@@ -18,10 +18,10 @@ func parseParams(c *fiber.Ctx, req interface{}) error {
 			code = e.Code
 		}
 
-		_ = c.Status(fiber.StatusBadRequest).JSON(utils.ResponseError(
-			utils.CreateResponseStatus(code),
-			nil,
-		))
+		_ = utils.ResponseBadRequest(c, &utils.ResponseEntity{
+			Code:   code,
+			Errors: e,
+		})
 		return err
 	}
 
@@ -33,10 +33,10 @@ func validate(c *fiber.Ctx, model interface{}) error {
 	validate := validates.NewValidator()
 	if errs := validate.Struct(model); errs != nil {
 		err := validates.ValidateErrors(errs)
-		_ = c.Status(fiber.StatusBadRequest).JSON(utils.ResponseError(
-			utils.CreateResponseStatus(utils.CODE_INVALID_PARAM),
-			err,
-		))
+		_ = utils.ResponseBadRequest(c, &utils.ResponseEntity{
+			Code:   utils.CODE_INVALID_PARAM,
+			Errors: err,
+		})
 		return errs
 	}
 
@@ -47,10 +47,10 @@ func validate(c *fiber.Ctx, model interface{}) error {
 func parseJwt(c *fiber.Ctx) (*auth.TokenMetadata, error) {
 	claims, err := auth.ExtractTokenMetadata(c)
 	if err != nil {
-		_ = c.Status(fiber.StatusUnauthorized).JSON(utils.ResponseError(
-			utils.CreateResponseStatus(utils.CODE_INVALID_JWT),
-			err,
-		))
+		_ = utils.ResponseBadRequest(c, &utils.ResponseEntity{
+			Code:   utils.CODE_INVALID_JWT,
+			Errors: err,
+		})
 		return nil, err
 	}
 

@@ -2,42 +2,35 @@ package utils
 
 import "github.com/gofiber/fiber/v2"
 
-type ResponseStatus struct {
+type ResponseEntity struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-	Errors  interface{} `json:"errors"`
+	Data    interface{} `json:",data"`
+	Errors  interface{} `json:",errors"`
 }
 
-func CreateResponseStatus(code int, params ...string) *ResponseStatus {
-	return &ResponseStatus{
-		Code:    code,
-		Message: GetMessage(code, params...),
-	}
+func (entity *ResponseEntity) SetMessage() *ResponseEntity {
+	entity.Message = GetMessage(entity.Code)
+	return entity
 }
 
-func ResponseData(status *ResponseStatus, data interface{}) interface{} {
-	resp := fiber.Map{
-		"code":    status.Code,
-		"message": status.Message,
-	}
-
-	if data != nil {
-		resp["data"] = data
-	}
-
-	return resp
+func (entity *ResponseEntity) SetMessageWithParams(params ...string) *ResponseEntity {
+	entity.Message = GetMessage(entity.Code, params...)
+	return entity
 }
 
-func ResponseError(status *ResponseStatus, errors any) interface{} {
-	resp := fiber.Map{
-		"code":    status.Code,
-		"message": status.Message,
-	}
+func ResponseOk(c *fiber.Ctx, entity *ResponseEntity) error {
+	return c.Status(fiber.StatusOK).JSON(entity)
+}
 
-	if errors != nil {
-		resp["errors"] = errors
-	}
+func ResponseError(c *fiber.Ctx, entity *ResponseEntity) error {
+	return c.Status(fiber.StatusInternalServerError).JSON(entity)
+}
 
-	return resp
+func ResponseBadRequest(c *fiber.Ctx, entity *ResponseEntity) error {
+	return c.Status(fiber.StatusBadRequest).JSON(entity)
+}
+
+func ResponseUnAuthorized(c *fiber.Ctx, entity *ResponseEntity) error {
+	return c.Status(fiber.StatusUnauthorized).JSON(entity)
 }
