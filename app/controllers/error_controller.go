@@ -19,15 +19,14 @@ func GlobalErrorHandler(c *fiber.Ctx, err error) error {
 		code = e.Code
 	}
 
-	return c.Status(fiber.StatusInternalServerError).JSON(utils.ResponseError(
-		utils.CreateResponseStatus(code),
-		err.Error(),
-	))
+	return utils.ResponseEntity{
+		Code:   code,
+		Errors: err.Error(),
+	}.ResponseError(c)
 }
 
 func NotFound(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusNotFound).JSON(utils.ResponseError(
-		utils.CreateResponseStatus(utils.CODE_NOTFOUND),
-		nil,
-	))
+	return utils.ResponseEntity{
+		Code: utils.CODE_NOTFOUND,
+	}.ResponseOk(c)
 }

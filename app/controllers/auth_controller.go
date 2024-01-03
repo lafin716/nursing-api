@@ -39,10 +39,10 @@ func UserSignUp(c *fiber.Ctx) error {
 	// 비밀번호는 가림
 	user.PasswordHash = ""
 
-	return c.Status(fiber.StatusOK).JSON(utils.ResponseData(
-		utils.CreateResponseStatus(utils.CODE_SUCCESS),
-		user,
-	))
+	return utils.ResponseEntity{
+		Code: utils.CODE_SUCCESS,
+		Data: user,
+	}.ResponseOk(c)
 }
 
 // 로그인
@@ -73,25 +73,24 @@ func UserSignIn(c *fiber.Ctx) error {
 	// 비밀번호 검증
 	comparePassword := utils.ComparePassword(user.PasswordHash, signIn.Password)
 	if !comparePassword {
-		return c.Status(fiber.StatusBadRequest).JSON(utils.ResponseError(
-			utils.CreateResponseStatus(utils.CODE_INVALID_SIGN_IN),
-			nil,
-		))
+		return utils.ResponseEntity{
+			Code: utils.CODE_INVALID_SIGN_IN,
+		}.ResponseBadRequest(c)
 	}
 
 	// 토큰 생성
 	tokens, err := auth.GenerateNewTokens(user.ID.String(), []string{})
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(utils.ResponseError(
-			utils.CreateResponseStatus(utils.CODE_ERROR_WITH_MSG, "토큰 생성 실패"),
-			err,
-		))
+		return utils.ResponseEntity{
+			Code:          utils.CODE_ERROR_WITH_MSG,
+			MessageParams: []string{"토큰 생성 실패"},
+		}.ResponseError(c)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(utils.ResponseData(
-		utils.CreateResponseStatus(utils.CODE_SUCCESS),
-		tokens,
-	))
+	return utils.ResponseEntity{
+		Code: utils.CODE_SUCCESS,
+		Data: tokens,
+	}.ResponseOk(c)
 }
 
 // 로그아웃
@@ -104,8 +103,5 @@ func UserSignOut(c *fiber.Ctx) error {
 	userId := claims.UserID.String()
 	log.Printf("로그아웃 : %s", userId)
 
-	return c.Status(fiber.StatusOK).JSON(utils.ResponseData(
-		utils.CreateResponseStatus(utils.CODE_SUCCESS),
-		nil,
-	))
+	return utils.ResponseEntity{Code: utils.CODE_SUCCESS}.ResponseOk(c)
 }

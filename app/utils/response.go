@@ -1,36 +1,46 @@
 package utils
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"strings"
+)
 
 type ResponseEntity struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:",data"`
-	Errors  interface{} `json:",errors"`
+	Code          int         `json:"code"`
+	Message       string      `json:"message,omitempty"`
+	MessageParams []string    `json:"-"`
+	Data          interface{} `json:"data,omitempty"`
+	Errors        interface{} `json:"errors,omitempty"`
 }
 
-func (entity *ResponseEntity) SetMessage() *ResponseEntity {
+func resolveMessage(entity *ResponseEntity) {
+	if strings.TrimSpace(entity.Message) != "" {
+		return
+	}
+
+	if len(entity.MessageParams) > 0 {
+		entity.Message = GetMessage(entity.Code, entity.MessageParams...)
+	}
+
 	entity.Message = GetMessage(entity.Code)
-	return entity
 }
 
-func (entity *ResponseEntity) SetMessageWithParams(params ...string) *ResponseEntity {
-	entity.Message = GetMessage(entity.Code, params...)
-	return entity
-}
-
-func ResponseOk(c *fiber.Ctx, entity *ResponseEntity) error {
+func (entity ResponseEntity) ResponseOk(c *fiber.Ctx) error {
+	resolveMessage(&entity)
 	return c.Status(fiber.StatusOK).JSON(entity)
 }
 
-func ResponseError(c *fiber.Ctx, entity *ResponseEntity) error {
+func (entity ResponseEntity) ResponseError(c *fiber.Ctx) error {
+	resolveMessage(&entity)
 	return c.Status(fiber.StatusInternalServerError).JSON(entity)
 }
 
-func ResponseBadRequest(c *fiber.Ctx, entity *ResponseEntity) error {
+func (entity ResponseEntity) ResponseBadRequest(c *fiber.Ctx) error {
+	resolveMessage(&entity)
 	return c.Status(fiber.StatusBadRequest).JSON(entity)
 }
 
-func ResponseUnAuthorized(c *fiber.Ctx, entity *ResponseEntity) error {
+func (entity ResponseEntity) ResponseUnAuthorized(c *fiber.Ctx) error {
+	resolveMessage(&entity)
 	return c.Status(fiber.StatusUnauthorized).JSON(entity)
 }

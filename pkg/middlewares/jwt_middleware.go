@@ -19,14 +19,14 @@ func JwtProtected() func(*fiber.Ctx) error {
 
 func jwtErrorHandler(c *fiber.Ctx, err error) error {
 	if err.Error() == "Missing or malformed JWT" {
-		return c.Status(fiber.StatusBadRequest).JSON(utils.ResponseError(
-			utils.CreateResponseStatus(utils.CODE_INVALID_JWT),
-			err.Error(),
-		))
+		return utils.ResponseEntity{
+			Code:   utils.CODE_INVALID_JWT,
+			Errors: err.Error(),
+		}.ResponseBadRequest(c)
 	}
 
-	return c.Status(fiber.StatusUnauthorized).JSON(utils.ResponseError(
-		utils.CreateResponseStatus(utils.CODE_UNAUTHORIZED),
-		err.Error(),
-	))
+	return utils.ResponseEntity{
+		Code:   utils.CODE_UNAUTHORIZED,
+		Errors: err.Error(),
+	}.ResponseUnAuthorized(c)
 }
