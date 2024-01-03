@@ -11,6 +11,7 @@ const (
 	CODE_INVALID_PARAM   = 422
 	CODE_ERROR           = 500
 	CODE_ERROR_WITH_MSG  = 501
+	CODE_DUPLICATE_EMAIL = 600
 )
 
 var codeMessages = map[int]string{
@@ -22,6 +23,7 @@ var codeMessages = map[int]string{
 	CODE_INVALID_PARAM:   "유효하지 않은 파라미터입니다.",
 	CODE_ERROR:           "오류가 발생하였습니다",
 	CODE_ERROR_WITH_MSG:  "오류가 발생하였습니다 :: %s",
+	CODE_DUPLICATE_EMAIL: "이미 가입된 이메일입니다.",
 }
 
 func GetMessage(code int, param ...string) string {
