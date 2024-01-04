@@ -5,24 +5,38 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 )
+
+type JwtGenerator struct {
+	config *JwtConfig
+}
+
+type TokenRequest struct {
+	ID          string
+	Credentials []string
+}
 
 type Tokens struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
-func GenerateNewTokens(id string, credentials []string) (*Tokens, error) {
-	accessToken, err := generateNewAccessToken(id, credentials)
+func NewJwtGenerator(config *JwtConfig) *JwtGenerator {
+	return &JwtGenerator{
+		config: config,
+	}
+}
+
+func (g *JwtGenerator) GenerateNewTokens(request *TokenRequest) (*Tokens, error) {
+	accessToken, err := g.generateNewAccessToken(request.ID, request.Credentials)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := generateNewRefreshToken()
+	refreshToken, err := g.generateNewRefreshToken()
 	if err != nil {
 		return nil, err
 	}
@@ -33,13 +47,9 @@ func GenerateNewTokens(id string, credentials []string) (*Tokens, error) {
 	}, nil
 }
 
-func ParseRefreshToken(refreshToken string) (int64, error) {
-	return strconv.ParseInt(strings.Split(refreshToken, ".")[1], 0, 64)
-}
-
-func generateNewAccessToken(id string, credentials []string) (string, error) {
-	secret := os.Getenv("JWT_SECRET_KEY")
-	minutesCount, _ := strconv.Atoi(os.Getenv("ACCESS_TOKEN_EXPIRES"))
+func (g *JwtGenerator) generateNewAccessToken(id string, credentials []string) (string, error) {
+	secret := g.config.SecretKey
+	minutesCount := g.config.AccessTokenExpires
 	claims := jwt.MapClaims{
 		"id":      id,
 		"expires": time.Now().Add(time.Minute * time.Duration(minutesCount)).Unix(),
@@ -59,18 +69,23 @@ func generateNewAccessToken(id string, credentials []string) (string, error) {
 	return t, nil
 }
 
-func generateNewRefreshToken() (string, error) {
+func (g *JwtGenerator) generateNewRefreshToken() (string, error) {
 	hash := sha256.New()
-	refresh := os.Getenv("REFRESH_SECRET_KEY") + time.Now().String()
+	refresh := g.config.RefreshKey + time.Now().String()
 
 	_, err := hash.Write([]byte(refresh))
 	if err != nil {
 		return "", nil
 	}
 
-	hoursCount, _ := strconv.Atoi(os.Getenv("REFRESH_TOKEN_EXPIRES"))
+	hoursCount := g.config.RefreshTokenExpires
 	expireTime := fmt.Sprint(time.Now().Add(time.Hour * time.Duration(hoursCount)).Unix())
 	t := hex.EncodeToString(hash.Sum(nil)) + "." + expireTime
 
 	return t, nil
+}
+
+// TODO 이 함수는 필요는 해보이나 일단 당장은 사용하지 않으므로 대기
+func ParseRefreshToken(refreshToken string) (int64, error) {
+	return strconv.ParseInt(strings.Split(refreshToken, ".")[1], 0, 64)
 }

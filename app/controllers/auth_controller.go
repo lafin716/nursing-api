@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"log"
+	"nursing_api/app/container"
 	"nursing_api/app/models"
 	"nursing_api/app/utils"
 	"nursing_api/pkg/auth"
@@ -11,7 +11,8 @@ import (
 )
 
 // 회원가입
-func UserSignUp(c *fiber.Ctx) error {
+func UserSignUp(container *container.FiberContainer) error {
+	c := container.Ctx
 	signUp := &models.SignUp{}
 
 	// 파라미터 파싱
@@ -63,7 +64,8 @@ func UserSignUp(c *fiber.Ctx) error {
 }
 
 // 로그인
-func UserSignIn(c *fiber.Ctx) error {
+func UserSignIn(container *container.FiberContainer) error {
+	c := container.Ctx
 	signIn := &models.SignIn{}
 
 	// 파라미터 파싱
@@ -96,7 +98,11 @@ func UserSignIn(c *fiber.Ctx) error {
 	}
 
 	// 토큰 생성
-	tokens, err := auth.GenerateNewTokens(user.ID.String(), []string{})
+	tokenRequest := &auth.TokenRequest{
+		ID:          user.ID.String(),
+		Credentials: []string{},
+	}
+	tokens, err := container.JwtClient.Generator.GenerateNewTokens(tokenRequest)
 	if err != nil {
 		return utils.ResponseEntity{
 			Code:          utils.CODE_ERROR_WITH_MSG,
@@ -111,8 +117,9 @@ func UserSignIn(c *fiber.Ctx) error {
 }
 
 // 로그아웃
-func UserSignOut(c *fiber.Ctx) error {
-	claims, err := parseJwt(c)
+func UserSignOut(container *container.FiberContainer) error {
+	c := container.Ctx
+	claims, err := parseJwt(container)
 	if err != nil {
 		return nil
 	}

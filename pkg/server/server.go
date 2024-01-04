@@ -1,52 +1,36 @@
-package bootstrap
+package server
 
 import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"log"
-	"nursing_api/ent"
-	"nursing_api/pkg/middlewares"
-	"nursing_api/pkg/routes"
 	"os"
 	"os/signal"
 )
 
-type Server struct {
-	app       *fiber.App
-	entClient *ent.Client
+type ServerConfig struct {
+	Profile string
+	App     *fiber.App
 }
 
-func NewServer(app *fiber.App, c *ent.Client) *Server {
+type Server struct {
+	config *ServerConfig
+}
+
+func NewServer(config *ServerConfig) *Server {
 	return &Server{
-		app:       app,
-		entClient: c,
+		config: config,
 	}
 }
 
 func (s *Server) Run() error {
-	// 미들웨어 설정
-	log.Println("미들웨어 설정")
-	middlewares.FiberMiddleware(s.app)
-
-	// 전체 허용 API 라우팅 설정
-	log.Println("미들웨어 설정")
-	routes.PublicRoutes(s.app)
-
-	// 인증 필요 API 라우팅 설정
-	log.Println("퍼블릭 라우팅 설정")
-	routes.PrivateRoutes(s.app)
-
-	// 존재하지 않는 엔드포인트 라우팅 설정
-	log.Println("프라이빗 라우팅 설정")
-	routes.NotFoundRoute(s.app)
-
 	// 서버 환경에 따라 서버 구동 분기
-	if os.Getenv("PROFILE") == "production" {
+	if s.config.Profile == "production" {
 		log.Println("운영 환경에서 서버를 구동합니다")
-		StartServerWithGracefulShutdown(s.app)
+		StartServerWithGracefulShutdown(s.config.App)
 	} else {
 		log.Println("개발 환경에서 서버를 구동합니다")
-		StartServer(s.app)
+		StartServer(s.config.App)
 	}
 
 	return nil

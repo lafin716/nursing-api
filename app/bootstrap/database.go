@@ -1,4 +1,4 @@
-package configs
+package bootstrap
 
 import (
 	"log"
@@ -7,7 +7,12 @@ import (
 	"strconv"
 )
 
-func DatabaseConfig() *database.Config {
+func GetDatabaseClient() *database.DatabaseClient {
+	client := database.NewPostgresClient(getDatabaseConfig())
+	return client
+}
+
+func getDatabaseConfig() *database.Config {
 	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
 	if err != nil {
 		log.Fatalf("데이터베이스 포트 형식이 아닙니다: %v", err)

@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"nursing_api/app/container"
 	"nursing_api/app/utils"
 	"nursing_api/pkg/auth"
 	"nursing_api/pkg/validates"
@@ -44,8 +45,9 @@ func validate(c *fiber.Ctx, model interface{}) error {
 }
 
 // jwt 토큰 파싱
-func parseJwt(c *fiber.Ctx) (*auth.TokenMetadata, error) {
-	claims, err := auth.ExtractTokenMetadata(c)
+func parseJwt(container *container.FiberContainer) (*auth.TokenMetadata, error) {
+	c := container.Ctx
+	claims, err := container.JwtClient.Parser.ExtractTokenMetadata(c)
 	if err != nil {
 		_ = utils.ResponseEntity{
 			Code:   utils.CODE_INVALID_JWT,
