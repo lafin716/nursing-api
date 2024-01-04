@@ -47,7 +47,7 @@ func UserSignUp(container *container.FiberContainer) error {
 	}
 
 	// 유저 객체 생성
-	user := &models.User{
+	newUser := &models.User{
 		ID:           uuid.New(),
 		Name:         signUp.Name,
 		Email:        signUp.Email,
@@ -58,7 +58,7 @@ func UserSignUp(container *container.FiberContainer) error {
 		CreatedAt:    time.Now(),
 	}
 
-	savedUser := service.SaveUser(user)
+	savedUser := service.SaveUser(newUser)
 	savedUser.PasswordHash = ""
 
 	return utils.ResponseEntity{
@@ -70,6 +70,7 @@ func UserSignUp(container *container.FiberContainer) error {
 // 로그인
 func UserSignIn(container *container.FiberContainer) error {
 	c := container.Ctx
+	service := getService(container.DBClient)
 	signIn := &models.SignIn{}
 
 	// 파라미터 파싱
@@ -82,19 +83,15 @@ func UserSignIn(container *container.FiberContainer) error {
 		return nil
 	}
 
-	// TODO DB에서 유저정보 조회, 현재는 임시 유저객체로 조회 mock
-	user := &models.User{
-		ID:           uuid.New(),
-		Name:         "임시유저",
-		Email:        signIn.Email,
-		PasswordHash: utils.GeneratePassword(signIn.Password),
-		FailCount:    0,
-		LastLoggedIn: time.Now(),
-		CreatedAt:    time.Now(),
+	foundUser := service.GetUserByEmail(signIn.Email)
+	if foundUser == nil {
+		return utils.ResponseEntity{
+			Code: utils.CODE_USER_NOTFOUND,
+		}.ResponseOk(c)
 	}
 
 	// 비밀번호 검증
-	comparePassword := utils.ComparePassword(user.PasswordHash, signIn.Password)
+	comparePassword := utils.ComparePassword(foundUser.PasswordHash, signIn.Password)
 	if !comparePassword {
 		return utils.ResponseEntity{
 			Code: utils.CODE_INVALID_SIGN_IN,
@@ -103,7 +100,7 @@ func UserSignIn(container *container.FiberContainer) error {
 
 	// 토큰 생성
 	tokenRequest := &auth.TokenRequest{
-		ID:          user.ID.String(),
+		ID:          foundUser.ID.String(),
 		Credentials: []string{},
 	}
 	tokens, err := container.JwtClient.Generator.GenerateNewTokens(tokenRequest)
