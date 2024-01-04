@@ -14,7 +14,8 @@ type Config struct {
 	Database  string
 	User      string
 	Password  string
-	SSLEnable string
+	SSLEnable bool
+	Debug     bool
 }
 
 type DatabaseClient struct {
@@ -23,27 +24,41 @@ type DatabaseClient struct {
 }
 
 func (c *Config) Serialize() string {
-	return fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s",
+	sslMode := "disable"
+	if c.SSLEnable {
+		sslMode = "require"
+	}
+
+	return fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=%s",
 		c.Host,
 		c.Port,
 		c.User,
 		c.Database,
-		c.Password)
+		c.Password,
+		sslMode,
+	)
 }
 
 func NewPostgresClient(config *Config) *DatabaseClient {
+	log.Printf("데이터베이스 URL : %s", config.Serialize())
 	client, err := ent.Open("postgres", config.Serialize())
 	if err != nil {
 		log.Printf("데이터베이스 연결에 실패하였습니다: %v", err)
 	}
 
-	defer client.Close()
 	ctx := context.Background()
+	if err := client.Schema.Create(ctx); err != nil {
+		log.Printf("데이터베이스 컨텍스트 생성에 실패하였습니다: %v", err)
+	}
 
 	return &DatabaseClient{
 		Client: client,
 		Ctx:    ctx,
 	}
+}
+
+func (d *DatabaseClient) Close() {
+	d.Client.Close()
 }
 
 // 마이그레이션

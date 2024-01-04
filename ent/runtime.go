@@ -17,19 +17,19 @@ func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescUserStatus is the schema descriptor for user_status field.
-	userDescUserStatus := userFields[3].Descriptor()
+	userDescUserStatus := userFields[4].Descriptor()
 	// user.DefaultUserStatus holds the default value on creation for the user_status field.
 	user.DefaultUserStatus = userDescUserStatus.Default.(string)
 	// userDescUserType is the schema descriptor for user_type field.
-	userDescUserType := userFields[4].Descriptor()
+	userDescUserType := userFields[5].Descriptor()
 	// user.DefaultUserType holds the default value on creation for the user_type field.
 	user.DefaultUserType = userDescUserType.Default.(string)
 	// userDescFailCount is the schema descriptor for fail_count field.
-	userDescFailCount := userFields[5].Descriptor()
+	userDescFailCount := userFields[6].Descriptor()
 	// user.DefaultFailCount holds the default value on creation for the fail_count field.
 	user.DefaultFailCount = userDescFailCount.Default.(int)
 	// userDescCreatedAt is the schema descriptor for created_at field.
-	userDescCreatedAt := userFields[7].Descriptor()
+	userDescCreatedAt := userFields[8].Descriptor()
 	// user.DefaultCreatedAt holds the default value on creation for the created_at field.
 	user.DefaultCreatedAt = userDescCreatedAt.Default.(func() time.Time)
 	// userDescID is the schema descriptor for id field.

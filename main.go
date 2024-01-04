@@ -13,14 +13,15 @@ func main() {
 	log.Println("서버 구동 시작")
 
 	// 서버 구동 시작
-	fiberApp := bootstrap.GetServer()
+	fiberContainer := bootstrap.GetServer()
 	serverConfig := &server.ServerConfig{
 		Profile: os.Getenv("PROFILE"),
-		App:     fiberApp,
+		App:     fiberContainer.App,
 	}
 	s := server.NewServer(serverConfig)
 	err := s.Run()
 	if err != nil {
 		log.Println("서버 종료.")
 	}
+	defer fiberContainer.DBClient.Close()
 }

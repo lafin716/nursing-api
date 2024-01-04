@@ -1,11 +1,33 @@
 package bootstrap
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"log"
+	"nursing_api/app/container"
+	"nursing_api/app/controllers"
+	"nursing_api/app/routes"
+	"nursing_api/pkg/auth"
+	"nursing_api/pkg/database"
 )
 
-func GetServer() *fiber.App {
+type FiberApplication struct {
+	container *container.FiberContainer
+}
+
+func NewFiberApplication(jwtClient *auth.JwtClient, dbClient *database.DatabaseClient) *FiberApplication {
+	application := &FiberApplication{
+		container: container.NewFiberContainer(jwtClient, dbClient),
+	}
+
+	application.initApp()
+	return application
+}
+
+func (c *FiberApplication) initApp() {
+	handler := controllers.NewFiberHandler(c.container)
+	routes.NewRoutes(handler).Resolve()
+}
+
+func GetServer() *container.FiberContainer {
 	log.Println("JWT 모듈 초기화")
 	jwtClient := GetJwtClient()
 	log.Println("데이터베이스 초기화")
@@ -13,5 +35,5 @@ func GetServer() *fiber.App {
 	log.Println("Fiber 프레임워크 구동")
 	fiberContainer := NewFiberApplication(jwtClient, dbClient)
 
-	return fiberContainer.container.App
+	return fiberContainer.container
 }

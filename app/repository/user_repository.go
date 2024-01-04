@@ -8,30 +8,61 @@ import (
 
 type userRepository struct {
 	client *ent.UserClient
+	ctx    context.Context
 }
 
 type UserRepository interface {
-	CountUserByEmail(email string) (int, error)
+	CreateUser(*ent.User) (*ent.User, error)
+	CountUserByEmail(string) (int, error)
+	GetUserByEmail(string) *ent.User
 }
 
-func NewUserRepository(client *ent.Client) UserRepository {
-	return &userRepository{client: client.User}
+func NewUserRepository(client *ent.Client, ctx context.Context) UserRepository {
+	return &userRepository{
+		client: client.User,
+		ctx:    ctx,
+	}
+}
+
+func (u *userRepository) CreateUser(user *ent.User) (*ent.User, error) {
+	savedUser, err := u.client.Create().
+		SetUserName(user.UserName).
+		SetUserEmail(user.UserEmail).
+		SetUserPassword(user.UserPassword).
+		SetCreatedAt(user.CreatedAt).
+		Save(u.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return savedUser, nil
 }
 
 func (u *userRepository) CountUserByEmail(email string) (int, error) {
-	client, err := GetClient()
-	if err != nil {
-		return -1, err
-	}
-	defer client.Close()
-	ctx := context.Background()
-
-	emailCount, err := client.User.
+	client := u.client
+	emailCount, err := client.
 		Query().
 		Where(
 			user.UserEmail(email),
 		).
-		Count(ctx)
+		Count(u.ctx)
+	if err != nil {
+		return -1, err
+	}
 
 	return emailCount, nil
+}
+
+func (u *userRepository) GetUserByEmail(email string) *ent.User {
+	client := u.client
+	foundUser, err := client.Query().
+		Where(
+			user.UserEmail(email),
+		).
+		Only(u.ctx)
+	if err != nil {
+		return nil
+	}
+
+	return foundUser
 }

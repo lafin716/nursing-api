@@ -18,12 +18,24 @@ func getDatabaseConfig() *database.Config {
 		log.Fatalf("데이터베이스 포트 형식이 아닙니다: %v", err)
 	}
 
+	sslMode, err := strconv.ParseBool(os.Getenv("DB_SSL"))
+	if err != nil {
+		sslMode = false
+	}
+
+	dbDebug, err := strconv.ParseBool(os.Getenv("DB_DEBUG"))
+	if err != nil {
+		dbDebug = false
+	}
+
 	config := &database.Config{
-		Host:     os.Getenv("DB_HOST"),
-		Port:     port,
-		Database: os.Getenv("DB_NAME"),
-		User:     os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASSWORD"),
+		Host:      os.Getenv("DB_HOST"),
+		Port:      port,
+		Database:  os.Getenv("DB_NAME"),
+		User:      os.Getenv("DB_USER"),
+		Password:  os.Getenv("DB_PASSWORD"),
+		SSLEnable: sslMode,
+		Debug:     dbDebug,
 	}
 
 	return config

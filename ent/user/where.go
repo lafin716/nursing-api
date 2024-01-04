@@ -55,6 +55,11 @@ func IDLTE(id uuid.UUID) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldID, id))
 }
 
+// UserName applies equality check predicate on the "user_name" field. It's identical to UserNameEQ.
+func UserName(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldUserName, v))
+}
+
 // UserEmail applies equality check predicate on the "user_email" field. It's identical to UserEmailEQ.
 func UserEmail(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUserEmail, v))
@@ -93,6 +98,81 @@ func CreatedAt(v time.Time) predicate.User {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UserNameEQ applies the EQ predicate on the "user_name" field.
+func UserNameEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldUserName, v))
+}
+
+// UserNameNEQ applies the NEQ predicate on the "user_name" field.
+func UserNameNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldUserName, v))
+}
+
+// UserNameIn applies the In predicate on the "user_name" field.
+func UserNameIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldUserName, vs...))
+}
+
+// UserNameNotIn applies the NotIn predicate on the "user_name" field.
+func UserNameNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldUserName, vs...))
+}
+
+// UserNameGT applies the GT predicate on the "user_name" field.
+func UserNameGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldUserName, v))
+}
+
+// UserNameGTE applies the GTE predicate on the "user_name" field.
+func UserNameGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldUserName, v))
+}
+
+// UserNameLT applies the LT predicate on the "user_name" field.
+func UserNameLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldUserName, v))
+}
+
+// UserNameLTE applies the LTE predicate on the "user_name" field.
+func UserNameLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldUserName, v))
+}
+
+// UserNameContains applies the Contains predicate on the "user_name" field.
+func UserNameContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldUserName, v))
+}
+
+// UserNameHasPrefix applies the HasPrefix predicate on the "user_name" field.
+func UserNameHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldUserName, v))
+}
+
+// UserNameHasSuffix applies the HasSuffix predicate on the "user_name" field.
+func UserNameHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldUserName, v))
+}
+
+// UserNameIsNil applies the IsNil predicate on the "user_name" field.
+func UserNameIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldUserName))
+}
+
+// UserNameNotNil applies the NotNil predicate on the "user_name" field.
+func UserNameNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldUserName))
+}
+
+// UserNameEqualFold applies the EqualFold predicate on the "user_name" field.
+func UserNameEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldUserName, v))
+}
+
+// UserNameContainsFold applies the ContainsFold predicate on the "user_name" field.
+func UserNameContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldUserName, v))
 }
 
 // UserEmailEQ applies the EQ predicate on the "user_email" field.

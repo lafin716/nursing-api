@@ -34,6 +34,7 @@ type UserMutation struct {
 	op             Op
 	typ            string
 	id             *uuid.UUID
+	user_name      *string
 	user_email     *string
 	user_password  *string
 	user_status    *string
@@ -151,6 +152,55 @@ func (m *UserMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetUserName sets the "user_name" field.
+func (m *UserMutation) SetUserName(s string) {
+	m.user_name = &s
+}
+
+// UserName returns the value of the "user_name" field in the mutation.
+func (m *UserMutation) UserName() (r string, exists bool) {
+	v := m.user_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserName returns the old "user_name" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldUserName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserName: %w", err)
+	}
+	return oldValue.UserName, nil
+}
+
+// ClearUserName clears the value of the "user_name" field.
+func (m *UserMutation) ClearUserName() {
+	m.user_name = nil
+	m.clearedFields[user.FieldUserName] = struct{}{}
+}
+
+// UserNameCleared returns if the "user_name" field was cleared in this mutation.
+func (m *UserMutation) UserNameCleared() bool {
+	_, ok := m.clearedFields[user.FieldUserName]
+	return ok
+}
+
+// ResetUserName resets all changes to the "user_name" field.
+func (m *UserMutation) ResetUserName() {
+	m.user_name = nil
+	delete(m.clearedFields, user.FieldUserName)
 }
 
 // SetUserEmail sets the "user_email" field.
@@ -521,7 +571,10 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
+	if m.user_name != nil {
+		fields = append(fields, user.FieldUserName)
+	}
 	if m.user_email != nil {
 		fields = append(fields, user.FieldUserEmail)
 	}
@@ -554,6 +607,8 @@ func (m *UserMutation) Fields() []string {
 // schema.
 func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case user.FieldUserName:
+		return m.UserName()
 	case user.FieldUserEmail:
 		return m.UserEmail()
 	case user.FieldUserPassword:
@@ -579,6 +634,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case user.FieldUserName:
+		return m.OldUserName(ctx)
 	case user.FieldUserEmail:
 		return m.OldUserEmail(ctx)
 	case user.FieldUserPassword:
@@ -604,6 +661,13 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *UserMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case user.FieldUserName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserName(v)
+		return nil
 	case user.FieldUserEmail:
 		v, ok := value.(string)
 		if !ok {
@@ -705,6 +769,9 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(user.FieldUserName) {
+		fields = append(fields, user.FieldUserName)
+	}
 	if m.FieldCleared(user.FieldLastSignedIn) {
 		fields = append(fields, user.FieldLastSignedIn)
 	}
@@ -725,6 +792,9 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
+	case user.FieldUserName:
+		m.ClearUserName()
+		return nil
 	case user.FieldLastSignedIn:
 		m.ClearLastSignedIn()
 		return nil
@@ -739,6 +809,9 @@ func (m *UserMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *UserMutation) ResetField(name string) error {
 	switch name {
+	case user.FieldUserName:
+		m.ResetUserName()
+		return nil
 	case user.FieldUserEmail:
 		m.ResetUserEmail()
 		return nil

@@ -28,6 +28,26 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
+// SetUserName sets the "user_name" field.
+func (uu *UserUpdate) SetUserName(s string) *UserUpdate {
+	uu.mutation.SetUserName(s)
+	return uu
+}
+
+// SetNillableUserName sets the "user_name" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUserName(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetUserName(*s)
+	}
+	return uu
+}
+
+// ClearUserName clears the value of the "user_name" field.
+func (uu *UserUpdate) ClearUserName() *UserUpdate {
+	uu.mutation.ClearUserName()
+	return uu
+}
+
 // SetUserEmail sets the "user_email" field.
 func (uu *UserUpdate) SetUserEmail(s string) *UserUpdate {
 	uu.mutation.SetUserEmail(s)
@@ -200,6 +220,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := uu.mutation.UserName(); ok {
+		_spec.SetField(user.FieldUserName, field.TypeString, value)
+	}
+	if uu.mutation.UserNameCleared() {
+		_spec.ClearField(user.FieldUserName, field.TypeString)
+	}
 	if value, ok := uu.mutation.UserEmail(); ok {
 		_spec.SetField(user.FieldUserEmail, field.TypeString, value)
 	}
@@ -251,6 +277,26 @@ type UserUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *UserMutation
+}
+
+// SetUserName sets the "user_name" field.
+func (uuo *UserUpdateOne) SetUserName(s string) *UserUpdateOne {
+	uuo.mutation.SetUserName(s)
+	return uuo
+}
+
+// SetNillableUserName sets the "user_name" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUserName(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetUserName(*s)
+	}
+	return uuo
+}
+
+// ClearUserName clears the value of the "user_name" field.
+func (uuo *UserUpdateOne) ClearUserName() *UserUpdateOne {
+	uuo.mutation.ClearUserName()
+	return uuo
 }
 
 // SetUserEmail sets the "user_email" field.
@@ -454,6 +500,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := uuo.mutation.UserName(); ok {
+		_spec.SetField(user.FieldUserName, field.TypeString, value)
+	}
+	if uuo.mutation.UserNameCleared() {
+		_spec.ClearField(user.FieldUserName, field.TypeString)
 	}
 	if value, ok := uuo.mutation.UserEmail(); ok {
 		_spec.SetField(user.FieldUserEmail, field.TypeString, value)
