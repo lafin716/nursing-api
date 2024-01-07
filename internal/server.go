@@ -41,6 +41,7 @@ func NewServer(
 	jwtClient *jwt.JwtClient,
 	dbClient *database.DatabaseClient,
 	authRouter router.AuthRouter,
+	userRouter router.UserRouter,
 ) *Server {
 	fiberClient := web.NewFiberClient(cfg)
 	app := fiberClient.GetApp()
@@ -48,6 +49,7 @@ func NewServer(
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
 	authRouter.Init(&v1, jwtClient.Middleware)
+	userRouter.Init(&v1, jwtClient.Middleware)
 
 	return &Server{
 		app: app,

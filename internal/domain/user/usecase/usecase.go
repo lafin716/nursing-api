@@ -1,11 +1,12 @@
 package usecase
 
 import (
-	"nursing_api/internal/domain/user"
+	"github.com/google/uuid"
 	"nursing_api/internal/domain/user/dto"
 )
 
 type UserUseCase interface {
-	RegisterUser(req *dto.RegisterRequest) dto.RegisterResponse
-	VerifyUser(user *user.User) (bool, error)
+	RegisterUser(req *dto.RegisterRequest) *dto.RegisterResponse
+	VerifyUser(req *dto.LoginRequest) *dto.LoginResponse
+	GetUser(userId uuid.UUID) *dto.GetUserResponse
 }

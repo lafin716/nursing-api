@@ -17,16 +17,16 @@ type RegisterResponse struct {
 	Error   error
 }
 
-func OkRegisterUser(newUser *user.User) RegisterResponse {
-	return RegisterResponse{
+func OkRegisterUser(newUser *user.User) *RegisterResponse {
+	return &RegisterResponse{
 		Success: true,
 		Message: "",
 		User:    newUser,
 	}
 }
 
-func FailRegisterUser(message string, err error) RegisterResponse {
-	return RegisterResponse{
+func FailRegisterUser(message string, err error) *RegisterResponse {
+	return &RegisterResponse{
 		Success: false,
 		Message: message,
 		Error:   err,

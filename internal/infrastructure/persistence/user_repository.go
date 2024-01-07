@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"nursing_api/internal/domain/user"
 	"nursing_api/internal/domain/user/repository"
 	"nursing_api/pkg/database"
@@ -21,8 +22,17 @@ func NewUserRepository(dbClient *database.DatabaseClient) repository.UserReposit
 	}
 }
 
+func (u userRepository) GetUserById(userId uuid.UUID) (*user.User, error) {
+	foundUser, err := u.client.Query().Where(userEntity.ID(userId)).Only(u.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toUserDomain(foundUser), nil
+}
+
 func (u userRepository) CreateUser(user *user.User) (*user.User, error) {
-	entity := toEntity(user)
+	entity := toUserEntity(user)
 	savedUser, err := u.client.Create().
 		SetUserName(entity.UserName).
 		SetUserEmail(entity.UserEmail).
@@ -33,7 +43,7 @@ func (u userRepository) CreateUser(user *user.User) (*user.User, error) {
 		return nil, err
 	}
 
-	return toDomain(savedUser), nil
+	return toUserDomain(savedUser), nil
 }
 
 func (u userRepository) GetUserByEmail(email string) (*user.User, error) {
@@ -47,7 +57,7 @@ func (u userRepository) GetUserByEmail(email string) (*user.User, error) {
 		return nil, err
 	}
 
-	return toDomain(foundUser), nil
+	return toUserDomain(foundUser), nil
 }
 
 func (u userRepository) CountUserByEmail(email string) (int, error) {
@@ -65,7 +75,7 @@ func (u userRepository) CountUserByEmail(email string) (int, error) {
 	return emailCount, nil
 }
 
-func toDomain(entity *ent.User) *user.User {
+func toUserDomain(entity *ent.User) *user.User {
 	return &user.User{
 		ID:           entity.ID,
 		Name:         entity.UserName,
@@ -80,7 +90,7 @@ func toDomain(entity *ent.User) *user.User {
 	}
 }
 
-func toEntity(domain *user.User) *ent.User {
+func toUserEntity(domain *user.User) *ent.User {
 	return &ent.User{
 		ID:           domain.ID,
 		UserName:     domain.Name,

@@ -12,7 +12,6 @@ import (
 
 func main() {
 	log.Println("서버 구동 시작")
-
 	s, err := server.New()
 	if err != nil {
 		panic(err)

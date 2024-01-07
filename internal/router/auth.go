@@ -24,7 +24,7 @@ func (r *authRouter) Init(
 	router *fiber.Router,
 	jwtMiddleware *jwt.JwtMiddleware,
 ) {
-	userRouter := (*router).Group("/user")
+	userRouter := (*router).Group("/auth")
 	{
 		userRouter.Post("/signup", r.authApi.SignUp)
 		userRouter.Post("/signin", r.authApi.SignIn)

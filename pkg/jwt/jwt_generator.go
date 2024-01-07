@@ -20,8 +20,10 @@ type TokenRequest struct {
 }
 
 type Tokens struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	AccessToken         string `json:"access_token"`
+	AccessTokenExpires  int64  `json:"access_token_expires"`
+	RefreshToken        string `json:"refresh_token"`
+	RefreshTokenExpires int64  `json:"refresh_token_expires"`
 }
 
 func NewJwtGenerator(config *JwtConfig) *JwtGenerator {
@@ -31,28 +33,31 @@ func NewJwtGenerator(config *JwtConfig) *JwtGenerator {
 }
 
 func (g *JwtGenerator) GenerateNewTokens(request *TokenRequest) (*Tokens, error) {
-	accessToken, err := g.generateNewAccessToken(request.ID, request.Credentials)
+	accessToken, accessExpires, err := g.generateNewAccessToken(request.ID, request.Credentials)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := g.generateNewRefreshToken()
+	refreshToken, refreshExpires, err := g.generateNewRefreshToken()
 	if err != nil {
 		return nil, err
 	}
 
 	return &Tokens{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:         accessToken,
+		AccessTokenExpires:  accessExpires,
+		RefreshToken:        refreshToken,
+		RefreshTokenExpires: refreshExpires,
 	}, nil
 }
 
-func (g *JwtGenerator) generateNewAccessToken(id string, credentials []string) (string, error) {
+func (g *JwtGenerator) generateNewAccessToken(id string, credentials []string) (string, int64, error) {
 	secret := g.config.SecretKey
 	minutesCount := g.config.AccessTokenExpires
+	accessTokenExpires := time.Now().Add(time.Minute * time.Duration(minutesCount)).Unix()
 	claims := jwt.MapClaims{
 		"id":      id,
-		"expires": time.Now().Add(time.Minute * time.Duration(minutesCount)).Unix(),
+		"expires": accessTokenExpires,
 	}
 
 	// TODO 현재는 사용안함 추후 권한 관리 추가시 활성화
@@ -63,26 +68,26 @@ func (g *JwtGenerator) generateNewAccessToken(id string, credentials []string) (
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(secret))
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
-	return t, nil
+	return t, accessTokenExpires, nil
 }
 
-func (g *JwtGenerator) generateNewRefreshToken() (string, error) {
+func (g *JwtGenerator) generateNewRefreshToken() (string, int64, error) {
 	hash := sha256.New()
 	refresh := g.config.RefreshKey + time.Now().String()
 
 	_, err := hash.Write([]byte(refresh))
 	if err != nil {
-		return "", nil
+		return "", 0, nil
 	}
 
 	hoursCount := g.config.RefreshTokenExpires
-	expireTime := fmt.Sprint(time.Now().Add(time.Hour * time.Duration(hoursCount)).Unix())
-	t := hex.EncodeToString(hash.Sum(nil)) + "." + expireTime
+	refreshExpireTime := time.Now().Add(time.Hour * time.Duration(hoursCount)).Unix()
+	t := hex.EncodeToString(hash.Sum(nil)) + "." + fmt.Sprint(refreshExpireTime)
 
-	return t, nil
+	return t, refreshExpireTime, nil
 }
 
 // TODO 이 함수는 필요는 해보이나 일단 당장은 사용하지 않으므로 대기

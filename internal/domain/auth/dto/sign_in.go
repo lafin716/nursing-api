@@ -14,16 +14,16 @@ type SignInResponse struct {
 	Error   error
 }
 
-func OkSignIn(token *auth.Token) SignInResponse {
-	return SignInResponse{
+func OkSignIn(token *auth.Token) *SignInResponse {
+	return &SignInResponse{
 		Success: true,
 		Message: "토큰이 발급되었습니다.",
 		Token:   token,
 	}
 }
 
-func FailSignIn(message string, err error) SignInResponse {
-	return SignInResponse{
+func FailSignIn(message string, err error) *SignInResponse {
+	return &SignInResponse{
 		Success: false,
 		Message: message,
 		Error:   err,

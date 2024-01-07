@@ -29,10 +29,13 @@ func New() (*Server, error) {
 	databaseClient := database.NewPostgresClient(databaseConfig)
 	userRepository := persistence.NewUserRepository(databaseClient)
 	userUseCase := service.NewUserService(userRepository)
-	authUseCase := service.NewAuthService(userUseCase, jwtClient)
-	authHttpApi := api.NewAuthHttpApi(authUseCase)
+	authRepository := persistence.NewAuthRepository(databaseClient)
+	authUseCase := service.NewAuthService(userUseCase, authRepository, jwtClient)
+	authHttpApi := api.NewAuthHttpApi(authUseCase, jwtClient)
 	authRouter := router.NewAuthRouter(authHttpApi)
-	server := NewServer(fiberConfig, jwtClient, databaseClient, authRouter)
+	userHttpApi := api.NewUserHttpApi(userUseCase, jwtClient)
+	userRouter := router.NewUserRouter(userHttpApi)
+	server := NewServer(fiberConfig, jwtClient, databaseClient, authRouter, userRouter)
 	return server, nil
 }
 
@@ -49,12 +52,14 @@ func NewServer(
 	jwtClient *jwt.JwtClient,
 	dbClient *database.DatabaseClient,
 	authRouter router.AuthRouter,
+	userRouter router.UserRouter,
 ) *Server {
 	fiberClient := web.NewFiberClient(cfg)
 	app := fiberClient.GetApp()
 	api2 := app.Group("/api")
 	v1 := api2.Group("/v1")
 	authRouter.Init(&v1, jwtClient.Middleware)
+	userRouter.Init(&v1, jwtClient.Middleware)
 
 	return &Server{
 		app: app,
