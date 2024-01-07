@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ENDPOINT = "https://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList"
+	ENDPOINT = "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList"
 )
 
 type SummaryApi interface {
@@ -59,15 +59,8 @@ func NewSummaryApi(apiKey string) SummaryApi {
 }
 
 func (s *summaryApi) RetrievePill(pillName string) *SummaryResponse {
-	agent := getAgent("GET")
-	agent.QueryString("type=json")
-	agent.QueryString(fmt.Sprintf("serviceKey=%s", s.apiKey))
-	agent.QueryString(fmt.Sprintf("itemName=%s", pillName))
-
-	err := agent.Parse()
-	if err != nil {
-		return nil
-	}
+	query := fmt.Sprintf("?type=json&serviceKey=%s&itemName=%s", s.apiKey, pillName)
+	agent := fiber.Get(ENDPOINT + query)
 
 	_, body, errs := agent.Bytes()
 	if len(errs) > 0 {
@@ -75,7 +68,7 @@ func (s *summaryApi) RetrievePill(pillName string) *SummaryResponse {
 	}
 
 	var response SummaryResponse
-	err = json.Unmarshal(body, &response)
+	err := json.Unmarshal(body, &response)
 	if err != nil {
 		return nil
 	}
