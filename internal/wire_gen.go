@@ -13,6 +13,7 @@ import (
 	"nursing_api/internal/infrastructure/persistence"
 	"nursing_api/internal/router"
 	"nursing_api/internal/service"
+	"nursing_api/pkg/api/medicine"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
 	"nursing_api/pkg/jwt"
@@ -35,7 +36,12 @@ func New() (*Server, error) {
 	authRouter := router.NewAuthRouter(authHttpApi)
 	userHttpApi := api.NewUserHttpApi(userUseCase, jwtClient)
 	userRouter := router.NewUserRouter(userHttpApi)
-	server := NewServer(fiberConfig, jwtClient, databaseClient, authRouter, userRouter)
+	medicineApiConfig := config.NewMedicineApiConfig()
+	medicineApi := medicine.NewMedicineApi(medicineApiConfig)
+	medicineUseCase := service.NewMedicineService(medicineApi)
+	medicineHttpApi := api.NewMedicineHttpApi(medicineUseCase)
+	medicineRouter := router.NewMedicineRouter(medicineHttpApi)
+	server := NewServer(fiberConfig, jwtClient, databaseClient, authRouter, userRouter, medicineRouter)
 	return server, nil
 }
 
@@ -53,6 +59,7 @@ func NewServer(
 	dbClient *database.DatabaseClient,
 	authRouter router.AuthRouter,
 	userRouter router.UserRouter,
+	medicineRouter router.MedicineRouter,
 ) *Server {
 	fiberClient := web.NewFiberClient(cfg)
 	app := fiberClient.GetApp()
@@ -60,6 +67,7 @@ func NewServer(
 	v1 := api2.Group("/v1")
 	authRouter.Init(&v1, jwtClient.Middleware)
 	userRouter.Init(&v1, jwtClient.Middleware)
+	medicineRouter.Init(&v1, jwtClient.Middleware)
 
 	return &Server{
 		app: app,

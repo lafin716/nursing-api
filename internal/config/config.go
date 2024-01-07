@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"nursing_api/internal/common/errors"
 	"nursing_api/internal/common/response"
+	"nursing_api/pkg/api/medicine"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/jwt"
 	"nursing_api/pkg/web"
@@ -79,4 +80,11 @@ func NewDatabaseConfig() *database.Config {
 	}
 
 	return config
+}
+
+func NewMedicineApiConfig() *medicine.MedicineApiConfig {
+	return &medicine.MedicineApiConfig{
+		SummaryKey: os.Getenv("MEDICINE_SUMMARY_API_KEY"),
+		AppearKey:  os.Getenv("MEDICINE_APPEAR_API_KEY"),
+	}
 }
