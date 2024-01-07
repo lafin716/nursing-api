@@ -8,6 +8,7 @@ package server
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 	"nursing_api/internal/api"
 	"nursing_api/internal/config"
 	"nursing_api/internal/infrastructure/persistence"
@@ -18,6 +19,10 @@ import (
 	"nursing_api/pkg/ent"
 	"nursing_api/pkg/jwt"
 	"nursing_api/pkg/web"
+)
+
+import (
+	_ "nursing_api/docs"
 )
 
 // Injectors from server.go:
@@ -63,6 +68,7 @@ func NewServer(
 ) *Server {
 	fiberClient := web.NewFiberClient(cfg)
 	app := fiberClient.GetApp()
+	app.Get("/swagger/*", swagger.HandlerDefault)
 	api2 := app.Group("/api")
 	v1 := api2.Group("/v1")
 	authRouter.Init(&v1, jwtClient.Middleware)

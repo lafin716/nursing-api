@@ -1,0 +1,72 @@
+basePath: /api/v1
+definitions:
+  dto.SignInRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      password:
+        maxLength: 255
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.SignUpRequest:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      password:
+        maxLength: 255
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: lafin716@gmail.com
+    name: 박재욱
+  description: 간병관리 서비스 API입니다.
+  title: 간병관리 서비스 API
+  version: "1.0"
+paths:
+  /auth/signin:
+    post:
+      consumes:
+      - application/json
+      description: 회원정보로 인증을 수행하는 엔드포인트. 로그인 성공 시 JWT 토큰 반환.
+      parameters:
+      - description: 로그인 정보 (이메일, 비밀번호)
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SignInRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: 로그인 인증
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: 회원가입을 처리하는 엔드포인트. 회원가입 성공 시 JWT 토큰 반환.
+      parameters:
+      - description: 회원가입 정보 (이름, 이메일, 비밀번호)
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SignUpRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: 회원가입
+swagger: "2.0"

@@ -4,12 +4,20 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/lib/pq"
 	"log"
+	_ "nursing_api/docs"
 	"nursing_api/internal"
 	"nursing_api/pkg/web"
 	"os"
 	"strings"
 )
 
+// @title 간병관리 서비스 API
+// @version 1.0
+// @description 간병관리 서비스 API입니다.
+// @contact.name 박재욱
+// @contact.email lafin716@gmail.com
+// @host localhost:8080
+// @BasePath /api/v1
 func main() {
 	log.Println("서버 구동 시작")
 	s, err := server.New()

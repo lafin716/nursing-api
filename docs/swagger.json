@@ -1,0 +1,105 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "간병관리 서비스 API입니다.",
+        "title": "간병관리 서비스 API",
+        "contact": {
+            "name": "박재욱",
+            "email": "lafin716@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/auth/signin": {
+            "post": {
+                "description": "회원정보로 인증을 수행하는 엔드포인트. 로그인 성공 시 JWT 토큰 반환.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "로그인 인증",
+                "parameters": [
+                    {
+                        "description": "로그인 정보 (이메일, 비밀번호)",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SignInRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/auth/signup": {
+            "post": {
+                "description": "회원가입을 처리하는 엔드포인트. 회원가입 성공 시 JWT 토큰 반환.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "회원가입",
+                "parameters": [
+                    {
+                        "description": "회원가입 정보 (이름, 이메일, 비밀번호)",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SignUpRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        }
+    },
+    "definitions": {
+        "dto.SignInRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        },
+        "dto.SignUpRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 255
+                }
+            }
+        }
+    }
+}

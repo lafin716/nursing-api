@@ -29,6 +29,12 @@ func NewAuthHttpApi(
 	}
 }
 
+// @summary 로그인 인증
+// @description 회원정보로 인증을 수행하는 엔드포인트. 로그인 성공 시 JWT 토큰 반환.
+// @accept json
+// @produce json
+// @param dto body dto.SignInRequest true "로그인 정보 (이메일, 비밀번호)"
+// @router /auth/signin [post]
 func (a authHttpApi) SignIn(ctx *fiber.Ctx) error {
 	req := new(dto.SignInRequest)
 	err := ctx.BodyParser(req)
@@ -51,6 +57,12 @@ func (a authHttpApi) SignIn(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// @summary 회원가입
+// @description 회원가입을 처리하는 엔드포인트. 회원가입 성공 시 JWT 토큰 반환.
+// @accept json
+// @produce json
+// @param dto body dto.SignUpRequest true "회원가입 정보 (이름, 이메일, 비밀번호)"
+// @router /auth/signup [post]
 func (a authHttpApi) SignUp(ctx *fiber.Ctx) error {
 	req := new(dto.SignUpRequest)
 	err := ctx.BodyParser(req)

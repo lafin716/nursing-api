@@ -5,7 +5,9 @@ package server
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 	"github.com/google/wire"
+	_ "nursing_api/docs"
 	"nursing_api/internal/api"
 	"nursing_api/internal/config"
 	"nursing_api/internal/infrastructure/persistence"
@@ -48,6 +50,7 @@ func NewServer(
 ) *Server {
 	fiberClient := web.NewFiberClient(cfg)
 	app := fiberClient.GetApp()
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
