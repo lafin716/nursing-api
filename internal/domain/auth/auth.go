@@ -20,4 +20,5 @@ type AuthRepository interface {
 type AuthUseCase interface {
 	SignIn(req *SignInRequest) *SignInResponse
 	SignUp(req *SignUpRequest) *SignUpResponse
+	SignOut(userId uuid.UUID) error
 }

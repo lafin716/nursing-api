@@ -85,9 +85,16 @@ func (a authHttpApi) SignUp(ctx *fiber.Ctx) error {
 }
 
 func (a authHttpApi) SignOut(ctx *fiber.Ctx) error {
-	_, err := a.jwtClient.Parser.ExtractTokenMetadata(ctx)
+	claims, err := a.jwtClient.Parser.ExtractTokenMetadata(ctx)
 	if err != nil {
 		return response.New(response.CODE_INVALID_JWT).
+			SetErrors(err).
+			Error(ctx)
+	}
+
+	err = a.authUseCase.SignOut(claims.UserID)
+	if err != nil {
+		return response.New(response.CODE_FAIL_SIGN_UP).
 			SetErrors(err).
 			Error(ctx)
 	}

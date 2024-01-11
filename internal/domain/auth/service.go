@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"errors"
+	"github.com/google/uuid"
 	"nursing_api/internal/domain/user"
 	"nursing_api/pkg/jwt"
 )
@@ -87,4 +89,17 @@ func (a authService) SignUp(req *SignUpRequest) *SignUpResponse {
 		RefreshToken: jwtToken.RefreshToken,
 	}
 	return OkSignUp(token)
+}
+
+func (a authService) SignOut(userId uuid.UUID) error {
+	result, err := a.authRepository.DeleteToken(userId)
+	if err != nil {
+		return err
+	}
+
+	if !result {
+		return errors.New("이미 로그아웃 되었습니다.")
+	}
+
+	return nil
 }
