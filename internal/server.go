@@ -11,10 +11,10 @@ import (
 	"nursing_api/internal/api"
 	"nursing_api/internal/config"
 	"nursing_api/internal/domain"
+	"nursing_api/internal/middleware"
 	"nursing_api/internal/router"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
-	"nursing_api/pkg/jwt"
 	"nursing_api/pkg/web"
 )
 
@@ -23,6 +23,7 @@ func New() (*Server, error) {
 		NewServer,
 		config.Set,
 		router.Set,
+		middleware.Set,
 		api.Set,
 		domain.Set,
 	)))
@@ -36,7 +37,6 @@ type Server struct {
 
 func NewServer(
 	cfg *web.FiberConfig,
-	jwtClient *jwt.JwtClient,
 	dbClient *database.DatabaseClient,
 	router router.Routable,
 ) *Server {
@@ -46,7 +46,7 @@ func NewServer(
 
 	api := app.Group("/api")
 	v1 := api.Group("/v1")
-	router.Init(&v1, jwtClient.Middleware)
+	router.Init(&v1)
 
 	return &Server{
 		app: app,

@@ -14,6 +14,7 @@ import (
 	"nursing_api/internal/domain/auth"
 	"nursing_api/internal/domain/medicine"
 	"nursing_api/internal/domain/user"
+	"nursing_api/internal/middleware"
 	"nursing_api/internal/router"
 	"nursing_api/pkg/api/medicine"
 	"nursing_api/pkg/database"
@@ -30,13 +31,14 @@ import (
 
 func New() (*Server, error) {
 	fiberConfig := config.NewFiberConfig()
-	jwtConfig := config.NewJwtConfig()
-	jwtClient := jwt.NewJwtClient(jwtConfig)
 	databaseConfig := config.NewDatabaseConfig()
 	databaseClient := database.NewPostgresClient(databaseConfig)
+	authRepository := auth.NewAuthRepository(databaseClient)
+	jwtConfig := config.NewJwtConfig()
+	jwtClient := jwt.NewJwtClient(jwtConfig)
+	tokenVerifyMiddleware := middleware.NewJwtMiddleware(authRepository, jwtClient)
 	userRepository := user.NewUserRepository(databaseClient)
 	userUseCase := user.NewUserService(userRepository)
-	authRepository := auth.NewAuthRepository(databaseClient)
 	authUseCase := auth.NewAuthService(userUseCase, authRepository, jwtClient)
 	authHttpApi := api.NewAuthHttpApi(authUseCase, jwtClient)
 	userHttpApi := api.NewUserHttpApi(userUseCase, jwtClient)
@@ -44,8 +46,8 @@ func New() (*Server, error) {
 	medicineApi := medicine_api.NewMedicineApi(medicineApiConfig)
 	medicineUseCase := medicine.NewMedicineService(medicineApi)
 	medicineHttpApi := api.NewMedicineHttpApi(medicineUseCase)
-	routable := router.NewRouter(authHttpApi, userHttpApi, medicineHttpApi)
-	server := NewServer(fiberConfig, jwtClient, databaseClient, routable)
+	routable := router.NewRouter(tokenVerifyMiddleware, authHttpApi, userHttpApi, medicineHttpApi)
+	server := NewServer(fiberConfig, databaseClient, routable)
 	return server, nil
 }
 
@@ -59,7 +61,6 @@ type Server struct {
 
 func NewServer(
 	cfg *web.FiberConfig,
-	jwtClient *jwt.JwtClient,
 	dbClient *database.DatabaseClient, router2 router.Routable,
 
 ) *Server {
@@ -69,7 +70,7 @@ func NewServer(
 	api2 := app.Group("/api")
 	v1 := api2.Group("/v1")
 	router2.
-		Init(&v1, jwtClient.Middleware)
+		Init(&v1)
 
 	return &Server{
 		app: app,

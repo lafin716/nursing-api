@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/wire"
 	"nursing_api/internal/api"
-	"nursing_api/pkg/jwt"
+	"nursing_api/internal/middleware"
 )
 
 var Set = wire.NewSet(
@@ -12,32 +12,54 @@ var Set = wire.NewSet(
 )
 
 type Routable interface {
-	Init(router *fiber.Router, jwtMiddleware *jwt.JwtMiddleware)
+	Init(router *fiber.Router)
 }
 
-type apiSet struct {
-	authApi     api.AuthHttpApi
-	userApi     api.UserHttpApi
-	medicineApi api.MedicineHttpApi
+type middlewares struct {
+	jwtAuth *middleware.TokenVerifyMiddleware
+}
+
+type handlers struct {
+	auth     api.AuthHttpApi
+	user     api.UserHttpApi
+	medicine api.MedicineHttpApi
+}
+
+type container struct {
+	router     fiber.Router
+	middleware *middlewares
+	handler    *handlers
 }
 
 func NewRouter(
+	jwtAuth *middleware.TokenVerifyMiddleware,
 	authApi api.AuthHttpApi,
 	userApi api.UserHttpApi,
 	medicineApi api.MedicineHttpApi,
 ) Routable {
-	return &apiSet{
-		authApi,
-		userApi,
-		medicineApi,
+	return &container{
+		middleware: &middlewares{
+			jwtAuth: jwtAuth,
+		},
+		handler: &handlers{
+			authApi,
+			userApi,
+			medicineApi,
+		},
 	}
 }
 
-func (r *apiSet) Init(
+func (c *container) AuthMiddleware(handler fiber.Handler) []fiber.Handler {
+	mw := c.middleware.jwtAuth.Resolve()
+	mw = append(mw, handler)
+	return mw
+}
+
+func (c *container) Init(
 	router *fiber.Router,
-	jwtMiddleware *jwt.JwtMiddleware,
 ) {
-	NewAuthRouter(r).Init(router, jwtMiddleware)
-	NewUserRouter(r).Init(router, jwtMiddleware)
-	NewMedicineRouter(r).Init(router, jwtMiddleware)
+	c.router = *router
+	c.RegisterUserRoute()
+	c.RegisterAuthRoute()
+	c.RegisterMedicineRoute()
 }

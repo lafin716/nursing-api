@@ -15,7 +15,7 @@ func NewJwtMiddleware(config *JwtConfig) *JwtMiddleware {
 	}
 }
 
-func (m *JwtMiddleware) JwtProtected() func(*fiber.Ctx) error {
+func (m *JwtMiddleware) JwtProtected() fiber.Handler {
 	config := jwtware.Config{
 		SigningKey:   jwtware.SigningKey{Key: []byte(m.config.SecretKey)},
 		ContextKey:   "jwt",

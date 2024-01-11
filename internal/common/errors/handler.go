@@ -15,6 +15,7 @@ func GlobalErrorHandler(c *fiber.Ctx, err error) error {
 	}
 
 	return response.New(code).
+		SetMessage(err.Error()).
 		SetErrors(err).
 		Error(c)
 }

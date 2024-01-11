@@ -9,6 +9,12 @@ type userService struct {
 	userRepo UserRepository
 }
 
+func NewUserService(userRepo UserRepository) UserUseCase {
+	return &userService{
+		userRepo: userRepo,
+	}
+}
+
 func (u userService) GetUser(userId uuid.UUID) *GetUserResponse {
 	foundUser, err := u.userRepo.GetUserById(userId)
 	if err != nil {
@@ -16,12 +22,6 @@ func (u userService) GetUser(userId uuid.UUID) *GetUserResponse {
 	}
 
 	return OkGetUserResponse(foundUser)
-}
-
-func NewUserService(userRepo UserRepository) UserUseCase {
-	return &userService{
-		userRepo: userRepo,
-	}
 }
 
 func (u userService) RegisterUser(req *RegisterRequest) *RegisterResponse {
