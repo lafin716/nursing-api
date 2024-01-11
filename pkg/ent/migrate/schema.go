@@ -8,12 +8,42 @@ import (
 )
 
 var (
+	// MedicinesColumns holds the columns for the "medicines" table.
+	MedicinesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "medicine_name", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(50)"}},
+		{Name: "item_seq", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(20)"}},
+		{Name: "company_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(30)"}},
+		{Name: "description", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "usage", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "effect", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "side_effect", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "caution", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "warning", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "interaction", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "keep_method", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "appearance", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(20)"}},
+		{Name: "color_class1", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(20)"}},
+		{Name: "color_class2", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(20)"}},
+		{Name: "pill_image", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "class_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "otc_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "form_code_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+	}
+	// MedicinesTable holds the schema information for the "medicines" table.
+	MedicinesTable = &schema.Table{
+		Name:       "medicines",
+		Columns:    MedicinesColumns,
+		PrimaryKey: []*schema.Column{MedicinesColumns[0]},
+	}
 	// TokensColumns holds the columns for the "tokens" table.
 	TokensColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "access_token", Type: field.TypeString},
-		{Name: "refresh_token", Type: field.TypeString},
+		{Name: "access_token", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(500)"}},
+		{Name: "refresh_token", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(200)"}},
 		{Name: "access_token_expires", Type: field.TypeTime},
 		{Name: "refresh_token_expires", Type: field.TypeTime},
 		{Name: "created_at", Type: field.TypeTime},
@@ -28,11 +58,11 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "user_name", Type: field.TypeString, Nullable: true},
-		{Name: "user_email", Type: field.TypeString},
-		{Name: "user_password", Type: field.TypeString},
-		{Name: "user_status", Type: field.TypeString, Default: "INACTIVE"},
-		{Name: "user_type", Type: field.TypeString, Default: "EMAIL"},
+		{Name: "user_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
+		{Name: "user_email", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(100)"}},
+		{Name: "user_password", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(255)"}},
+		{Name: "user_status", Type: field.TypeString, Default: "INACTIVE", SchemaType: map[string]string{"postgres": "varchar(20)"}},
+		{Name: "user_type", Type: field.TypeString, Default: "EMAIL", SchemaType: map[string]string{"postgres": "varchar(20)"}},
 		{Name: "fail_count", Type: field.TypeInt, Default: 0},
 		{Name: "last_signed_in", Type: field.TypeTime, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
@@ -46,6 +76,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		MedicinesTable,
 		TokensTable,
 		UsersTable,
 	}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nursing_api/pkg/ent/medicine"
 	"nursing_api/pkg/ent/predicate"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
@@ -26,9 +27,1694 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeToken = "Token"
-	TypeUser  = "User"
+	TypeMedicine = "Medicine"
+	TypeToken    = "Token"
+	TypeUser     = "User"
 )
+
+// MedicineMutation represents an operation that mutates the Medicine nodes in the graph.
+type MedicineMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	medicine_name  *string
+	item_seq       *string
+	company_name   *string
+	description    *string
+	usage          *string
+	effect         *string
+	side_effect    *string
+	caution        *string
+	warning        *string
+	interaction    *string
+	keep_method    *string
+	appearance     *string
+	color_class1   *string
+	color_class2   *string
+	pill_image     *string
+	class_name     *string
+	otc_name       *string
+	form_code_name *string
+	created_at     *time.Time
+	updated_at     *time.Time
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*Medicine, error)
+	predicates     []predicate.Medicine
+}
+
+var _ ent.Mutation = (*MedicineMutation)(nil)
+
+// medicineOption allows management of the mutation configuration using functional options.
+type medicineOption func(*MedicineMutation)
+
+// newMedicineMutation creates new mutation for the Medicine entity.
+func newMedicineMutation(c config, op Op, opts ...medicineOption) *MedicineMutation {
+	m := &MedicineMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeMedicine,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withMedicineID sets the ID field of the mutation.
+func withMedicineID(id uuid.UUID) medicineOption {
+	return func(m *MedicineMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Medicine
+		)
+		m.oldValue = func(ctx context.Context) (*Medicine, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Medicine.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withMedicine sets the old Medicine of the mutation.
+func withMedicine(node *Medicine) medicineOption {
+	return func(m *MedicineMutation) {
+		m.oldValue = func(context.Context) (*Medicine, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m MedicineMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m MedicineMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Medicine entities.
+func (m *MedicineMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *MedicineMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *MedicineMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Medicine.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetMedicineName sets the "medicine_name" field.
+func (m *MedicineMutation) SetMedicineName(s string) {
+	m.medicine_name = &s
+}
+
+// MedicineName returns the value of the "medicine_name" field in the mutation.
+func (m *MedicineMutation) MedicineName() (r string, exists bool) {
+	v := m.medicine_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMedicineName returns the old "medicine_name" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldMedicineName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMedicineName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMedicineName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMedicineName: %w", err)
+	}
+	return oldValue.MedicineName, nil
+}
+
+// ResetMedicineName resets all changes to the "medicine_name" field.
+func (m *MedicineMutation) ResetMedicineName() {
+	m.medicine_name = nil
+}
+
+// SetItemSeq sets the "item_seq" field.
+func (m *MedicineMutation) SetItemSeq(s string) {
+	m.item_seq = &s
+}
+
+// ItemSeq returns the value of the "item_seq" field in the mutation.
+func (m *MedicineMutation) ItemSeq() (r string, exists bool) {
+	v := m.item_seq
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldItemSeq returns the old "item_seq" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldItemSeq(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldItemSeq is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldItemSeq requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldItemSeq: %w", err)
+	}
+	return oldValue.ItemSeq, nil
+}
+
+// ResetItemSeq resets all changes to the "item_seq" field.
+func (m *MedicineMutation) ResetItemSeq() {
+	m.item_seq = nil
+}
+
+// SetCompanyName sets the "company_name" field.
+func (m *MedicineMutation) SetCompanyName(s string) {
+	m.company_name = &s
+}
+
+// CompanyName returns the value of the "company_name" field in the mutation.
+func (m *MedicineMutation) CompanyName() (r string, exists bool) {
+	v := m.company_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompanyName returns the old "company_name" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldCompanyName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompanyName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompanyName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompanyName: %w", err)
+	}
+	return oldValue.CompanyName, nil
+}
+
+// ClearCompanyName clears the value of the "company_name" field.
+func (m *MedicineMutation) ClearCompanyName() {
+	m.company_name = nil
+	m.clearedFields[medicine.FieldCompanyName] = struct{}{}
+}
+
+// CompanyNameCleared returns if the "company_name" field was cleared in this mutation.
+func (m *MedicineMutation) CompanyNameCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldCompanyName]
+	return ok
+}
+
+// ResetCompanyName resets all changes to the "company_name" field.
+func (m *MedicineMutation) ResetCompanyName() {
+	m.company_name = nil
+	delete(m.clearedFields, medicine.FieldCompanyName)
+}
+
+// SetDescription sets the "description" field.
+func (m *MedicineMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *MedicineMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *MedicineMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[medicine.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *MedicineMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *MedicineMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, medicine.FieldDescription)
+}
+
+// SetUsage sets the "usage" field.
+func (m *MedicineMutation) SetUsage(s string) {
+	m.usage = &s
+}
+
+// Usage returns the value of the "usage" field in the mutation.
+func (m *MedicineMutation) Usage() (r string, exists bool) {
+	v := m.usage
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsage returns the old "usage" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldUsage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsage: %w", err)
+	}
+	return oldValue.Usage, nil
+}
+
+// ClearUsage clears the value of the "usage" field.
+func (m *MedicineMutation) ClearUsage() {
+	m.usage = nil
+	m.clearedFields[medicine.FieldUsage] = struct{}{}
+}
+
+// UsageCleared returns if the "usage" field was cleared in this mutation.
+func (m *MedicineMutation) UsageCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldUsage]
+	return ok
+}
+
+// ResetUsage resets all changes to the "usage" field.
+func (m *MedicineMutation) ResetUsage() {
+	m.usage = nil
+	delete(m.clearedFields, medicine.FieldUsage)
+}
+
+// SetEffect sets the "effect" field.
+func (m *MedicineMutation) SetEffect(s string) {
+	m.effect = &s
+}
+
+// Effect returns the value of the "effect" field in the mutation.
+func (m *MedicineMutation) Effect() (r string, exists bool) {
+	v := m.effect
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEffect returns the old "effect" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldEffect(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEffect is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEffect requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEffect: %w", err)
+	}
+	return oldValue.Effect, nil
+}
+
+// ClearEffect clears the value of the "effect" field.
+func (m *MedicineMutation) ClearEffect() {
+	m.effect = nil
+	m.clearedFields[medicine.FieldEffect] = struct{}{}
+}
+
+// EffectCleared returns if the "effect" field was cleared in this mutation.
+func (m *MedicineMutation) EffectCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldEffect]
+	return ok
+}
+
+// ResetEffect resets all changes to the "effect" field.
+func (m *MedicineMutation) ResetEffect() {
+	m.effect = nil
+	delete(m.clearedFields, medicine.FieldEffect)
+}
+
+// SetSideEffect sets the "side_effect" field.
+func (m *MedicineMutation) SetSideEffect(s string) {
+	m.side_effect = &s
+}
+
+// SideEffect returns the value of the "side_effect" field in the mutation.
+func (m *MedicineMutation) SideEffect() (r string, exists bool) {
+	v := m.side_effect
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSideEffect returns the old "side_effect" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldSideEffect(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSideEffect is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSideEffect requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSideEffect: %w", err)
+	}
+	return oldValue.SideEffect, nil
+}
+
+// ClearSideEffect clears the value of the "side_effect" field.
+func (m *MedicineMutation) ClearSideEffect() {
+	m.side_effect = nil
+	m.clearedFields[medicine.FieldSideEffect] = struct{}{}
+}
+
+// SideEffectCleared returns if the "side_effect" field was cleared in this mutation.
+func (m *MedicineMutation) SideEffectCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldSideEffect]
+	return ok
+}
+
+// ResetSideEffect resets all changes to the "side_effect" field.
+func (m *MedicineMutation) ResetSideEffect() {
+	m.side_effect = nil
+	delete(m.clearedFields, medicine.FieldSideEffect)
+}
+
+// SetCaution sets the "caution" field.
+func (m *MedicineMutation) SetCaution(s string) {
+	m.caution = &s
+}
+
+// Caution returns the value of the "caution" field in the mutation.
+func (m *MedicineMutation) Caution() (r string, exists bool) {
+	v := m.caution
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCaution returns the old "caution" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldCaution(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCaution is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCaution requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCaution: %w", err)
+	}
+	return oldValue.Caution, nil
+}
+
+// ClearCaution clears the value of the "caution" field.
+func (m *MedicineMutation) ClearCaution() {
+	m.caution = nil
+	m.clearedFields[medicine.FieldCaution] = struct{}{}
+}
+
+// CautionCleared returns if the "caution" field was cleared in this mutation.
+func (m *MedicineMutation) CautionCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldCaution]
+	return ok
+}
+
+// ResetCaution resets all changes to the "caution" field.
+func (m *MedicineMutation) ResetCaution() {
+	m.caution = nil
+	delete(m.clearedFields, medicine.FieldCaution)
+}
+
+// SetWarning sets the "warning" field.
+func (m *MedicineMutation) SetWarning(s string) {
+	m.warning = &s
+}
+
+// Warning returns the value of the "warning" field in the mutation.
+func (m *MedicineMutation) Warning() (r string, exists bool) {
+	v := m.warning
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWarning returns the old "warning" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldWarning(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWarning is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWarning requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWarning: %w", err)
+	}
+	return oldValue.Warning, nil
+}
+
+// ClearWarning clears the value of the "warning" field.
+func (m *MedicineMutation) ClearWarning() {
+	m.warning = nil
+	m.clearedFields[medicine.FieldWarning] = struct{}{}
+}
+
+// WarningCleared returns if the "warning" field was cleared in this mutation.
+func (m *MedicineMutation) WarningCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldWarning]
+	return ok
+}
+
+// ResetWarning resets all changes to the "warning" field.
+func (m *MedicineMutation) ResetWarning() {
+	m.warning = nil
+	delete(m.clearedFields, medicine.FieldWarning)
+}
+
+// SetInteraction sets the "interaction" field.
+func (m *MedicineMutation) SetInteraction(s string) {
+	m.interaction = &s
+}
+
+// Interaction returns the value of the "interaction" field in the mutation.
+func (m *MedicineMutation) Interaction() (r string, exists bool) {
+	v := m.interaction
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInteraction returns the old "interaction" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldInteraction(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInteraction is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInteraction requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInteraction: %w", err)
+	}
+	return oldValue.Interaction, nil
+}
+
+// ClearInteraction clears the value of the "interaction" field.
+func (m *MedicineMutation) ClearInteraction() {
+	m.interaction = nil
+	m.clearedFields[medicine.FieldInteraction] = struct{}{}
+}
+
+// InteractionCleared returns if the "interaction" field was cleared in this mutation.
+func (m *MedicineMutation) InteractionCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldInteraction]
+	return ok
+}
+
+// ResetInteraction resets all changes to the "interaction" field.
+func (m *MedicineMutation) ResetInteraction() {
+	m.interaction = nil
+	delete(m.clearedFields, medicine.FieldInteraction)
+}
+
+// SetKeepMethod sets the "keep_method" field.
+func (m *MedicineMutation) SetKeepMethod(s string) {
+	m.keep_method = &s
+}
+
+// KeepMethod returns the value of the "keep_method" field in the mutation.
+func (m *MedicineMutation) KeepMethod() (r string, exists bool) {
+	v := m.keep_method
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKeepMethod returns the old "keep_method" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldKeepMethod(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKeepMethod is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKeepMethod requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKeepMethod: %w", err)
+	}
+	return oldValue.KeepMethod, nil
+}
+
+// ClearKeepMethod clears the value of the "keep_method" field.
+func (m *MedicineMutation) ClearKeepMethod() {
+	m.keep_method = nil
+	m.clearedFields[medicine.FieldKeepMethod] = struct{}{}
+}
+
+// KeepMethodCleared returns if the "keep_method" field was cleared in this mutation.
+func (m *MedicineMutation) KeepMethodCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldKeepMethod]
+	return ok
+}
+
+// ResetKeepMethod resets all changes to the "keep_method" field.
+func (m *MedicineMutation) ResetKeepMethod() {
+	m.keep_method = nil
+	delete(m.clearedFields, medicine.FieldKeepMethod)
+}
+
+// SetAppearance sets the "appearance" field.
+func (m *MedicineMutation) SetAppearance(s string) {
+	m.appearance = &s
+}
+
+// Appearance returns the value of the "appearance" field in the mutation.
+func (m *MedicineMutation) Appearance() (r string, exists bool) {
+	v := m.appearance
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppearance returns the old "appearance" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldAppearance(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppearance is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppearance requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppearance: %w", err)
+	}
+	return oldValue.Appearance, nil
+}
+
+// ClearAppearance clears the value of the "appearance" field.
+func (m *MedicineMutation) ClearAppearance() {
+	m.appearance = nil
+	m.clearedFields[medicine.FieldAppearance] = struct{}{}
+}
+
+// AppearanceCleared returns if the "appearance" field was cleared in this mutation.
+func (m *MedicineMutation) AppearanceCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldAppearance]
+	return ok
+}
+
+// ResetAppearance resets all changes to the "appearance" field.
+func (m *MedicineMutation) ResetAppearance() {
+	m.appearance = nil
+	delete(m.clearedFields, medicine.FieldAppearance)
+}
+
+// SetColorClass1 sets the "color_class1" field.
+func (m *MedicineMutation) SetColorClass1(s string) {
+	m.color_class1 = &s
+}
+
+// ColorClass1 returns the value of the "color_class1" field in the mutation.
+func (m *MedicineMutation) ColorClass1() (r string, exists bool) {
+	v := m.color_class1
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldColorClass1 returns the old "color_class1" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldColorClass1(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldColorClass1 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldColorClass1 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldColorClass1: %w", err)
+	}
+	return oldValue.ColorClass1, nil
+}
+
+// ClearColorClass1 clears the value of the "color_class1" field.
+func (m *MedicineMutation) ClearColorClass1() {
+	m.color_class1 = nil
+	m.clearedFields[medicine.FieldColorClass1] = struct{}{}
+}
+
+// ColorClass1Cleared returns if the "color_class1" field was cleared in this mutation.
+func (m *MedicineMutation) ColorClass1Cleared() bool {
+	_, ok := m.clearedFields[medicine.FieldColorClass1]
+	return ok
+}
+
+// ResetColorClass1 resets all changes to the "color_class1" field.
+func (m *MedicineMutation) ResetColorClass1() {
+	m.color_class1 = nil
+	delete(m.clearedFields, medicine.FieldColorClass1)
+}
+
+// SetColorClass2 sets the "color_class2" field.
+func (m *MedicineMutation) SetColorClass2(s string) {
+	m.color_class2 = &s
+}
+
+// ColorClass2 returns the value of the "color_class2" field in the mutation.
+func (m *MedicineMutation) ColorClass2() (r string, exists bool) {
+	v := m.color_class2
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldColorClass2 returns the old "color_class2" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldColorClass2(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldColorClass2 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldColorClass2 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldColorClass2: %w", err)
+	}
+	return oldValue.ColorClass2, nil
+}
+
+// ClearColorClass2 clears the value of the "color_class2" field.
+func (m *MedicineMutation) ClearColorClass2() {
+	m.color_class2 = nil
+	m.clearedFields[medicine.FieldColorClass2] = struct{}{}
+}
+
+// ColorClass2Cleared returns if the "color_class2" field was cleared in this mutation.
+func (m *MedicineMutation) ColorClass2Cleared() bool {
+	_, ok := m.clearedFields[medicine.FieldColorClass2]
+	return ok
+}
+
+// ResetColorClass2 resets all changes to the "color_class2" field.
+func (m *MedicineMutation) ResetColorClass2() {
+	m.color_class2 = nil
+	delete(m.clearedFields, medicine.FieldColorClass2)
+}
+
+// SetPillImage sets the "pill_image" field.
+func (m *MedicineMutation) SetPillImage(s string) {
+	m.pill_image = &s
+}
+
+// PillImage returns the value of the "pill_image" field in the mutation.
+func (m *MedicineMutation) PillImage() (r string, exists bool) {
+	v := m.pill_image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPillImage returns the old "pill_image" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldPillImage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPillImage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPillImage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPillImage: %w", err)
+	}
+	return oldValue.PillImage, nil
+}
+
+// ClearPillImage clears the value of the "pill_image" field.
+func (m *MedicineMutation) ClearPillImage() {
+	m.pill_image = nil
+	m.clearedFields[medicine.FieldPillImage] = struct{}{}
+}
+
+// PillImageCleared returns if the "pill_image" field was cleared in this mutation.
+func (m *MedicineMutation) PillImageCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldPillImage]
+	return ok
+}
+
+// ResetPillImage resets all changes to the "pill_image" field.
+func (m *MedicineMutation) ResetPillImage() {
+	m.pill_image = nil
+	delete(m.clearedFields, medicine.FieldPillImage)
+}
+
+// SetClassName sets the "class_name" field.
+func (m *MedicineMutation) SetClassName(s string) {
+	m.class_name = &s
+}
+
+// ClassName returns the value of the "class_name" field in the mutation.
+func (m *MedicineMutation) ClassName() (r string, exists bool) {
+	v := m.class_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClassName returns the old "class_name" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldClassName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClassName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClassName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClassName: %w", err)
+	}
+	return oldValue.ClassName, nil
+}
+
+// ClearClassName clears the value of the "class_name" field.
+func (m *MedicineMutation) ClearClassName() {
+	m.class_name = nil
+	m.clearedFields[medicine.FieldClassName] = struct{}{}
+}
+
+// ClassNameCleared returns if the "class_name" field was cleared in this mutation.
+func (m *MedicineMutation) ClassNameCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldClassName]
+	return ok
+}
+
+// ResetClassName resets all changes to the "class_name" field.
+func (m *MedicineMutation) ResetClassName() {
+	m.class_name = nil
+	delete(m.clearedFields, medicine.FieldClassName)
+}
+
+// SetOtcName sets the "otc_name" field.
+func (m *MedicineMutation) SetOtcName(s string) {
+	m.otc_name = &s
+}
+
+// OtcName returns the value of the "otc_name" field in the mutation.
+func (m *MedicineMutation) OtcName() (r string, exists bool) {
+	v := m.otc_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOtcName returns the old "otc_name" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldOtcName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOtcName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOtcName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOtcName: %w", err)
+	}
+	return oldValue.OtcName, nil
+}
+
+// ClearOtcName clears the value of the "otc_name" field.
+func (m *MedicineMutation) ClearOtcName() {
+	m.otc_name = nil
+	m.clearedFields[medicine.FieldOtcName] = struct{}{}
+}
+
+// OtcNameCleared returns if the "otc_name" field was cleared in this mutation.
+func (m *MedicineMutation) OtcNameCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldOtcName]
+	return ok
+}
+
+// ResetOtcName resets all changes to the "otc_name" field.
+func (m *MedicineMutation) ResetOtcName() {
+	m.otc_name = nil
+	delete(m.clearedFields, medicine.FieldOtcName)
+}
+
+// SetFormCodeName sets the "form_code_name" field.
+func (m *MedicineMutation) SetFormCodeName(s string) {
+	m.form_code_name = &s
+}
+
+// FormCodeName returns the value of the "form_code_name" field in the mutation.
+func (m *MedicineMutation) FormCodeName() (r string, exists bool) {
+	v := m.form_code_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFormCodeName returns the old "form_code_name" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldFormCodeName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFormCodeName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFormCodeName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFormCodeName: %w", err)
+	}
+	return oldValue.FormCodeName, nil
+}
+
+// ClearFormCodeName clears the value of the "form_code_name" field.
+func (m *MedicineMutation) ClearFormCodeName() {
+	m.form_code_name = nil
+	m.clearedFields[medicine.FieldFormCodeName] = struct{}{}
+}
+
+// FormCodeNameCleared returns if the "form_code_name" field was cleared in this mutation.
+func (m *MedicineMutation) FormCodeNameCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldFormCodeName]
+	return ok
+}
+
+// ResetFormCodeName resets all changes to the "form_code_name" field.
+func (m *MedicineMutation) ResetFormCodeName() {
+	m.form_code_name = nil
+	delete(m.clearedFields, medicine.FieldFormCodeName)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *MedicineMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *MedicineMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *MedicineMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *MedicineMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *MedicineMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Medicine entity.
+// If the Medicine object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MedicineMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *MedicineMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[medicine.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *MedicineMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[medicine.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *MedicineMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, medicine.FieldUpdatedAt)
+}
+
+// Where appends a list predicates to the MedicineMutation builder.
+func (m *MedicineMutation) Where(ps ...predicate.Medicine) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the MedicineMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *MedicineMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Medicine, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *MedicineMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *MedicineMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Medicine).
+func (m *MedicineMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *MedicineMutation) Fields() []string {
+	fields := make([]string, 0, 20)
+	if m.medicine_name != nil {
+		fields = append(fields, medicine.FieldMedicineName)
+	}
+	if m.item_seq != nil {
+		fields = append(fields, medicine.FieldItemSeq)
+	}
+	if m.company_name != nil {
+		fields = append(fields, medicine.FieldCompanyName)
+	}
+	if m.description != nil {
+		fields = append(fields, medicine.FieldDescription)
+	}
+	if m.usage != nil {
+		fields = append(fields, medicine.FieldUsage)
+	}
+	if m.effect != nil {
+		fields = append(fields, medicine.FieldEffect)
+	}
+	if m.side_effect != nil {
+		fields = append(fields, medicine.FieldSideEffect)
+	}
+	if m.caution != nil {
+		fields = append(fields, medicine.FieldCaution)
+	}
+	if m.warning != nil {
+		fields = append(fields, medicine.FieldWarning)
+	}
+	if m.interaction != nil {
+		fields = append(fields, medicine.FieldInteraction)
+	}
+	if m.keep_method != nil {
+		fields = append(fields, medicine.FieldKeepMethod)
+	}
+	if m.appearance != nil {
+		fields = append(fields, medicine.FieldAppearance)
+	}
+	if m.color_class1 != nil {
+		fields = append(fields, medicine.FieldColorClass1)
+	}
+	if m.color_class2 != nil {
+		fields = append(fields, medicine.FieldColorClass2)
+	}
+	if m.pill_image != nil {
+		fields = append(fields, medicine.FieldPillImage)
+	}
+	if m.class_name != nil {
+		fields = append(fields, medicine.FieldClassName)
+	}
+	if m.otc_name != nil {
+		fields = append(fields, medicine.FieldOtcName)
+	}
+	if m.form_code_name != nil {
+		fields = append(fields, medicine.FieldFormCodeName)
+	}
+	if m.created_at != nil {
+		fields = append(fields, medicine.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, medicine.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *MedicineMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case medicine.FieldMedicineName:
+		return m.MedicineName()
+	case medicine.FieldItemSeq:
+		return m.ItemSeq()
+	case medicine.FieldCompanyName:
+		return m.CompanyName()
+	case medicine.FieldDescription:
+		return m.Description()
+	case medicine.FieldUsage:
+		return m.Usage()
+	case medicine.FieldEffect:
+		return m.Effect()
+	case medicine.FieldSideEffect:
+		return m.SideEffect()
+	case medicine.FieldCaution:
+		return m.Caution()
+	case medicine.FieldWarning:
+		return m.Warning()
+	case medicine.FieldInteraction:
+		return m.Interaction()
+	case medicine.FieldKeepMethod:
+		return m.KeepMethod()
+	case medicine.FieldAppearance:
+		return m.Appearance()
+	case medicine.FieldColorClass1:
+		return m.ColorClass1()
+	case medicine.FieldColorClass2:
+		return m.ColorClass2()
+	case medicine.FieldPillImage:
+		return m.PillImage()
+	case medicine.FieldClassName:
+		return m.ClassName()
+	case medicine.FieldOtcName:
+		return m.OtcName()
+	case medicine.FieldFormCodeName:
+		return m.FormCodeName()
+	case medicine.FieldCreatedAt:
+		return m.CreatedAt()
+	case medicine.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *MedicineMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case medicine.FieldMedicineName:
+		return m.OldMedicineName(ctx)
+	case medicine.FieldItemSeq:
+		return m.OldItemSeq(ctx)
+	case medicine.FieldCompanyName:
+		return m.OldCompanyName(ctx)
+	case medicine.FieldDescription:
+		return m.OldDescription(ctx)
+	case medicine.FieldUsage:
+		return m.OldUsage(ctx)
+	case medicine.FieldEffect:
+		return m.OldEffect(ctx)
+	case medicine.FieldSideEffect:
+		return m.OldSideEffect(ctx)
+	case medicine.FieldCaution:
+		return m.OldCaution(ctx)
+	case medicine.FieldWarning:
+		return m.OldWarning(ctx)
+	case medicine.FieldInteraction:
+		return m.OldInteraction(ctx)
+	case medicine.FieldKeepMethod:
+		return m.OldKeepMethod(ctx)
+	case medicine.FieldAppearance:
+		return m.OldAppearance(ctx)
+	case medicine.FieldColorClass1:
+		return m.OldColorClass1(ctx)
+	case medicine.FieldColorClass2:
+		return m.OldColorClass2(ctx)
+	case medicine.FieldPillImage:
+		return m.OldPillImage(ctx)
+	case medicine.FieldClassName:
+		return m.OldClassName(ctx)
+	case medicine.FieldOtcName:
+		return m.OldOtcName(ctx)
+	case medicine.FieldFormCodeName:
+		return m.OldFormCodeName(ctx)
+	case medicine.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case medicine.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Medicine field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MedicineMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case medicine.FieldMedicineName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMedicineName(v)
+		return nil
+	case medicine.FieldItemSeq:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetItemSeq(v)
+		return nil
+	case medicine.FieldCompanyName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompanyName(v)
+		return nil
+	case medicine.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case medicine.FieldUsage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsage(v)
+		return nil
+	case medicine.FieldEffect:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEffect(v)
+		return nil
+	case medicine.FieldSideEffect:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSideEffect(v)
+		return nil
+	case medicine.FieldCaution:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCaution(v)
+		return nil
+	case medicine.FieldWarning:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWarning(v)
+		return nil
+	case medicine.FieldInteraction:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInteraction(v)
+		return nil
+	case medicine.FieldKeepMethod:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKeepMethod(v)
+		return nil
+	case medicine.FieldAppearance:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppearance(v)
+		return nil
+	case medicine.FieldColorClass1:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetColorClass1(v)
+		return nil
+	case medicine.FieldColorClass2:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetColorClass2(v)
+		return nil
+	case medicine.FieldPillImage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPillImage(v)
+		return nil
+	case medicine.FieldClassName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClassName(v)
+		return nil
+	case medicine.FieldOtcName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOtcName(v)
+		return nil
+	case medicine.FieldFormCodeName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFormCodeName(v)
+		return nil
+	case medicine.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case medicine.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Medicine field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *MedicineMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *MedicineMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *MedicineMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Medicine numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *MedicineMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(medicine.FieldCompanyName) {
+		fields = append(fields, medicine.FieldCompanyName)
+	}
+	if m.FieldCleared(medicine.FieldDescription) {
+		fields = append(fields, medicine.FieldDescription)
+	}
+	if m.FieldCleared(medicine.FieldUsage) {
+		fields = append(fields, medicine.FieldUsage)
+	}
+	if m.FieldCleared(medicine.FieldEffect) {
+		fields = append(fields, medicine.FieldEffect)
+	}
+	if m.FieldCleared(medicine.FieldSideEffect) {
+		fields = append(fields, medicine.FieldSideEffect)
+	}
+	if m.FieldCleared(medicine.FieldCaution) {
+		fields = append(fields, medicine.FieldCaution)
+	}
+	if m.FieldCleared(medicine.FieldWarning) {
+		fields = append(fields, medicine.FieldWarning)
+	}
+	if m.FieldCleared(medicine.FieldInteraction) {
+		fields = append(fields, medicine.FieldInteraction)
+	}
+	if m.FieldCleared(medicine.FieldKeepMethod) {
+		fields = append(fields, medicine.FieldKeepMethod)
+	}
+	if m.FieldCleared(medicine.FieldAppearance) {
+		fields = append(fields, medicine.FieldAppearance)
+	}
+	if m.FieldCleared(medicine.FieldColorClass1) {
+		fields = append(fields, medicine.FieldColorClass1)
+	}
+	if m.FieldCleared(medicine.FieldColorClass2) {
+		fields = append(fields, medicine.FieldColorClass2)
+	}
+	if m.FieldCleared(medicine.FieldPillImage) {
+		fields = append(fields, medicine.FieldPillImage)
+	}
+	if m.FieldCleared(medicine.FieldClassName) {
+		fields = append(fields, medicine.FieldClassName)
+	}
+	if m.FieldCleared(medicine.FieldOtcName) {
+		fields = append(fields, medicine.FieldOtcName)
+	}
+	if m.FieldCleared(medicine.FieldFormCodeName) {
+		fields = append(fields, medicine.FieldFormCodeName)
+	}
+	if m.FieldCleared(medicine.FieldUpdatedAt) {
+		fields = append(fields, medicine.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *MedicineMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *MedicineMutation) ClearField(name string) error {
+	switch name {
+	case medicine.FieldCompanyName:
+		m.ClearCompanyName()
+		return nil
+	case medicine.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case medicine.FieldUsage:
+		m.ClearUsage()
+		return nil
+	case medicine.FieldEffect:
+		m.ClearEffect()
+		return nil
+	case medicine.FieldSideEffect:
+		m.ClearSideEffect()
+		return nil
+	case medicine.FieldCaution:
+		m.ClearCaution()
+		return nil
+	case medicine.FieldWarning:
+		m.ClearWarning()
+		return nil
+	case medicine.FieldInteraction:
+		m.ClearInteraction()
+		return nil
+	case medicine.FieldKeepMethod:
+		m.ClearKeepMethod()
+		return nil
+	case medicine.FieldAppearance:
+		m.ClearAppearance()
+		return nil
+	case medicine.FieldColorClass1:
+		m.ClearColorClass1()
+		return nil
+	case medicine.FieldColorClass2:
+		m.ClearColorClass2()
+		return nil
+	case medicine.FieldPillImage:
+		m.ClearPillImage()
+		return nil
+	case medicine.FieldClassName:
+		m.ClearClassName()
+		return nil
+	case medicine.FieldOtcName:
+		m.ClearOtcName()
+		return nil
+	case medicine.FieldFormCodeName:
+		m.ClearFormCodeName()
+		return nil
+	case medicine.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Medicine nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *MedicineMutation) ResetField(name string) error {
+	switch name {
+	case medicine.FieldMedicineName:
+		m.ResetMedicineName()
+		return nil
+	case medicine.FieldItemSeq:
+		m.ResetItemSeq()
+		return nil
+	case medicine.FieldCompanyName:
+		m.ResetCompanyName()
+		return nil
+	case medicine.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case medicine.FieldUsage:
+		m.ResetUsage()
+		return nil
+	case medicine.FieldEffect:
+		m.ResetEffect()
+		return nil
+	case medicine.FieldSideEffect:
+		m.ResetSideEffect()
+		return nil
+	case medicine.FieldCaution:
+		m.ResetCaution()
+		return nil
+	case medicine.FieldWarning:
+		m.ResetWarning()
+		return nil
+	case medicine.FieldInteraction:
+		m.ResetInteraction()
+		return nil
+	case medicine.FieldKeepMethod:
+		m.ResetKeepMethod()
+		return nil
+	case medicine.FieldAppearance:
+		m.ResetAppearance()
+		return nil
+	case medicine.FieldColorClass1:
+		m.ResetColorClass1()
+		return nil
+	case medicine.FieldColorClass2:
+		m.ResetColorClass2()
+		return nil
+	case medicine.FieldPillImage:
+		m.ResetPillImage()
+		return nil
+	case medicine.FieldClassName:
+		m.ResetClassName()
+		return nil
+	case medicine.FieldOtcName:
+		m.ResetOtcName()
+		return nil
+	case medicine.FieldFormCodeName:
+		m.ResetFormCodeName()
+		return nil
+	case medicine.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case medicine.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Medicine field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *MedicineMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *MedicineMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *MedicineMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *MedicineMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *MedicineMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *MedicineMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *MedicineMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Medicine unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *MedicineMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Medicine edge %s", name)
+}
 
 // TokenMutation represents an operation that mutates the Token nodes in the graph.
 type TokenMutation struct {

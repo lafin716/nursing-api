@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nursing_api/pkg/ent/medicine"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
 	"reflect"
@@ -74,8 +75,9 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			token.Table: token.ValidColumn,
-			user.Table:  user.ValidColumn,
+			medicine.Table: medicine.ValidColumn,
+			token.Table:    token.ValidColumn,
+			user.Table:     user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

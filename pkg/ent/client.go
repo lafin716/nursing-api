@@ -11,6 +11,7 @@ import (
 
 	"nursing_api/pkg/ent/migrate"
 
+	"nursing_api/pkg/ent/medicine"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
 
@@ -25,6 +26,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Medicine is the client for interacting with the Medicine builders.
+	Medicine *MedicineClient
 	// Token is the client for interacting with the Token builders.
 	Token *TokenClient
 	// User is the client for interacting with the User builders.
@@ -40,6 +43,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Medicine = NewMedicineClient(c.config)
 	c.Token = NewTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -132,10 +136,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Token:  NewTokenClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:      ctx,
+		config:   cfg,
+		Medicine: NewMedicineClient(cfg),
+		Token:    NewTokenClient(cfg),
+		User:     NewUserClient(cfg),
 	}, nil
 }
 
@@ -153,17 +158,18 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Token:  NewTokenClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:      ctx,
+		config:   cfg,
+		Medicine: NewMedicineClient(cfg),
+		Token:    NewTokenClient(cfg),
+		User:     NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Token.
+//		Medicine.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -185,6 +191,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Medicine.Use(hooks...)
 	c.Token.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -192,6 +199,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Medicine.Intercept(interceptors...)
 	c.Token.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -199,12 +207,147 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *MedicineMutation:
+		return c.Medicine.mutate(ctx, m)
 	case *TokenMutation:
 		return c.Token.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// MedicineClient is a client for the Medicine schema.
+type MedicineClient struct {
+	config
+}
+
+// NewMedicineClient returns a client for the Medicine from the given config.
+func NewMedicineClient(c config) *MedicineClient {
+	return &MedicineClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `medicine.Hooks(f(g(h())))`.
+func (c *MedicineClient) Use(hooks ...Hook) {
+	c.hooks.Medicine = append(c.hooks.Medicine, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `medicine.Intercept(f(g(h())))`.
+func (c *MedicineClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Medicine = append(c.inters.Medicine, interceptors...)
+}
+
+// Create returns a builder for creating a Medicine entity.
+func (c *MedicineClient) Create() *MedicineCreate {
+	mutation := newMedicineMutation(c.config, OpCreate)
+	return &MedicineCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Medicine entities.
+func (c *MedicineClient) CreateBulk(builders ...*MedicineCreate) *MedicineCreateBulk {
+	return &MedicineCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MedicineClient) MapCreateBulk(slice any, setFunc func(*MedicineCreate, int)) *MedicineCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MedicineCreateBulk{err: fmt.Errorf("calling to MedicineClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MedicineCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MedicineCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Medicine.
+func (c *MedicineClient) Update() *MedicineUpdate {
+	mutation := newMedicineMutation(c.config, OpUpdate)
+	return &MedicineUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MedicineClient) UpdateOne(m *Medicine) *MedicineUpdateOne {
+	mutation := newMedicineMutation(c.config, OpUpdateOne, withMedicine(m))
+	return &MedicineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MedicineClient) UpdateOneID(id uuid.UUID) *MedicineUpdateOne {
+	mutation := newMedicineMutation(c.config, OpUpdateOne, withMedicineID(id))
+	return &MedicineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Medicine.
+func (c *MedicineClient) Delete() *MedicineDelete {
+	mutation := newMedicineMutation(c.config, OpDelete)
+	return &MedicineDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MedicineClient) DeleteOne(m *Medicine) *MedicineDeleteOne {
+	return c.DeleteOneID(m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MedicineClient) DeleteOneID(id uuid.UUID) *MedicineDeleteOne {
+	builder := c.Delete().Where(medicine.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MedicineDeleteOne{builder}
+}
+
+// Query returns a query builder for Medicine.
+func (c *MedicineClient) Query() *MedicineQuery {
+	return &MedicineQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMedicine},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Medicine entity by its id.
+func (c *MedicineClient) Get(ctx context.Context, id uuid.UUID) (*Medicine, error) {
+	return c.Query().Where(medicine.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MedicineClient) GetX(ctx context.Context, id uuid.UUID) *Medicine {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MedicineClient) Hooks() []Hook {
+	return c.hooks.Medicine
+}
+
+// Interceptors returns the client interceptors.
+func (c *MedicineClient) Interceptors() []Interceptor {
+	return c.inters.Medicine
+}
+
+func (c *MedicineClient) mutate(ctx context.Context, m *MedicineMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MedicineCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MedicineUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MedicineUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MedicineDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Medicine mutation op: %q", m.Op())
 	}
 }
 
@@ -477,9 +620,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Token, User []ent.Hook
+		Medicine, Token, User []ent.Hook
 	}
 	inters struct {
-		Token, User []ent.Interceptor
+		Medicine, Token, User []ent.Interceptor
 	}
 )

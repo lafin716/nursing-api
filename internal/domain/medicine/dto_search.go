@@ -3,11 +3,11 @@ package medicine
 type SearchPillResponse struct {
 	Success bool
 	Message string
-	Pills   []Medicine
+	Pills   []*Medicine
 	Error   error
 }
 
-func OkSearchPill(pills []Medicine) *SearchPillResponse {
+func OkSearchPill(pills []*Medicine) *SearchPillResponse {
 	return &SearchPillResponse{
 		Success: true,
 		Message: "의약품 검색 완료",

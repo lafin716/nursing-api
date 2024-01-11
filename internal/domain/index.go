@@ -19,6 +19,7 @@ var Set = wire.NewSet(
 var repository = wire.NewSet(
 	auth.NewAuthRepository,
 	user.NewUserRepository,
+	medicine.NewAuthRepository,
 )
 
 var service = wire.NewSet(

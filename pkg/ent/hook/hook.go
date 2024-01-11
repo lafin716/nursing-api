@@ -8,6 +8,18 @@ import (
 	"nursing_api/pkg/ent"
 )
 
+// The MedicineFunc type is an adapter to allow the use of ordinary
+// function as Medicine mutator.
+type MedicineFunc func(context.Context, *ent.MedicineMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MedicineFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MedicineMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MedicineMutation", m)
+}
+
 // The TokenFunc type is an adapter to allow the use of ordinary
 // function as Token mutator.
 type TokenFunc func(context.Context, *ent.TokenMutation) (ent.Value, error)

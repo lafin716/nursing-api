@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"nursing_api/pkg/ent/medicine"
 	"nursing_api/pkg/ent/schema"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
@@ -15,6 +16,16 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	medicineFields := schema.Medicine{}.Fields()
+	_ = medicineFields
+	// medicineDescCreatedAt is the schema descriptor for created_at field.
+	medicineDescCreatedAt := medicineFields[19].Descriptor()
+	// medicine.DefaultCreatedAt holds the default value on creation for the created_at field.
+	medicine.DefaultCreatedAt = medicineDescCreatedAt.Default.(func() time.Time)
+	// medicineDescID is the schema descriptor for id field.
+	medicineDescID := medicineFields[0].Descriptor()
+	// medicine.DefaultID holds the default value on creation for the id field.
+	medicine.DefaultID = medicineDescID.Default.(func() uuid.UUID)
 	tokenFields := schema.Token{}.Fields()
 	_ = tokenFields
 	// tokenDescCreatedAt is the schema descriptor for created_at field.
