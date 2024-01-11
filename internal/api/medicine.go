@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"nursing_api/internal/common/response"
-	medicine "nursing_api/internal/domain/medicine/usecase"
+	"nursing_api/internal/domain/medicine"
 	"strings"
 )
 

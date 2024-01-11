@@ -6,17 +6,13 @@ import (
 	"nursing_api/pkg/jwt"
 )
 
-type AuthRouter interface {
-	Init(router *fiber.Router, jwtMiddleware *jwt.JwtMiddleware)
-}
-
 type authRouter struct {
 	authApi api.AuthHttpApi
 }
 
-func NewAuthRouter(authApi api.AuthHttpApi) AuthRouter {
+func NewAuthRouter(apiSet *apiSet) Routable {
 	return &authRouter{
-		authApi: authApi,
+		authApi: apiSet.authApi,
 	}
 }
 

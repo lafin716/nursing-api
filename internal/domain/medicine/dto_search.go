@@ -1,15 +1,13 @@
 package medicine
 
-import "nursing_api/internal/domain/medicine"
-
 type SearchPillResponse struct {
 	Success bool
 	Message string
-	Pills   []medicine.Medicine
+	Pills   []Medicine
 	Error   error
 }
 
-func OkSearchPill(pills []medicine.Medicine) *SearchPillResponse {
+func OkSearchPill(pills []Medicine) *SearchPillResponse {
 	return &SearchPillResponse{
 		Success: true,
 		Message: "의약품 검색 완료",

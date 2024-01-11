@@ -1,6 +1,4 @@
-package dto
-
-import "nursing_api/internal/domain/user"
+package user
 
 type LoginRequest struct {
 	Email    string `json:"email" validate:"required,email,lte=100"`
@@ -10,11 +8,11 @@ type LoginRequest struct {
 type LoginResponse struct {
 	Success bool
 	Message string
-	User    *user.User
+	User    *User
 	Error   error
 }
 
-func OkLoginUser(loginUser *user.User) *LoginResponse {
+func OkLoginUser(loginUser *User) *LoginResponse {
 	return &LoginResponse{
 		Success: true,
 		Message: "",

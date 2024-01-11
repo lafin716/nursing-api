@@ -1,6 +1,4 @@
-package dto
-
-import "nursing_api/internal/domain/auth"
+package auth
 
 type SignInRequest struct {
 	Email    string `json:"email" validate:"required,email,lte=255"`
@@ -10,11 +8,11 @@ type SignInRequest struct {
 type SignInResponse struct {
 	Success bool
 	Message string
-	Token   *auth.Token
+	Token   *Token
 	Error   error
 }
 
-func OkSignIn(token *auth.Token) *SignInResponse {
+func OkSignIn(token *Token) *SignInResponse {
 	return &SignInResponse{
 		Success: true,
 		Message: "토큰이 발급되었습니다.",

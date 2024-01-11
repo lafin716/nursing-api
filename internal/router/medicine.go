@@ -6,17 +6,13 @@ import (
 	"nursing_api/pkg/jwt"
 )
 
-type MedicineRouter interface {
-	Init(router *fiber.Router, jwtMiddleware *jwt.JwtMiddleware)
-}
-
 type medicineRouter struct {
 	medicineApi api.MedicineHttpApi
 }
 
-func NewMedicineRouter(medicineApi api.MedicineHttpApi) MedicineRouter {
+func NewMedicineRouter(apiSet *apiSet) Routable {
 	return &medicineRouter{
-		medicineApi: medicineApi,
+		medicineApi: apiSet.medicineApi,
 	}
 }
 

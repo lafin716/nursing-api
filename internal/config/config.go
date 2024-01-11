@@ -82,8 +82,8 @@ func NewDatabaseConfig() *database.Config {
 	return config
 }
 
-func NewMedicineApiConfig() *medicine.MedicineApiConfig {
-	return &medicine.MedicineApiConfig{
+func NewMedicineApiConfig() *medicine_api.MedicineApiConfig {
+	return &medicine_api.MedicineApiConfig{
 		SummaryKey: os.Getenv("MEDICINE_SUMMARY_API_KEY"),
 		AppearKey:  os.Getenv("MEDICINE_APPEAR_API_KEY"),
 	}

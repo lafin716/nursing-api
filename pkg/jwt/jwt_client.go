@@ -2,10 +2,7 @@ package jwt
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/wire"
 )
-
-var Set = wire.NewSet(NewJwtClient)
 
 type JwtConfig struct {
 	SecretKey           string

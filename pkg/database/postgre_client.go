@@ -3,13 +3,10 @@ package database
 import (
 	"context"
 	"fmt"
-	"github.com/google/wire"
 	"log"
 	"nursing_api/pkg/ent"
 	"os"
 )
-
-var Set = wire.NewSet(NewPostgresClient)
 
 type Config struct {
 	Host      string

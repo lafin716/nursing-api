@@ -1,8 +1,4 @@
-package dto
-
-import (
-	"nursing_api/internal/domain/user"
-)
+package user
 
 type RegisterRequest struct {
 	Name     string `json:"name" validate:"required,lte=100"`
@@ -13,11 +9,11 @@ type RegisterRequest struct {
 type RegisterResponse struct {
 	Success bool
 	Message string
-	User    *user.User
+	User    *User
 	Error   error
 }
 
-func OkRegisterUser(newUser *user.User) *RegisterResponse {
+func OkRegisterUser(newUser *User) *RegisterResponse {
 	return &RegisterResponse{
 		Success: true,
 		Message: "",

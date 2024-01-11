@@ -1,4 +1,4 @@
-package medicine
+package medicine_api
 
 type MedicineApiConfig struct {
 	SummaryKey string

@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.SignInRequest"
+                            "$ref": "#/definitions/auth.SignInRequest"
                         }
                     }
                 ],
@@ -59,7 +59,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.SignUpRequest"
+                            "$ref": "#/definitions/auth.SignUpRequest"
                         }
                     }
                 ],
@@ -68,7 +68,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.SignInRequest": {
+        "auth.SignInRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -85,7 +85,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.SignUpRequest": {
+        "auth.SignUpRequest": {
             "type": "object",
             "required": [
                 "email",

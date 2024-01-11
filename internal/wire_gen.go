@@ -11,9 +11,10 @@ import (
 	"github.com/gofiber/swagger"
 	"nursing_api/internal/api"
 	"nursing_api/internal/config"
-	"nursing_api/internal/infrastructure/persistence"
+	"nursing_api/internal/domain/auth"
+	"nursing_api/internal/domain/medicine"
+	"nursing_api/internal/domain/user"
 	"nursing_api/internal/router"
-	"nursing_api/internal/service"
 	"nursing_api/pkg/api/medicine"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
@@ -33,20 +34,18 @@ func New() (*Server, error) {
 	jwtClient := jwt.NewJwtClient(jwtConfig)
 	databaseConfig := config.NewDatabaseConfig()
 	databaseClient := database.NewPostgresClient(databaseConfig)
-	userRepository := persistence.NewUserRepository(databaseClient)
-	userUseCase := service.NewUserService(userRepository)
-	authRepository := persistence.NewAuthRepository(databaseClient)
-	authUseCase := service.NewAuthService(userUseCase, authRepository, jwtClient)
+	userRepository := user.NewUserRepository(databaseClient)
+	userUseCase := user.NewUserService(userRepository)
+	authRepository := auth.NewAuthRepository(databaseClient)
+	authUseCase := auth.NewAuthService(userUseCase, authRepository, jwtClient)
 	authHttpApi := api.NewAuthHttpApi(authUseCase, jwtClient)
-	authRouter := router.NewAuthRouter(authHttpApi)
 	userHttpApi := api.NewUserHttpApi(userUseCase, jwtClient)
-	userRouter := router.NewUserRouter(userHttpApi)
 	medicineApiConfig := config.NewMedicineApiConfig()
-	medicineApi := medicine.NewMedicineApi(medicineApiConfig)
-	medicineUseCase := service.NewMedicineService(medicineApi)
+	medicineApi := medicine_api.NewMedicineApi(medicineApiConfig)
+	medicineUseCase := medicine.NewMedicineService(medicineApi)
 	medicineHttpApi := api.NewMedicineHttpApi(medicineUseCase)
-	medicineRouter := router.NewMedicineRouter(medicineHttpApi)
-	server := NewServer(fiberConfig, jwtClient, databaseClient, authRouter, userRouter, medicineRouter)
+	routable := router.NewRouter(authHttpApi, userHttpApi, medicineHttpApi)
+	server := NewServer(fiberConfig, jwtClient, databaseClient, routable)
 	return server, nil
 }
 
@@ -61,19 +60,16 @@ type Server struct {
 func NewServer(
 	cfg *web.FiberConfig,
 	jwtClient *jwt.JwtClient,
-	dbClient *database.DatabaseClient,
-	authRouter router.AuthRouter,
-	userRouter router.UserRouter,
-	medicineRouter router.MedicineRouter,
+	dbClient *database.DatabaseClient, router2 router.Routable,
+
 ) *Server {
 	fiberClient := web.NewFiberClient(cfg)
 	app := fiberClient.GetApp()
 	app.Get("/swagger/*", swagger.HandlerDefault)
 	api2 := app.Group("/api")
 	v1 := api2.Group("/v1")
-	authRouter.Init(&v1, jwtClient.Middleware)
-	userRouter.Init(&v1, jwtClient.Middleware)
-	medicineRouter.Init(&v1, jwtClient.Middleware)
+	router2.
+		Init(&v1, jwtClient.Middleware)
 
 	return &Server{
 		app: app,

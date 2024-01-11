@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  dto.SignInRequest:
+  auth.SignInRequest:
     properties:
       email:
         maxLength: 255
@@ -12,7 +12,7 @@ definitions:
     - email
     - password
     type: object
-  dto.SignUpRequest:
+  auth.SignUpRequest:
     properties:
       email:
         maxLength: 255
@@ -48,7 +48,7 @@ paths:
         name: dto
         required: true
         schema:
-          $ref: '#/definitions/dto.SignInRequest'
+          $ref: '#/definitions/auth.SignInRequest'
       produces:
       - application/json
       responses: {}
@@ -64,7 +64,7 @@ paths:
         name: dto
         required: true
         schema:
-          $ref: '#/definitions/dto.SignUpRequest'
+          $ref: '#/definitions/auth.SignUpRequest'
       produces:
       - application/json
       responses: {}

@@ -1,8 +1,4 @@
-package dto
-
-import (
-	"nursing_api/internal/domain/auth"
-)
+package auth
 
 type SignUpRequest struct {
 	Name     string `json:"name" validate:"required,lte=100"`
@@ -13,11 +9,11 @@ type SignUpRequest struct {
 type SignUpResponse struct {
 	Success bool
 	Message string
-	Token   *auth.Token
+	Token   *Token
 	Error   error
 }
 
-func OkSignUp(token *auth.Token) *SignUpResponse {
+func OkSignUp(token *Token) *SignUpResponse {
 	return &SignUpResponse{
 		Success: true,
 		Message: "회원가입이 정상처리되었습니다.",

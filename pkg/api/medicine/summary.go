@@ -1,4 +1,4 @@
-package medicine
+package medicine_api
 
 import (
 	"encoding/json"

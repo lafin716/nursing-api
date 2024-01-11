@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"nursing_api/internal/common/response"
-	"nursing_api/internal/domain/user/usecase"
+	"nursing_api/internal/domain/user"
 	"nursing_api/pkg/jwt"
 )
 
@@ -12,12 +12,12 @@ type UserHttpApi interface {
 }
 
 type userHttpApi struct {
-	userUseCase usecase.UserUseCase
+	userUseCase user.UserUseCase
 	jwtClient   *jwt.JwtClient
 }
 
 func NewUserHttpApi(
-	userUseCase usecase.UserUseCase,
+	userUseCase user.UserUseCase,
 	jwtClient *jwt.JwtClient,
 ) UserHttpApi {
 	return &userHttpApi{

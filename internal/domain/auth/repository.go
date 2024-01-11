@@ -1,10 +1,8 @@
-package persistence
+package auth
 
 import (
 	"context"
 	"github.com/google/uuid"
-	"nursing_api/internal/domain/auth"
-	"nursing_api/internal/domain/auth/repository"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
 	tokenEntity "nursing_api/pkg/ent/token"
@@ -16,14 +14,14 @@ type authRepository struct {
 	ctx    context.Context
 }
 
-func NewAuthRepository(dbClient *database.DatabaseClient) repository.AuthRepository {
+func NewAuthRepository(dbClient *database.DatabaseClient) AuthRepository {
 	return &authRepository{
 		client: dbClient.Client.Token,
 		ctx:    dbClient.Ctx,
 	}
 }
 
-func (u authRepository) SaveToken(userId uuid.UUID, token *auth.Token) (*auth.Token, error) {
+func (u authRepository) SaveToken(userId uuid.UUID, token *Token) (*Token, error) {
 	savedToken, err := u.client.Create().
 		SetUserID(userId).
 		SetAccessToken(token.AccessToken).
@@ -39,7 +37,7 @@ func (u authRepository) SaveToken(userId uuid.UUID, token *auth.Token) (*auth.To
 	return modelToken, nil
 }
 
-func (u authRepository) GetToken(userId uuid.UUID) (*auth.Token, error) {
+func (u authRepository) GetToken(userId uuid.UUID) (*Token, error) {
 	foundToken, err := u.client.Query().
 		Where(
 			tokenEntity.UserID(userId),
@@ -65,8 +63,8 @@ func (u authRepository) DeleteToken(userId uuid.UUID) (bool, error) {
 	return true, nil
 }
 
-func toTokenModel(entity *ent.Token) *auth.Token {
-	return &auth.Token{
+func toTokenModel(entity *ent.Token) *Token {
+	return &Token{
 		AccessToken:         entity.AccessToken,
 		AccessTokenExpires:  entity.AccessTokenExpires.Unix(),
 		RefreshToken:        entity.RefreshToken,
@@ -74,7 +72,7 @@ func toTokenModel(entity *ent.Token) *auth.Token {
 	}
 }
 
-func toTokenEntity(model *auth.Token) *ent.Token {
+func toTokenEntity(model *Token) *ent.Token {
 	return &ent.Token{
 		AccessToken:         model.AccessToken,
 		AccessTokenExpires:  time.Unix(model.AccessTokenExpires, 0),

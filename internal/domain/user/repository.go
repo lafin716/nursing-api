@@ -1,10 +1,8 @@
-package persistence
+package user
 
 import (
 	"context"
 	"github.com/google/uuid"
-	"nursing_api/internal/domain/user"
-	"nursing_api/internal/domain/user/repository"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
 	userEntity "nursing_api/pkg/ent/user"
@@ -15,14 +13,14 @@ type userRepository struct {
 	ctx    context.Context
 }
 
-func NewUserRepository(dbClient *database.DatabaseClient) repository.UserRepository {
+func NewUserRepository(dbClient *database.DatabaseClient) UserRepository {
 	return &userRepository{
 		client: dbClient.Client.User,
 		ctx:    dbClient.Ctx,
 	}
 }
 
-func (u userRepository) GetUserById(userId uuid.UUID) (*user.User, error) {
+func (u userRepository) GetUserById(userId uuid.UUID) (*User, error) {
 	foundUser, err := u.client.Query().Where(userEntity.ID(userId)).Only(u.ctx)
 	if err != nil {
 		return nil, err
@@ -31,7 +29,7 @@ func (u userRepository) GetUserById(userId uuid.UUID) (*user.User, error) {
 	return toUserDomain(foundUser), nil
 }
 
-func (u userRepository) CreateUser(user *user.User) (*user.User, error) {
+func (u userRepository) CreateUser(user *User) (*User, error) {
 	entity := toUserEntity(user)
 	savedUser, err := u.client.Create().
 		SetUserName(entity.UserName).
@@ -46,7 +44,7 @@ func (u userRepository) CreateUser(user *user.User) (*user.User, error) {
 	return toUserDomain(savedUser), nil
 }
 
-func (u userRepository) GetUserByEmail(email string) (*user.User, error) {
+func (u userRepository) GetUserByEmail(email string) (*User, error) {
 	client := u.client
 	foundUser, err := client.Query().
 		Where(
@@ -75,8 +73,8 @@ func (u userRepository) CountUserByEmail(email string) (int, error) {
 	return emailCount, nil
 }
 
-func toUserDomain(entity *ent.User) *user.User {
-	return &user.User{
+func toUserDomain(entity *ent.User) *User {
+	return &User{
 		ID:           entity.ID,
 		Name:         entity.UserName,
 		Email:        entity.UserEmail,
@@ -90,7 +88,7 @@ func toUserDomain(entity *ent.User) *user.User {
 	}
 }
 
-func toUserEntity(domain *user.User) *ent.User {
+func toUserEntity(domain *User) *ent.User {
 	return &ent.User{
 		ID:           domain.ID,
 		UserName:     domain.Name,

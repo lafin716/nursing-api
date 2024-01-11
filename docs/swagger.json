@@ -29,7 +29,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.SignInRequest"
+                            "$ref": "#/definitions/auth.SignInRequest"
                         }
                     }
                 ],
@@ -53,7 +53,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.SignUpRequest"
+                            "$ref": "#/definitions/auth.SignUpRequest"
                         }
                     }
                 ],
@@ -62,7 +62,7 @@
         }
     },
     "definitions": {
-        "dto.SignInRequest": {
+        "auth.SignInRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -79,7 +79,7 @@
                 }
             }
         },
-        "dto.SignUpRequest": {
+        "auth.SignUpRequest": {
             "type": "object",
             "required": [
                 "email",

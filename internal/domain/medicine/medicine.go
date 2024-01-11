@@ -1,6 +1,8 @@
 package medicine
 
-import "time"
+import (
+	"time"
+)
 
 type Medicine struct {
 	Name           string
@@ -11,4 +13,15 @@ type Medicine struct {
 	Usage          string
 	Keeping        string
 	CreatedAt      time.Time
+}
+
+type MedicineRepository interface {
+	SavePill(medicine *Medicine) (bool, error)
+}
+
+type MedicineUseCase interface {
+	SearchMedicine(pillName string) *SearchPillResponse
+}
+
+type MedicineSummaryApi interface {
 }

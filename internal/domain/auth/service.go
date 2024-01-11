@@ -1,26 +1,21 @@
-package service
+package auth
 
 import (
-	"nursing_api/internal/domain/auth"
-	"nursing_api/internal/domain/auth/dto"
-	"nursing_api/internal/domain/auth/repository"
-	authUseCase "nursing_api/internal/domain/auth/usecase"
-	userDto "nursing_api/internal/domain/user/dto"
-	userUseCase "nursing_api/internal/domain/user/usecase"
+	"nursing_api/internal/domain/user"
 	"nursing_api/pkg/jwt"
 )
 
 type authService struct {
-	userUseCase    userUseCase.UserUseCase
-	authRepository repository.AuthRepository
+	userUseCase    user.UserUseCase
+	authRepository AuthRepository
 	jwtClient      *jwt.JwtClient
 }
 
 func NewAuthService(
-	userUseCase userUseCase.UserUseCase,
-	authRepository repository.AuthRepository,
+	userUseCase user.UserUseCase,
+	authRepository AuthRepository,
 	jwtClient *jwt.JwtClient,
-) authUseCase.AuthUseCase {
+) AuthUseCase {
 	return &authService{
 		userUseCase:    userUseCase,
 		authRepository: authRepository,
@@ -28,8 +23,8 @@ func NewAuthService(
 	}
 }
 
-func (a authService) SignIn(req *dto.SignInRequest) *dto.SignInResponse {
-	loginDto := &userDto.LoginRequest{
+func (a authService) SignIn(req *SignInRequest) *SignInResponse {
+	loginDto := &user.LoginRequest{
 		Email:    req.Email,
 		Password: req.Password,
 	}
@@ -37,7 +32,7 @@ func (a authService) SignIn(req *dto.SignInRequest) *dto.SignInResponse {
 	// 로그인 처리
 	response := a.userUseCase.VerifyUser(loginDto)
 	if !response.Success {
-		return dto.FailSignIn(response.Message, response.Error)
+		return FailSignIn(response.Message, response.Error)
 	}
 	userId := response.User.ID
 
@@ -48,11 +43,11 @@ func (a authService) SignIn(req *dto.SignInRequest) *dto.SignInResponse {
 	}
 	jwtToken, err := a.jwtClient.Generator.GenerateNewTokens(tokenRequest)
 	if err != nil {
-		return dto.FailSignIn("토큰 생성에 실패하였습니다.", err)
+		return FailSignIn("토큰 생성에 실패하였습니다.", err)
 	}
 
 	// 토큰 저장
-	newToken := &auth.Token{
+	newToken := &Token{
 		AccessToken:         jwtToken.AccessToken,
 		AccessTokenExpires:  jwtToken.AccessTokenExpires,
 		RefreshToken:        jwtToken.RefreshToken,
@@ -61,21 +56,21 @@ func (a authService) SignIn(req *dto.SignInRequest) *dto.SignInResponse {
 	a.authRepository.DeleteToken(userId)
 	savedToken, err := a.authRepository.SaveToken(userId, newToken)
 	if err != nil {
-		return dto.FailSignIn("토큰 저장에 실패하였습니다.", err)
+		return FailSignIn("토큰 저장에 실패하였습니다.", err)
 	}
 
-	return dto.OkSignIn(savedToken)
+	return OkSignIn(savedToken)
 }
 
-func (a authService) SignUp(req *dto.SignUpRequest) *dto.SignUpResponse {
-	registerDto := &userDto.RegisterRequest{
+func (a authService) SignUp(req *SignUpRequest) *SignUpResponse {
+	registerDto := &user.RegisterRequest{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: req.Password,
 	}
 	response := a.userUseCase.RegisterUser(registerDto)
 	if !response.Success {
-		return dto.FailSignUp(response.Message, response.Error)
+		return FailSignUp(response.Message, response.Error)
 	}
 
 	tokenRequest := &jwt.TokenRequest{
@@ -84,12 +79,12 @@ func (a authService) SignUp(req *dto.SignUpRequest) *dto.SignUpResponse {
 	}
 	jwtToken, err := a.jwtClient.Generator.GenerateNewTokens(tokenRequest)
 	if err != nil {
-		return dto.FailSignUp("토큰 생성에 실패하였습니다.", err)
+		return FailSignUp("토큰 생성에 실패하였습니다.", err)
 	}
 
-	token := &auth.Token{
+	token := &Token{
 		AccessToken:  jwtToken.AccessToken,
 		RefreshToken: jwtToken.RefreshToken,
 	}
-	return dto.OkSignUp(token)
+	return OkSignUp(token)
 }
