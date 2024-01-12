@@ -1,8 +1,8 @@
 package user
 
 type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email,lte=100"`
-	Password string `json:"password" validate:"required,lte=100"`
+	Email    string `json:"email" validate:"required,email,min=1,max=100"`
+	Password string `json:"password" validate:"required,password"`
 }
 
 type LoginResponse struct {

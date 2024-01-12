@@ -38,6 +38,66 @@ var (
 		Columns:    MedicinesColumns,
 		PrimaryKey: []*schema.Column{MedicinesColumns[0]},
 	}
+	// PrescriptionsColumns holds the columns for the "prescriptions" table.
+	PrescriptionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "prescription_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(30)"}},
+		{Name: "hospital_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
+		{Name: "take_days", Type: field.TypeInt, Default: 0},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "memo", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+	}
+	// PrescriptionsTable holds the schema information for the "prescriptions" table.
+	PrescriptionsTable = &schema.Table{
+		Name:       "prescriptions",
+		Columns:    PrescriptionsColumns,
+		PrimaryKey: []*schema.Column{PrescriptionsColumns[0]},
+	}
+	// PrescriptionItemsColumns holds the columns for the "prescription_items" table.
+	PrescriptionItemsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "prescription_id", Type: field.TypeUUID},
+		{Name: "medicine_name", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(50)"}},
+		{Name: "take_time_zone", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(10)"}},
+		{Name: "take_moment", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(10)"}},
+		{Name: "take_etc", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
+		{Name: "take_amount", Type: field.TypeFloat64, Default: 0},
+		{Name: "medicine_unit", Type: field.TypeString, Nullable: true, Default: "개", SchemaType: map[string]string{"postgres": "varchar(3)"}},
+		{Name: "memo", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+	}
+	// PrescriptionItemsTable holds the schema information for the "prescription_items" table.
+	PrescriptionItemsTable = &schema.Table{
+		Name:       "prescription_items",
+		Columns:    PrescriptionItemsColumns,
+		PrimaryKey: []*schema.Column{PrescriptionItemsColumns[0]},
+	}
+	// TakeHistoriesColumns holds the columns for the "take_histories" table.
+	TakeHistoriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+	}
+	// TakeHistoriesTable holds the schema information for the "take_histories" table.
+	TakeHistoriesTable = &schema.Table{
+		Name:       "take_histories",
+		Columns:    TakeHistoriesColumns,
+		PrimaryKey: []*schema.Column{TakeHistoriesColumns[0]},
+	}
+	// TakeHistoryItemsColumns holds the columns for the "take_history_items" table.
+	TakeHistoryItemsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+	}
+	// TakeHistoryItemsTable holds the schema information for the "take_history_items" table.
+	TakeHistoryItemsTable = &schema.Table{
+		Name:       "take_history_items",
+		Columns:    TakeHistoryItemsColumns,
+		PrimaryKey: []*schema.Column{TakeHistoryItemsColumns[0]},
+	}
 	// TokensColumns holds the columns for the "tokens" table.
 	TokensColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -77,6 +137,10 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		MedicinesTable,
+		PrescriptionsTable,
+		PrescriptionItemsTable,
+		TakeHistoriesTable,
+		TakeHistoryItemsTable,
 		TokensTable,
 		UsersTable,
 	}

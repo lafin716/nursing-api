@@ -4,6 +4,8 @@ package ent
 
 import (
 	"nursing_api/pkg/ent/medicine"
+	"nursing_api/pkg/ent/prescription"
+	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/schema"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
@@ -26,6 +28,46 @@ func init() {
 	medicineDescID := medicineFields[0].Descriptor()
 	// medicine.DefaultID holds the default value on creation for the id field.
 	medicine.DefaultID = medicineDescID.Default.(func() uuid.UUID)
+	prescriptionFields := schema.Prescription{}.Fields()
+	_ = prescriptionFields
+	// prescriptionDescTakeDays is the schema descriptor for take_days field.
+	prescriptionDescTakeDays := prescriptionFields[4].Descriptor()
+	// prescription.DefaultTakeDays holds the default value on creation for the take_days field.
+	prescription.DefaultTakeDays = prescriptionDescTakeDays.Default.(int)
+	// prescriptionDescStartedAt is the schema descriptor for started_at field.
+	prescriptionDescStartedAt := prescriptionFields[5].Descriptor()
+	// prescription.DefaultStartedAt holds the default value on creation for the started_at field.
+	prescription.DefaultStartedAt = prescriptionDescStartedAt.Default.(func() time.Time)
+	// prescriptionDescFinishedAt is the schema descriptor for finished_at field.
+	prescriptionDescFinishedAt := prescriptionFields[6].Descriptor()
+	// prescription.DefaultFinishedAt holds the default value on creation for the finished_at field.
+	prescription.DefaultFinishedAt = prescriptionDescFinishedAt.Default.(func() time.Time)
+	// prescriptionDescCreatedAt is the schema descriptor for created_at field.
+	prescriptionDescCreatedAt := prescriptionFields[8].Descriptor()
+	// prescription.DefaultCreatedAt holds the default value on creation for the created_at field.
+	prescription.DefaultCreatedAt = prescriptionDescCreatedAt.Default.(func() time.Time)
+	// prescriptionDescID is the schema descriptor for id field.
+	prescriptionDescID := prescriptionFields[0].Descriptor()
+	// prescription.DefaultID holds the default value on creation for the id field.
+	prescription.DefaultID = prescriptionDescID.Default.(func() uuid.UUID)
+	prescriptionitemFields := schema.PrescriptionItem{}.Fields()
+	_ = prescriptionitemFields
+	// prescriptionitemDescTakeAmount is the schema descriptor for take_amount field.
+	prescriptionitemDescTakeAmount := prescriptionitemFields[7].Descriptor()
+	// prescriptionitem.DefaultTakeAmount holds the default value on creation for the take_amount field.
+	prescriptionitem.DefaultTakeAmount = prescriptionitemDescTakeAmount.Default.(float64)
+	// prescriptionitemDescMedicineUnit is the schema descriptor for medicine_unit field.
+	prescriptionitemDescMedicineUnit := prescriptionitemFields[8].Descriptor()
+	// prescriptionitem.DefaultMedicineUnit holds the default value on creation for the medicine_unit field.
+	prescriptionitem.DefaultMedicineUnit = prescriptionitemDescMedicineUnit.Default.(string)
+	// prescriptionitemDescCreatedAt is the schema descriptor for created_at field.
+	prescriptionitemDescCreatedAt := prescriptionitemFields[10].Descriptor()
+	// prescriptionitem.DefaultCreatedAt holds the default value on creation for the created_at field.
+	prescriptionitem.DefaultCreatedAt = prescriptionitemDescCreatedAt.Default.(func() time.Time)
+	// prescriptionitemDescID is the schema descriptor for id field.
+	prescriptionitemDescID := prescriptionitemFields[0].Descriptor()
+	// prescriptionitem.DefaultID holds the default value on creation for the id field.
+	prescriptionitem.DefaultID = prescriptionitemDescID.Default.(func() uuid.UUID)
 	tokenFields := schema.Token{}.Fields()
 	_ = tokenFields
 	// tokenDescCreatedAt is the schema descriptor for created_at field.

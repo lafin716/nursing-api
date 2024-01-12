@@ -12,6 +12,10 @@ import (
 	"nursing_api/pkg/ent/migrate"
 
 	"nursing_api/pkg/ent/medicine"
+	"nursing_api/pkg/ent/prescription"
+	"nursing_api/pkg/ent/prescriptionitem"
+	"nursing_api/pkg/ent/takehistory"
+	"nursing_api/pkg/ent/takehistoryitem"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
 
@@ -28,6 +32,14 @@ type Client struct {
 	Schema *migrate.Schema
 	// Medicine is the client for interacting with the Medicine builders.
 	Medicine *MedicineClient
+	// Prescription is the client for interacting with the Prescription builders.
+	Prescription *PrescriptionClient
+	// PrescriptionItem is the client for interacting with the PrescriptionItem builders.
+	PrescriptionItem *PrescriptionItemClient
+	// TakeHistory is the client for interacting with the TakeHistory builders.
+	TakeHistory *TakeHistoryClient
+	// TakeHistoryItem is the client for interacting with the TakeHistoryItem builders.
+	TakeHistoryItem *TakeHistoryItemClient
 	// Token is the client for interacting with the Token builders.
 	Token *TokenClient
 	// User is the client for interacting with the User builders.
@@ -44,6 +56,10 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Medicine = NewMedicineClient(c.config)
+	c.Prescription = NewPrescriptionClient(c.config)
+	c.PrescriptionItem = NewPrescriptionItemClient(c.config)
+	c.TakeHistory = NewTakeHistoryClient(c.config)
+	c.TakeHistoryItem = NewTakeHistoryItemClient(c.config)
 	c.Token = NewTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -136,11 +152,15 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:      ctx,
-		config:   cfg,
-		Medicine: NewMedicineClient(cfg),
-		Token:    NewTokenClient(cfg),
-		User:     NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Medicine:         NewMedicineClient(cfg),
+		Prescription:     NewPrescriptionClient(cfg),
+		PrescriptionItem: NewPrescriptionItemClient(cfg),
+		TakeHistory:      NewTakeHistoryClient(cfg),
+		TakeHistoryItem:  NewTakeHistoryItemClient(cfg),
+		Token:            NewTokenClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -158,11 +178,15 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:      ctx,
-		config:   cfg,
-		Medicine: NewMedicineClient(cfg),
-		Token:    NewTokenClient(cfg),
-		User:     NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Medicine:         NewMedicineClient(cfg),
+		Prescription:     NewPrescriptionClient(cfg),
+		PrescriptionItem: NewPrescriptionItemClient(cfg),
+		TakeHistory:      NewTakeHistoryClient(cfg),
+		TakeHistoryItem:  NewTakeHistoryItemClient(cfg),
+		Token:            NewTokenClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -191,17 +215,23 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Medicine.Use(hooks...)
-	c.Token.Use(hooks...)
-	c.User.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.Medicine, c.Prescription, c.PrescriptionItem, c.TakeHistory,
+		c.TakeHistoryItem, c.Token, c.User,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Medicine.Intercept(interceptors...)
-	c.Token.Intercept(interceptors...)
-	c.User.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.Medicine, c.Prescription, c.PrescriptionItem, c.TakeHistory,
+		c.TakeHistoryItem, c.Token, c.User,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -209,6 +239,14 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *MedicineMutation:
 		return c.Medicine.mutate(ctx, m)
+	case *PrescriptionMutation:
+		return c.Prescription.mutate(ctx, m)
+	case *PrescriptionItemMutation:
+		return c.PrescriptionItem.mutate(ctx, m)
+	case *TakeHistoryMutation:
+		return c.TakeHistory.mutate(ctx, m)
+	case *TakeHistoryItemMutation:
+		return c.TakeHistoryItem.mutate(ctx, m)
 	case *TokenMutation:
 		return c.Token.mutate(ctx, m)
 	case *UserMutation:
@@ -348,6 +386,538 @@ func (c *MedicineClient) mutate(ctx context.Context, m *MedicineMutation) (Value
 		return (&MedicineDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Medicine mutation op: %q", m.Op())
+	}
+}
+
+// PrescriptionClient is a client for the Prescription schema.
+type PrescriptionClient struct {
+	config
+}
+
+// NewPrescriptionClient returns a client for the Prescription from the given config.
+func NewPrescriptionClient(c config) *PrescriptionClient {
+	return &PrescriptionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `prescription.Hooks(f(g(h())))`.
+func (c *PrescriptionClient) Use(hooks ...Hook) {
+	c.hooks.Prescription = append(c.hooks.Prescription, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `prescription.Intercept(f(g(h())))`.
+func (c *PrescriptionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Prescription = append(c.inters.Prescription, interceptors...)
+}
+
+// Create returns a builder for creating a Prescription entity.
+func (c *PrescriptionClient) Create() *PrescriptionCreate {
+	mutation := newPrescriptionMutation(c.config, OpCreate)
+	return &PrescriptionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Prescription entities.
+func (c *PrescriptionClient) CreateBulk(builders ...*PrescriptionCreate) *PrescriptionCreateBulk {
+	return &PrescriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PrescriptionClient) MapCreateBulk(slice any, setFunc func(*PrescriptionCreate, int)) *PrescriptionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PrescriptionCreateBulk{err: fmt.Errorf("calling to PrescriptionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PrescriptionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PrescriptionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Prescription.
+func (c *PrescriptionClient) Update() *PrescriptionUpdate {
+	mutation := newPrescriptionMutation(c.config, OpUpdate)
+	return &PrescriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PrescriptionClient) UpdateOne(pr *Prescription) *PrescriptionUpdateOne {
+	mutation := newPrescriptionMutation(c.config, OpUpdateOne, withPrescription(pr))
+	return &PrescriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PrescriptionClient) UpdateOneID(id uuid.UUID) *PrescriptionUpdateOne {
+	mutation := newPrescriptionMutation(c.config, OpUpdateOne, withPrescriptionID(id))
+	return &PrescriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Prescription.
+func (c *PrescriptionClient) Delete() *PrescriptionDelete {
+	mutation := newPrescriptionMutation(c.config, OpDelete)
+	return &PrescriptionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PrescriptionClient) DeleteOne(pr *Prescription) *PrescriptionDeleteOne {
+	return c.DeleteOneID(pr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PrescriptionClient) DeleteOneID(id uuid.UUID) *PrescriptionDeleteOne {
+	builder := c.Delete().Where(prescription.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PrescriptionDeleteOne{builder}
+}
+
+// Query returns a query builder for Prescription.
+func (c *PrescriptionClient) Query() *PrescriptionQuery {
+	return &PrescriptionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePrescription},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Prescription entity by its id.
+func (c *PrescriptionClient) Get(ctx context.Context, id uuid.UUID) (*Prescription, error) {
+	return c.Query().Where(prescription.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PrescriptionClient) GetX(ctx context.Context, id uuid.UUID) *Prescription {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PrescriptionClient) Hooks() []Hook {
+	return c.hooks.Prescription
+}
+
+// Interceptors returns the client interceptors.
+func (c *PrescriptionClient) Interceptors() []Interceptor {
+	return c.inters.Prescription
+}
+
+func (c *PrescriptionClient) mutate(ctx context.Context, m *PrescriptionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PrescriptionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PrescriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PrescriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PrescriptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Prescription mutation op: %q", m.Op())
+	}
+}
+
+// PrescriptionItemClient is a client for the PrescriptionItem schema.
+type PrescriptionItemClient struct {
+	config
+}
+
+// NewPrescriptionItemClient returns a client for the PrescriptionItem from the given config.
+func NewPrescriptionItemClient(c config) *PrescriptionItemClient {
+	return &PrescriptionItemClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `prescriptionitem.Hooks(f(g(h())))`.
+func (c *PrescriptionItemClient) Use(hooks ...Hook) {
+	c.hooks.PrescriptionItem = append(c.hooks.PrescriptionItem, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `prescriptionitem.Intercept(f(g(h())))`.
+func (c *PrescriptionItemClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PrescriptionItem = append(c.inters.PrescriptionItem, interceptors...)
+}
+
+// Create returns a builder for creating a PrescriptionItem entity.
+func (c *PrescriptionItemClient) Create() *PrescriptionItemCreate {
+	mutation := newPrescriptionItemMutation(c.config, OpCreate)
+	return &PrescriptionItemCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PrescriptionItem entities.
+func (c *PrescriptionItemClient) CreateBulk(builders ...*PrescriptionItemCreate) *PrescriptionItemCreateBulk {
+	return &PrescriptionItemCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PrescriptionItemClient) MapCreateBulk(slice any, setFunc func(*PrescriptionItemCreate, int)) *PrescriptionItemCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PrescriptionItemCreateBulk{err: fmt.Errorf("calling to PrescriptionItemClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PrescriptionItemCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PrescriptionItemCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PrescriptionItem.
+func (c *PrescriptionItemClient) Update() *PrescriptionItemUpdate {
+	mutation := newPrescriptionItemMutation(c.config, OpUpdate)
+	return &PrescriptionItemUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PrescriptionItemClient) UpdateOne(pi *PrescriptionItem) *PrescriptionItemUpdateOne {
+	mutation := newPrescriptionItemMutation(c.config, OpUpdateOne, withPrescriptionItem(pi))
+	return &PrescriptionItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PrescriptionItemClient) UpdateOneID(id uuid.UUID) *PrescriptionItemUpdateOne {
+	mutation := newPrescriptionItemMutation(c.config, OpUpdateOne, withPrescriptionItemID(id))
+	return &PrescriptionItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PrescriptionItem.
+func (c *PrescriptionItemClient) Delete() *PrescriptionItemDelete {
+	mutation := newPrescriptionItemMutation(c.config, OpDelete)
+	return &PrescriptionItemDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PrescriptionItemClient) DeleteOne(pi *PrescriptionItem) *PrescriptionItemDeleteOne {
+	return c.DeleteOneID(pi.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PrescriptionItemClient) DeleteOneID(id uuid.UUID) *PrescriptionItemDeleteOne {
+	builder := c.Delete().Where(prescriptionitem.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PrescriptionItemDeleteOne{builder}
+}
+
+// Query returns a query builder for PrescriptionItem.
+func (c *PrescriptionItemClient) Query() *PrescriptionItemQuery {
+	return &PrescriptionItemQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePrescriptionItem},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PrescriptionItem entity by its id.
+func (c *PrescriptionItemClient) Get(ctx context.Context, id uuid.UUID) (*PrescriptionItem, error) {
+	return c.Query().Where(prescriptionitem.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PrescriptionItemClient) GetX(ctx context.Context, id uuid.UUID) *PrescriptionItem {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PrescriptionItemClient) Hooks() []Hook {
+	return c.hooks.PrescriptionItem
+}
+
+// Interceptors returns the client interceptors.
+func (c *PrescriptionItemClient) Interceptors() []Interceptor {
+	return c.inters.PrescriptionItem
+}
+
+func (c *PrescriptionItemClient) mutate(ctx context.Context, m *PrescriptionItemMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PrescriptionItemCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PrescriptionItemUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PrescriptionItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PrescriptionItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PrescriptionItem mutation op: %q", m.Op())
+	}
+}
+
+// TakeHistoryClient is a client for the TakeHistory schema.
+type TakeHistoryClient struct {
+	config
+}
+
+// NewTakeHistoryClient returns a client for the TakeHistory from the given config.
+func NewTakeHistoryClient(c config) *TakeHistoryClient {
+	return &TakeHistoryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `takehistory.Hooks(f(g(h())))`.
+func (c *TakeHistoryClient) Use(hooks ...Hook) {
+	c.hooks.TakeHistory = append(c.hooks.TakeHistory, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `takehistory.Intercept(f(g(h())))`.
+func (c *TakeHistoryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TakeHistory = append(c.inters.TakeHistory, interceptors...)
+}
+
+// Create returns a builder for creating a TakeHistory entity.
+func (c *TakeHistoryClient) Create() *TakeHistoryCreate {
+	mutation := newTakeHistoryMutation(c.config, OpCreate)
+	return &TakeHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TakeHistory entities.
+func (c *TakeHistoryClient) CreateBulk(builders ...*TakeHistoryCreate) *TakeHistoryCreateBulk {
+	return &TakeHistoryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TakeHistoryClient) MapCreateBulk(slice any, setFunc func(*TakeHistoryCreate, int)) *TakeHistoryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TakeHistoryCreateBulk{err: fmt.Errorf("calling to TakeHistoryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TakeHistoryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TakeHistoryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TakeHistory.
+func (c *TakeHistoryClient) Update() *TakeHistoryUpdate {
+	mutation := newTakeHistoryMutation(c.config, OpUpdate)
+	return &TakeHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TakeHistoryClient) UpdateOne(th *TakeHistory) *TakeHistoryUpdateOne {
+	mutation := newTakeHistoryMutation(c.config, OpUpdateOne, withTakeHistory(th))
+	return &TakeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TakeHistoryClient) UpdateOneID(id int) *TakeHistoryUpdateOne {
+	mutation := newTakeHistoryMutation(c.config, OpUpdateOne, withTakeHistoryID(id))
+	return &TakeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TakeHistory.
+func (c *TakeHistoryClient) Delete() *TakeHistoryDelete {
+	mutation := newTakeHistoryMutation(c.config, OpDelete)
+	return &TakeHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TakeHistoryClient) DeleteOne(th *TakeHistory) *TakeHistoryDeleteOne {
+	return c.DeleteOneID(th.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TakeHistoryClient) DeleteOneID(id int) *TakeHistoryDeleteOne {
+	builder := c.Delete().Where(takehistory.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TakeHistoryDeleteOne{builder}
+}
+
+// Query returns a query builder for TakeHistory.
+func (c *TakeHistoryClient) Query() *TakeHistoryQuery {
+	return &TakeHistoryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTakeHistory},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TakeHistory entity by its id.
+func (c *TakeHistoryClient) Get(ctx context.Context, id int) (*TakeHistory, error) {
+	return c.Query().Where(takehistory.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TakeHistoryClient) GetX(ctx context.Context, id int) *TakeHistory {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TakeHistoryClient) Hooks() []Hook {
+	return c.hooks.TakeHistory
+}
+
+// Interceptors returns the client interceptors.
+func (c *TakeHistoryClient) Interceptors() []Interceptor {
+	return c.inters.TakeHistory
+}
+
+func (c *TakeHistoryClient) mutate(ctx context.Context, m *TakeHistoryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TakeHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TakeHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TakeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TakeHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TakeHistory mutation op: %q", m.Op())
+	}
+}
+
+// TakeHistoryItemClient is a client for the TakeHistoryItem schema.
+type TakeHistoryItemClient struct {
+	config
+}
+
+// NewTakeHistoryItemClient returns a client for the TakeHistoryItem from the given config.
+func NewTakeHistoryItemClient(c config) *TakeHistoryItemClient {
+	return &TakeHistoryItemClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `takehistoryitem.Hooks(f(g(h())))`.
+func (c *TakeHistoryItemClient) Use(hooks ...Hook) {
+	c.hooks.TakeHistoryItem = append(c.hooks.TakeHistoryItem, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `takehistoryitem.Intercept(f(g(h())))`.
+func (c *TakeHistoryItemClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TakeHistoryItem = append(c.inters.TakeHistoryItem, interceptors...)
+}
+
+// Create returns a builder for creating a TakeHistoryItem entity.
+func (c *TakeHistoryItemClient) Create() *TakeHistoryItemCreate {
+	mutation := newTakeHistoryItemMutation(c.config, OpCreate)
+	return &TakeHistoryItemCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TakeHistoryItem entities.
+func (c *TakeHistoryItemClient) CreateBulk(builders ...*TakeHistoryItemCreate) *TakeHistoryItemCreateBulk {
+	return &TakeHistoryItemCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TakeHistoryItemClient) MapCreateBulk(slice any, setFunc func(*TakeHistoryItemCreate, int)) *TakeHistoryItemCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TakeHistoryItemCreateBulk{err: fmt.Errorf("calling to TakeHistoryItemClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TakeHistoryItemCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TakeHistoryItemCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TakeHistoryItem.
+func (c *TakeHistoryItemClient) Update() *TakeHistoryItemUpdate {
+	mutation := newTakeHistoryItemMutation(c.config, OpUpdate)
+	return &TakeHistoryItemUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TakeHistoryItemClient) UpdateOne(thi *TakeHistoryItem) *TakeHistoryItemUpdateOne {
+	mutation := newTakeHistoryItemMutation(c.config, OpUpdateOne, withTakeHistoryItem(thi))
+	return &TakeHistoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TakeHistoryItemClient) UpdateOneID(id int) *TakeHistoryItemUpdateOne {
+	mutation := newTakeHistoryItemMutation(c.config, OpUpdateOne, withTakeHistoryItemID(id))
+	return &TakeHistoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TakeHistoryItem.
+func (c *TakeHistoryItemClient) Delete() *TakeHistoryItemDelete {
+	mutation := newTakeHistoryItemMutation(c.config, OpDelete)
+	return &TakeHistoryItemDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TakeHistoryItemClient) DeleteOne(thi *TakeHistoryItem) *TakeHistoryItemDeleteOne {
+	return c.DeleteOneID(thi.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TakeHistoryItemClient) DeleteOneID(id int) *TakeHistoryItemDeleteOne {
+	builder := c.Delete().Where(takehistoryitem.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TakeHistoryItemDeleteOne{builder}
+}
+
+// Query returns a query builder for TakeHistoryItem.
+func (c *TakeHistoryItemClient) Query() *TakeHistoryItemQuery {
+	return &TakeHistoryItemQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTakeHistoryItem},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TakeHistoryItem entity by its id.
+func (c *TakeHistoryItemClient) Get(ctx context.Context, id int) (*TakeHistoryItem, error) {
+	return c.Query().Where(takehistoryitem.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TakeHistoryItemClient) GetX(ctx context.Context, id int) *TakeHistoryItem {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TakeHistoryItemClient) Hooks() []Hook {
+	return c.hooks.TakeHistoryItem
+}
+
+// Interceptors returns the client interceptors.
+func (c *TakeHistoryItemClient) Interceptors() []Interceptor {
+	return c.inters.TakeHistoryItem
+}
+
+func (c *TakeHistoryItemClient) mutate(ctx context.Context, m *TakeHistoryItemMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TakeHistoryItemCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TakeHistoryItemUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TakeHistoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TakeHistoryItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TakeHistoryItem mutation op: %q", m.Op())
 	}
 }
 
@@ -620,9 +1190,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Medicine, Token, User []ent.Hook
+		Medicine, Prescription, PrescriptionItem, TakeHistory, TakeHistoryItem, Token,
+		User []ent.Hook
 	}
 	inters struct {
-		Medicine, Token, User []ent.Interceptor
+		Medicine, Prescription, PrescriptionItem, TakeHistory, TakeHistoryItem, Token,
+		User []ent.Interceptor
 	}
 )

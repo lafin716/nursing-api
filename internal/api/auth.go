@@ -43,6 +43,13 @@ func (a authHttpApi) SignIn(ctx *fiber.Ctx) error {
 			Error(ctx)
 	}
 
+	errs := validateParameter(req)
+	if errs != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(errs).
+			Error(ctx)
+	}
+
 	result := a.authUseCase.SignIn(req)
 	if !result.Success {
 		return response.New(response.CODE_FAIL_SIGN_UP).
@@ -68,6 +75,13 @@ func (a authHttpApi) SignUp(ctx *fiber.Ctx) error {
 	if err != nil {
 		return response.New(response.CODE_INVALID_PARAM).
 			SetErrors(err).
+			Error(ctx)
+	}
+
+	errs := validateParameter(req)
+	if errs != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(errs).
 			Error(ctx)
 	}
 

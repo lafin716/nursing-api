@@ -23,10 +23,17 @@ func NewMedicineHttpApi(
 	}
 }
 
+// TODO 검색어 2자 이상 유효성검사 구조체로 변경
 func (u *medicineHttpApi) Search(ctx *fiber.Ctx) error {
 	pillName := ctx.Params("pillName", "")
 	if strings.TrimSpace(pillName) == "" {
 		return response.New(response.CODE_INVALID_PARAM).BadRequest(ctx)
+	}
+
+	if len(pillName) < 2 {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetMessage("검색어는 2자 이상 입력하세요.").
+			BadRequest(ctx)
 	}
 
 	result := u.usecase.SearchMedicine(pillName)

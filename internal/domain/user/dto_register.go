@@ -1,9 +1,9 @@
 package user
 
 type RegisterRequest struct {
-	Name     string `json:"name" validate:"required,lte=100"`
-	Email    string `json:"email" validate:"required,email,lte=100"`
-	Password string `json:"password" validate:"required,lte=100"`
+	Name     string `json:"name" validate:"required,min=1,max=30"`
+	Email    string `json:"email" validate:"required,email,min=1,max=100"`
+	Password string `json:"password" validate:"required,password"`
 }
 
 type RegisterResponse struct {

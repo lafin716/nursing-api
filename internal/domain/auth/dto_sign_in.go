@@ -1,8 +1,8 @@
 package auth
 
 type SignInRequest struct {
-	Email    string `json:"email" validate:"required,email,lte=255"`
-	Password string `json:"password" validate:"required,lte=255"`
+	Email    string `json:"email" validate:"required,email,min=1,max=255"`
+	Password string `json:"password" validate:"required,password"`
 }
 
 type SignInResponse struct {

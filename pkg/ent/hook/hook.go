@@ -20,6 +20,54 @@ func (f MedicineFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MedicineMutation", m)
 }
 
+// The PrescriptionFunc type is an adapter to allow the use of ordinary
+// function as Prescription mutator.
+type PrescriptionFunc func(context.Context, *ent.PrescriptionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PrescriptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PrescriptionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PrescriptionMutation", m)
+}
+
+// The PrescriptionItemFunc type is an adapter to allow the use of ordinary
+// function as PrescriptionItem mutator.
+type PrescriptionItemFunc func(context.Context, *ent.PrescriptionItemMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PrescriptionItemFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PrescriptionItemMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PrescriptionItemMutation", m)
+}
+
+// The TakeHistoryFunc type is an adapter to allow the use of ordinary
+// function as TakeHistory mutator.
+type TakeHistoryFunc func(context.Context, *ent.TakeHistoryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TakeHistoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TakeHistoryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TakeHistoryMutation", m)
+}
+
+// The TakeHistoryItemFunc type is an adapter to allow the use of ordinary
+// function as TakeHistoryItem mutator.
+type TakeHistoryItemFunc func(context.Context, *ent.TakeHistoryItemMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TakeHistoryItemFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TakeHistoryItemMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TakeHistoryItemMutation", m)
+}
+
 // The TokenFunc type is an adapter to allow the use of ordinary
 // function as Token mutator.
 type TokenFunc func(context.Context, *ent.TokenMutation) (ent.Value, error)
