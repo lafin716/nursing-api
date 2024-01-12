@@ -9,14 +9,12 @@ import (
 )
 
 type medicineRepository struct {
-	debug  *ent.Client
 	client *ent.MedicineClient
 	ctx    context.Context
 }
 
 func NewAuthRepository(dbClient *database.DatabaseClient) MedicineRepository {
 	return &medicineRepository{
-		debug:  dbClient.Client,
 		client: dbClient.Client.Medicine,
 		ctx:    dbClient.Ctx,
 	}
@@ -70,7 +68,7 @@ func (m medicineRepository) createRow(medicine *Medicine) *ent.MedicineCreate {
 }
 
 func (m medicineRepository) GetPillsByNames(pillName string) ([]*Medicine, error) {
-	foundPills := m.debug.Debug().Medicine.
+	foundPills := m.client.
 		Query().
 		Where(
 			medicineSchema.MedicineNameContains(pillName),

@@ -12,6 +12,7 @@ var Set = wire.NewSet(
 	NewAuthHttpApi,
 	NewMedicineHttpApi,
 	NewErrorHttpApi,
+	NewPrescriptionApi,
 )
 
 func validateParameter(data interface{}) map[string]string {

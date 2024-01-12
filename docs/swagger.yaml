@@ -4,9 +4,9 @@ definitions:
     properties:
       email:
         maxLength: 255
+        minLength: 1
         type: string
       password:
-        maxLength: 255
         type: string
     required:
     - email
@@ -15,13 +15,14 @@ definitions:
   auth.SignUpRequest:
     properties:
       email:
-        maxLength: 255
+        maxLength: 100
+        minLength: 1
         type: string
       name:
-        maxLength: 100
+        maxLength: 30
+        minLength: 2
         type: string
       password:
-        maxLength: 255
         type: string
     required:
     - email

@@ -4,6 +4,7 @@ import (
 	"github.com/google/wire"
 	"nursing_api/internal/domain/auth"
 	"nursing_api/internal/domain/medicine"
+	"nursing_api/internal/domain/prescription"
 	"nursing_api/internal/domain/user"
 	medicine_api "nursing_api/pkg/api/medicine"
 	"nursing_api/pkg/database"
@@ -20,12 +21,14 @@ var repository = wire.NewSet(
 	auth.NewAuthRepository,
 	user.NewUserRepository,
 	medicine.NewAuthRepository,
+	prescription.NewPrescriptionRepository,
 )
 
 var service = wire.NewSet(
 	auth.NewAuthService,
 	user.NewUserService,
 	medicine.NewMedicineService,
+	prescription.NewPrescriptionService,
 )
 
 var gateway = wire.NewSet(

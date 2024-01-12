@@ -71,11 +71,11 @@
             "properties": {
                 "email": {
                     "type": "string",
-                    "maxLength": 255
+                    "maxLength": 255,
+                    "minLength": 1
                 },
                 "password": {
-                    "type": "string",
-                    "maxLength": 255
+                    "type": "string"
                 }
             }
         },
@@ -89,15 +89,16 @@
             "properties": {
                 "email": {
                     "type": "string",
-                    "maxLength": 255
+                    "maxLength": 100,
+                    "minLength": 1
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 30,
+                    "minLength": 2
                 },
                 "password": {
-                    "type": "string",
-                    "maxLength": 255
+                    "type": "string"
                 }
             }
         }

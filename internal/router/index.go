@@ -20,39 +20,16 @@ type middlewares struct {
 }
 
 type handlers struct {
-	auth     api.AuthHttpApi
-	user     api.UserHttpApi
-	medicine api.MedicineHttpApi
+	auth         api.AuthHttpApi
+	user         api.UserHttpApi
+	medicine     api.MedicineHttpApi
+	prescription api.PrescriptionApi
 }
 
 type container struct {
 	router     fiber.Router
 	middleware *middlewares
 	handler    *handlers
-}
-
-func NewRouter(
-	jwtAuth *middleware.TokenVerifyMiddleware,
-	authApi api.AuthHttpApi,
-	userApi api.UserHttpApi,
-	medicineApi api.MedicineHttpApi,
-) Routable {
-	return &container{
-		middleware: &middlewares{
-			jwtAuth: jwtAuth,
-		},
-		handler: &handlers{
-			authApi,
-			userApi,
-			medicineApi,
-		},
-	}
-}
-
-func (c *container) AuthMiddleware(handler fiber.Handler) []fiber.Handler {
-	mw := c.middleware.jwtAuth.Resolve()
-	mw = append(mw, handler)
-	return mw
 }
 
 func (c *container) Init(
@@ -62,4 +39,31 @@ func (c *container) Init(
 	c.RegisterUserRoute()
 	c.RegisterAuthRoute()
 	c.RegisterMedicineRoute()
+	c.RegisterPrescriptionRoute()
+}
+
+func NewRouter(
+	jwtAuth *middleware.TokenVerifyMiddleware,
+	authApi api.AuthHttpApi,
+	userApi api.UserHttpApi,
+	medicineApi api.MedicineHttpApi,
+	prescription api.PrescriptionApi,
+) Routable {
+	return &container{
+		middleware: &middlewares{
+			jwtAuth: jwtAuth,
+		},
+		handler: &handlers{
+			authApi,
+			userApi,
+			medicineApi,
+			prescription,
+		},
+	}
+}
+
+func (c *container) AuthMiddleware(handler fiber.Handler) []fiber.Handler {
+	mw := c.middleware.jwtAuth.Resolve()
+	mw = append(mw, handler)
+	return mw
 }

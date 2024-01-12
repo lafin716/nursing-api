@@ -40,12 +40,12 @@ type PrescriptionRepository interface {
 	GetItemListByPrescriptionId(prescriptionId uuid.UUID) ([]*Prescription, error)
 	Add(prescription *Prescription) (*Prescription, error)
 	AddItem(item PrescriptionItem) (*PrescriptionItem, error)
-	Update(prescription *Prescription) (*Prescription, error)
-	UpdateItem(itemId uuid.UUID) (*PrescriptionItem, error)
+	Update(prescription *Prescription) (int, error)
+	UpdateItem(itemId uuid.UUID) (int, error)
 	Delete(id uuid.UUID) (bool, error)
 	DeleteItem(itemId uuid.UUID) (bool, error)
 }
 
 type PrescriptionUseCase interface {
-	GetList()
+	Register(req *RegisterRequest) *RegisterResponse
 }

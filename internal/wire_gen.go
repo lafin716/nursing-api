@@ -13,6 +13,7 @@ import (
 	"nursing_api/internal/config"
 	"nursing_api/internal/domain/auth"
 	"nursing_api/internal/domain/medicine"
+	"nursing_api/internal/domain/prescription"
 	"nursing_api/internal/domain/user"
 	"nursing_api/internal/middleware"
 	"nursing_api/internal/router"
@@ -47,7 +48,10 @@ func New() (*Server, error) {
 	medicineApi := medicine_api.NewMedicineApi(medicineApiConfig)
 	medicineUseCase := medicine.NewMedicineService(medicineRepository, medicineApi)
 	medicineHttpApi := api.NewMedicineHttpApi(medicineUseCase)
-	routable := router.NewRouter(tokenVerifyMiddleware, authHttpApi, userHttpApi, medicineHttpApi)
+	prescriptionRepository := prescription.NewPrescriptionRepository(databaseClient)
+	prescriptionUseCase := prescription.NewPrescriptionService(prescriptionRepository)
+	prescriptionApi := api.NewPrescriptionApi(prescriptionUseCase)
+	routable := router.NewRouter(tokenVerifyMiddleware, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi)
 	server := NewServer(fiberConfig, databaseClient, routable)
 	return server, nil
 }
