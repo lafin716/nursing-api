@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"strings"
 	"time"
@@ -39,8 +40,33 @@ type PrescriptionItem struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the PrescriptionItemQuery when eager-loading is set.
+	Edges        PrescriptionItemEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// PrescriptionItemEdges holds the relations/edges for other nodes in the graph.
+type PrescriptionItemEdges struct {
+	// Prescription holds the value of the prescription edge.
+	Prescription *Prescription `json:"prescription,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// PrescriptionOrErr returns the Prescription value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PrescriptionItemEdges) PrescriptionOrErr() (*Prescription, error) {
+	if e.loadedTypes[0] {
+		if e.Prescription == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: prescription.Label}
+		}
+		return e.Prescription, nil
+	}
+	return nil, &NotLoadedError{edge: "prescription"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -154,6 +180,11 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (pi *PrescriptionItem) Value(name string) (ent.Value, error) {
 	return pi.selectValues.Get(name)
+}
+
+// QueryPrescription queries the "prescription" edge of the PrescriptionItem entity.
+func (pi *PrescriptionItem) QueryPrescription() *PrescriptionQuery {
+	return NewPrescriptionItemClient(pi.config).QueryPrescription(pi)
 }
 
 // Update returns a builder for updating this PrescriptionItem.

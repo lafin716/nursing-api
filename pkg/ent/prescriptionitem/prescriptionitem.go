@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -36,8 +37,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgePrescription holds the string denoting the prescription edge name in mutations.
+	EdgePrescription = "prescription"
 	// Table holds the table name of the prescriptionitem in the database.
 	Table = "prescription_items"
+	// PrescriptionTable is the table that holds the prescription relation/edge.
+	PrescriptionTable = "prescription_items"
+	// PrescriptionInverseTable is the table name for the Prescription entity.
+	// It exists in this package in order to avoid circular dependency with the "prescription" package.
+	PrescriptionInverseTable = "prescriptions"
+	// PrescriptionColumn is the table column denoting the prescription relation/edge.
+	PrescriptionColumn = "prescription_id"
 )
 
 // Columns holds all SQL columns for prescriptionitem fields.
@@ -138,4 +148,18 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByPrescriptionField orders the results by prescription field.
+func ByPrescriptionField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPrescriptionStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newPrescriptionStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PrescriptionInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, PrescriptionTable, PrescriptionColumn),
+	)
 }

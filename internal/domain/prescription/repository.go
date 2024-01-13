@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"log"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
 	schema "nursing_api/pkg/ent/prescription"
@@ -11,16 +12,18 @@ import (
 )
 
 type prescriptionRepository struct {
-	client *ent.PrescriptionClient
-	ctx    context.Context
+	client     *ent.PrescriptionClient
+	itemClient *ent.PrescriptionItemClient
+	ctx        context.Context
 }
 
 func NewPrescriptionRepository(
 	dbClient *database.DatabaseClient,
 ) PrescriptionRepository {
 	return &prescriptionRepository{
-		client: dbClient.Client.Prescription,
-		ctx:    dbClient.Ctx,
+		client:     dbClient.Client.Prescription,
+		itemClient: dbClient.Client.PrescriptionItem,
+		ctx:        dbClient.Ctx,
 	}
 }
 
@@ -42,6 +45,7 @@ func (p prescriptionRepository) GetListByUserId(userId uuid.UUID) ([]*Prescripti
 	foundList, err := p.client.
 		Query().
 		Where(schema.UserID(userId)).
+		WithItems().
 		Limit(10).
 		All(p.ctx)
 	if err != nil {
@@ -72,7 +76,33 @@ func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, 
 		return nil, err
 	}
 
+	savedItems := []*ent.PrescriptionItem{}
+	for _, item := range prescription.PrescriptionItems {
+		saved, err := p.createItem(saved, item)
+		if err != nil {
+			log.Printf("아이템 저장 실패:\n %+v\n", item)
+			continue
+		}
+		savedItems = append(savedItems, saved)
+	}
+
 	return toDomain(saved), nil
+}
+
+func (p prescriptionRepository) createItem(parent *ent.Prescription, item *PrescriptionItem) (*ent.PrescriptionItem, error) {
+	return p.itemClient.
+		Create().
+		SetUserID(item.UserId).
+		SetMedicineName(item.MedicineName).
+		SetTakeTimeZone(item.TakeTimeZone).
+		SetTakeMoment(item.TakeMoment).
+		SetTakeEtc(item.TakeEtc).
+		SetTakeAmount(item.TakeAmount).
+		SetMedicineUnit(item.MedicineUnit).
+		SetMemo(item.Memo).
+		SetCreatedAt(item.CreatedAt).
+		SetPrescription(parent).
+		Save(p.ctx)
 }
 
 func (p prescriptionRepository) AddItem(item PrescriptionItem) (*PrescriptionItem, error) {

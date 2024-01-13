@@ -1739,6 +1739,9 @@ type PrescriptionMutation struct {
 	created_at        *time.Time
 	updated_at        *time.Time
 	clearedFields     map[string]struct{}
+	items             map[uuid.UUID]struct{}
+	removeditems      map[uuid.UUID]struct{}
+	cleareditems      bool
 	done              bool
 	oldValue          func(context.Context) (*Prescription, error)
 	predicates        []predicate.Prescription
@@ -2270,6 +2273,60 @@ func (m *PrescriptionMutation) ResetUpdatedAt() {
 	delete(m.clearedFields, prescription.FieldUpdatedAt)
 }
 
+// AddItemIDs adds the "items" edge to the PrescriptionItem entity by ids.
+func (m *PrescriptionMutation) AddItemIDs(ids ...uuid.UUID) {
+	if m.items == nil {
+		m.items = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.items[ids[i]] = struct{}{}
+	}
+}
+
+// ClearItems clears the "items" edge to the PrescriptionItem entity.
+func (m *PrescriptionMutation) ClearItems() {
+	m.cleareditems = true
+}
+
+// ItemsCleared reports if the "items" edge to the PrescriptionItem entity was cleared.
+func (m *PrescriptionMutation) ItemsCleared() bool {
+	return m.cleareditems
+}
+
+// RemoveItemIDs removes the "items" edge to the PrescriptionItem entity by IDs.
+func (m *PrescriptionMutation) RemoveItemIDs(ids ...uuid.UUID) {
+	if m.removeditems == nil {
+		m.removeditems = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.items, ids[i])
+		m.removeditems[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedItems returns the removed IDs of the "items" edge to the PrescriptionItem entity.
+func (m *PrescriptionMutation) RemovedItemsIDs() (ids []uuid.UUID) {
+	for id := range m.removeditems {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ItemsIDs returns the "items" edge IDs in the mutation.
+func (m *PrescriptionMutation) ItemsIDs() (ids []uuid.UUID) {
+	for id := range m.items {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetItems resets all changes to the "items" edge.
+func (m *PrescriptionMutation) ResetItems() {
+	m.items = nil
+	m.cleareditems = false
+	m.removeditems = nil
+}
+
 // Where appends a list predicates to the PrescriptionMutation builder.
 func (m *PrescriptionMutation) Where(ps ...predicate.Prescription) {
 	m.predicates = append(m.predicates, ps...)
@@ -2593,74 +2650,111 @@ func (m *PrescriptionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PrescriptionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.items != nil {
+		edges = append(edges, prescription.EdgeItems)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *PrescriptionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case prescription.EdgeItems:
+		ids := make([]ent.Value, 0, len(m.items))
+		for id := range m.items {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PrescriptionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removeditems != nil {
+		edges = append(edges, prescription.EdgeItems)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *PrescriptionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case prescription.EdgeItems:
+		ids := make([]ent.Value, 0, len(m.removeditems))
+		for id := range m.removeditems {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PrescriptionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.cleareditems {
+		edges = append(edges, prescription.EdgeItems)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *PrescriptionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case prescription.EdgeItems:
+		return m.cleareditems
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *PrescriptionMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Prescription unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *PrescriptionMutation) ResetEdge(name string) error {
+	switch name {
+	case prescription.EdgeItems:
+		m.ResetItems()
+		return nil
+	}
 	return fmt.Errorf("unknown Prescription edge %s", name)
 }
 
 // PrescriptionItemMutation represents an operation that mutates the PrescriptionItem nodes in the graph.
 type PrescriptionItemMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	user_id         *uuid.UUID
-	prescription_id *uuid.UUID
-	medicine_name   *string
-	take_time_zone  *string
-	take_moment     *string
-	take_etc        *string
-	take_amount     *float64
-	addtake_amount  *float64
-	medicine_unit   *string
-	memo            *string
-	created_at      *time.Time
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*PrescriptionItem, error)
-	predicates      []predicate.PrescriptionItem
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	user_id             *uuid.UUID
+	medicine_name       *string
+	take_time_zone      *string
+	take_moment         *string
+	take_etc            *string
+	take_amount         *float64
+	addtake_amount      *float64
+	medicine_unit       *string
+	memo                *string
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	prescription        *uuid.UUID
+	clearedprescription bool
+	done                bool
+	oldValue            func(context.Context) (*PrescriptionItem, error)
+	predicates          []predicate.PrescriptionItem
 }
 
 var _ ent.Mutation = (*PrescriptionItemMutation)(nil)
@@ -2805,12 +2899,12 @@ func (m *PrescriptionItemMutation) ResetUserID() {
 
 // SetPrescriptionID sets the "prescription_id" field.
 func (m *PrescriptionItemMutation) SetPrescriptionID(u uuid.UUID) {
-	m.prescription_id = &u
+	m.prescription = &u
 }
 
 // PrescriptionID returns the value of the "prescription_id" field in the mutation.
 func (m *PrescriptionItemMutation) PrescriptionID() (r uuid.UUID, exists bool) {
-	v := m.prescription_id
+	v := m.prescription
 	if v == nil {
 		return
 	}
@@ -2836,7 +2930,7 @@ func (m *PrescriptionItemMutation) OldPrescriptionID(ctx context.Context) (v uui
 
 // ResetPrescriptionID resets all changes to the "prescription_id" field.
 func (m *PrescriptionItemMutation) ResetPrescriptionID() {
-	m.prescription_id = nil
+	m.prescription = nil
 }
 
 // SetMedicineName sets the "medicine_name" field.
@@ -3261,6 +3355,33 @@ func (m *PrescriptionItemMutation) ResetUpdatedAt() {
 	delete(m.clearedFields, prescriptionitem.FieldUpdatedAt)
 }
 
+// ClearPrescription clears the "prescription" edge to the Prescription entity.
+func (m *PrescriptionItemMutation) ClearPrescription() {
+	m.clearedprescription = true
+	m.clearedFields[prescriptionitem.FieldPrescriptionID] = struct{}{}
+}
+
+// PrescriptionCleared reports if the "prescription" edge to the Prescription entity was cleared.
+func (m *PrescriptionItemMutation) PrescriptionCleared() bool {
+	return m.clearedprescription
+}
+
+// PrescriptionIDs returns the "prescription" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PrescriptionID instead. It exists only for internal usage by the builders.
+func (m *PrescriptionItemMutation) PrescriptionIDs() (ids []uuid.UUID) {
+	if id := m.prescription; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPrescription resets all changes to the "prescription" edge.
+func (m *PrescriptionItemMutation) ResetPrescription() {
+	m.prescription = nil
+	m.clearedprescription = false
+}
+
 // Where appends a list predicates to the PrescriptionItemMutation builder.
 func (m *PrescriptionItemMutation) Where(ps ...predicate.PrescriptionItem) {
 	m.predicates = append(m.predicates, ps...)
@@ -3299,7 +3420,7 @@ func (m *PrescriptionItemMutation) Fields() []string {
 	if m.user_id != nil {
 		fields = append(fields, prescriptionitem.FieldUserID)
 	}
-	if m.prescription_id != nil {
+	if m.prescription != nil {
 		fields = append(fields, prescriptionitem.FieldPrescriptionID)
 	}
 	if m.medicine_name != nil {
@@ -3618,19 +3739,28 @@ func (m *PrescriptionItemMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PrescriptionItemMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.prescription != nil {
+		edges = append(edges, prescriptionitem.EdgePrescription)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *PrescriptionItemMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case prescriptionitem.EdgePrescription:
+		if id := m.prescription; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PrescriptionItemMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -3642,25 +3772,42 @@ func (m *PrescriptionItemMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PrescriptionItemMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedprescription {
+		edges = append(edges, prescriptionitem.EdgePrescription)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *PrescriptionItemMutation) EdgeCleared(name string) bool {
+	switch name {
+	case prescriptionitem.EdgePrescription:
+		return m.clearedprescription
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *PrescriptionItemMutation) ClearEdge(name string) error {
+	switch name {
+	case prescriptionitem.EdgePrescription:
+		m.ClearPrescription()
+		return nil
+	}
 	return fmt.Errorf("unknown PrescriptionItem unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *PrescriptionItemMutation) ResetEdge(name string) error {
+	switch name {
+	case prescriptionitem.EdgePrescription:
+		m.ResetPrescription()
+		return nil
+	}
 	return fmt.Errorf("unknown PrescriptionItem edge %s", name)
 }
 

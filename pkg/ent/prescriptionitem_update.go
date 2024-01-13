@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/predicate"
+	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"time"
 
@@ -226,9 +227,20 @@ func (piu *PrescriptionItemUpdate) ClearUpdatedAt() *PrescriptionItemUpdate {
 	return piu
 }
 
+// SetPrescription sets the "prescription" edge to the Prescription entity.
+func (piu *PrescriptionItemUpdate) SetPrescription(p *Prescription) *PrescriptionItemUpdate {
+	return piu.SetPrescriptionID(p.ID)
+}
+
 // Mutation returns the PrescriptionItemMutation object of the builder.
 func (piu *PrescriptionItemUpdate) Mutation() *PrescriptionItemMutation {
 	return piu.mutation
+}
+
+// ClearPrescription clears the "prescription" edge to the Prescription entity.
+func (piu *PrescriptionItemUpdate) ClearPrescription() *PrescriptionItemUpdate {
+	piu.mutation.ClearPrescription()
+	return piu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -258,7 +270,18 @@ func (piu *PrescriptionItemUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (piu *PrescriptionItemUpdate) check() error {
+	if _, ok := piu.mutation.PrescriptionID(); piu.mutation.PrescriptionCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "PrescriptionItem.prescription"`)
+	}
+	return nil
+}
+
 func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := piu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(prescriptionitem.Table, prescriptionitem.Columns, sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID))
 	if ps := piu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -269,9 +292,6 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if value, ok := piu.mutation.UserID(); ok {
 		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
-	}
-	if value, ok := piu.mutation.PrescriptionID(); ok {
-		_spec.SetField(prescriptionitem.FieldPrescriptionID, field.TypeUUID, value)
 	}
 	if value, ok := piu.mutation.MedicineName(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineName, field.TypeString, value)
@@ -320,6 +340,35 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if piu.mutation.UpdatedAtCleared() {
 		_spec.ClearField(prescriptionitem.FieldUpdatedAt, field.TypeTime)
+	}
+	if piu.mutation.PrescriptionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   prescriptionitem.PrescriptionTable,
+			Columns: []string{prescriptionitem.PrescriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := piu.mutation.PrescriptionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   prescriptionitem.PrescriptionTable,
+			Columns: []string{prescriptionitem.PrescriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, piu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -538,9 +587,20 @@ func (piuo *PrescriptionItemUpdateOne) ClearUpdatedAt() *PrescriptionItemUpdateO
 	return piuo
 }
 
+// SetPrescription sets the "prescription" edge to the Prescription entity.
+func (piuo *PrescriptionItemUpdateOne) SetPrescription(p *Prescription) *PrescriptionItemUpdateOne {
+	return piuo.SetPrescriptionID(p.ID)
+}
+
 // Mutation returns the PrescriptionItemMutation object of the builder.
 func (piuo *PrescriptionItemUpdateOne) Mutation() *PrescriptionItemMutation {
 	return piuo.mutation
+}
+
+// ClearPrescription clears the "prescription" edge to the Prescription entity.
+func (piuo *PrescriptionItemUpdateOne) ClearPrescription() *PrescriptionItemUpdateOne {
+	piuo.mutation.ClearPrescription()
+	return piuo
 }
 
 // Where appends a list predicates to the PrescriptionItemUpdate builder.
@@ -583,7 +643,18 @@ func (piuo *PrescriptionItemUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (piuo *PrescriptionItemUpdateOne) check() error {
+	if _, ok := piuo.mutation.PrescriptionID(); piuo.mutation.PrescriptionCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "PrescriptionItem.prescription"`)
+	}
+	return nil
+}
+
 func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *PrescriptionItem, err error) {
+	if err := piuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(prescriptionitem.Table, prescriptionitem.Columns, sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID))
 	id, ok := piuo.mutation.ID()
 	if !ok {
@@ -611,9 +682,6 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 	}
 	if value, ok := piuo.mutation.UserID(); ok {
 		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
-	}
-	if value, ok := piuo.mutation.PrescriptionID(); ok {
-		_spec.SetField(prescriptionitem.FieldPrescriptionID, field.TypeUUID, value)
 	}
 	if value, ok := piuo.mutation.MedicineName(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineName, field.TypeString, value)
@@ -662,6 +730,35 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 	}
 	if piuo.mutation.UpdatedAtCleared() {
 		_spec.ClearField(prescriptionitem.FieldUpdatedAt, field.TypeTime)
+	}
+	if piuo.mutation.PrescriptionCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   prescriptionitem.PrescriptionTable,
+			Columns: []string{prescriptionitem.PrescriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := piuo.mutation.PrescriptionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   prescriptionitem.PrescriptionTable,
+			Columns: []string{prescriptionitem.PrescriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &PrescriptionItem{config: piuo.config}
 	_spec.Assign = _node.assignValues

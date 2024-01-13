@@ -61,7 +61,6 @@ var (
 	PrescriptionItemsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "prescription_id", Type: field.TypeUUID},
 		{Name: "medicine_name", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(50)"}},
 		{Name: "take_time_zone", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(10)"}},
 		{Name: "take_moment", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(10)"}},
@@ -71,12 +70,21 @@ var (
 		{Name: "memo", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+		{Name: "prescription_id", Type: field.TypeUUID},
 	}
 	// PrescriptionItemsTable holds the schema information for the "prescription_items" table.
 	PrescriptionItemsTable = &schema.Table{
 		Name:       "prescription_items",
 		Columns:    PrescriptionItemsColumns,
 		PrimaryKey: []*schema.Column{PrescriptionItemsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "prescription_items_prescriptions_items",
+				Columns:    []*schema.Column{PrescriptionItemsColumns[11]},
+				RefColumns: []*schema.Column{PrescriptionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// TakeHistoriesColumns holds the columns for the "take_histories" table.
 	TakeHistoriesColumns = []*schema.Column{
@@ -147,4 +155,5 @@ var (
 )
 
 func init() {
+	PrescriptionItemsTable.ForeignKeys[0].RefTable = PrescriptionsTable
 }

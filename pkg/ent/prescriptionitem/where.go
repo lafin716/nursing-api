@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -168,26 +169,6 @@ func PrescriptionIDIn(vs ...uuid.UUID) predicate.PrescriptionItem {
 // PrescriptionIDNotIn applies the NotIn predicate on the "prescription_id" field.
 func PrescriptionIDNotIn(vs ...uuid.UUID) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldNotIn(FieldPrescriptionID, vs...))
-}
-
-// PrescriptionIDGT applies the GT predicate on the "prescription_id" field.
-func PrescriptionIDGT(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldGT(FieldPrescriptionID, v))
-}
-
-// PrescriptionIDGTE applies the GTE predicate on the "prescription_id" field.
-func PrescriptionIDGTE(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldGTE(FieldPrescriptionID, v))
-}
-
-// PrescriptionIDLT applies the LT predicate on the "prescription_id" field.
-func PrescriptionIDLT(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldLT(FieldPrescriptionID, v))
-}
-
-// PrescriptionIDLTE applies the LTE predicate on the "prescription_id" field.
-func PrescriptionIDLTE(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldLTE(FieldPrescriptionID, v))
 }
 
 // MedicineNameEQ applies the EQ predicate on the "medicine_name" field.
@@ -758,6 +739,29 @@ func UpdatedAtIsNil() predicate.PrescriptionItem {
 // UpdatedAtNotNil applies the NotNil predicate on the "updated_at" field.
 func UpdatedAtNotNil() predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldNotNull(FieldUpdatedAt))
+}
+
+// HasPrescription applies the HasEdge predicate on the "prescription" edge.
+func HasPrescription() predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, PrescriptionTable, PrescriptionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPrescriptionWith applies the HasEdge predicate on the "prescription" edge with a given conditions (other predicates).
+func HasPrescriptionWith(preds ...predicate.Prescription) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(func(s *sql.Selector) {
+		step := newPrescriptionStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

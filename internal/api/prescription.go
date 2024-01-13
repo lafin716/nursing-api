@@ -9,6 +9,7 @@ import (
 
 type PrescriptionApi interface {
 	Regist(ctx *fiber.Ctx) error
+	GetList(ctx *fiber.Ctx) error
 }
 
 type prescriptionApi struct {
@@ -26,14 +27,27 @@ func NewPrescriptionApi(
 	}
 }
 
-func (a *prescriptionApi) Regist(ctx *fiber.Ctx) error {
-	claims, err := a.jwtClient.Parser.ExtractTokenMetadata(ctx)
+func (a *prescriptionApi) GetList(ctx *fiber.Ctx) error {
+	userId, err := getUserId(a.jwtClient, ctx)
 	if err != nil {
-		return response.New(response.CODE_INVALID_JWT).
-			SetErrors(err).
-			Error(ctx)
+		return err
 	}
-	userId := claims.UserID
+
+	resp := a.service.GetList(&prescription.GetListRequest{UserId: userId})
+	if !resp.Success {
+		return response.New(response.CODE_NO_DATA).SetErrors(err).Error(ctx)
+	}
+
+	return response.New(response.CODE_SUCCESS).
+		SetData(resp.Data).
+		Ok(ctx)
+}
+
+func (a *prescriptionApi) Regist(ctx *fiber.Ctx) error {
+	userId, err := getUserId(a.jwtClient, ctx)
+	if err != nil {
+		return err
+	}
 
 	req := new(prescription.RegisterRequest)
 	err = ctx.BodyParser(req)

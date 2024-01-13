@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"time"
@@ -25,5 +26,15 @@ func (PrescriptionItem) Fields() []ent.Field {
 		field.String("memo").Optional().SchemaType(text()),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Optional(),
+	}
+}
+
+func (PrescriptionItem) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("prescription", Prescription.Type).
+			Ref("items").
+			Field("prescription_id").
+			Unique().
+			Required(),
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"time"
 
@@ -165,6 +166,11 @@ func (pic *PrescriptionItemCreate) SetNillableID(u *uuid.UUID) *PrescriptionItem
 	return pic
 }
 
+// SetPrescription sets the "prescription" edge to the Prescription entity.
+func (pic *PrescriptionItemCreate) SetPrescription(p *Prescription) *PrescriptionItemCreate {
+	return pic.SetPrescriptionID(p.ID)
+}
+
 // Mutation returns the PrescriptionItemMutation object of the builder.
 func (pic *PrescriptionItemCreate) Mutation() *PrescriptionItemMutation {
 	return pic.mutation
@@ -235,6 +241,9 @@ func (pic *PrescriptionItemCreate) check() error {
 	if _, ok := pic.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PrescriptionItem.created_at"`)}
 	}
+	if _, ok := pic.mutation.PrescriptionID(); !ok {
+		return &ValidationError{Name: "prescription", err: errors.New(`ent: missing required edge "PrescriptionItem.prescription"`)}
+	}
 	return nil
 }
 
@@ -274,10 +283,6 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
 		_node.UserID = value
 	}
-	if value, ok := pic.mutation.PrescriptionID(); ok {
-		_spec.SetField(prescriptionitem.FieldPrescriptionID, field.TypeUUID, value)
-		_node.PrescriptionID = value
-	}
 	if value, ok := pic.mutation.MedicineName(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineName, field.TypeString, value)
 		_node.MedicineName = value
@@ -313,6 +318,23 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 	if value, ok := pic.mutation.UpdatedAt(); ok {
 		_spec.SetField(prescriptionitem.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := pic.mutation.PrescriptionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   prescriptionitem.PrescriptionTable,
+			Columns: []string{prescriptionitem.PrescriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.PrescriptionID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

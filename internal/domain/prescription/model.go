@@ -6,17 +6,17 @@ import (
 )
 
 type Prescription struct {
-	ID                uuid.UUID          `json:"id"`
-	UserId            uuid.UUID          `json:"user_id"`
-	PrescriptionName  string             `json:"prescription_name"`
-	HospitalName      string             `json:"hospital_name"`
-	TakeDays          int                `json:"take_days"`
-	StartedAt         time.Time          `json:"started_at"`
-	FinishedAt        time.Time          `json:"finished_at"`
-	Memo              string             `json:"memo"`
-	CreatedAt         time.Time          `json:"created_at"`
-	UpdatedAt         time.Time          `json:"updated_at"`
-	PrescriptionItems []PrescriptionItem `json:"prescription_items"`
+	ID                uuid.UUID           `json:"id"`
+	UserId            uuid.UUID           `json:"user_id"`
+	PrescriptionName  string              `json:"prescription_name"`
+	HospitalName      string              `json:"hospital_name"`
+	TakeDays          int                 `json:"take_days"`
+	StartedAt         time.Time           `json:"started_at"`
+	FinishedAt        time.Time           `json:"finished_at"`
+	Memo              string              `json:"memo"`
+	CreatedAt         time.Time           `json:"created_at"`
+	UpdatedAt         time.Time           `json:"updated_at"`
+	PrescriptionItems []*PrescriptionItem `json:"prescription_items"`
 }
 
 type PrescriptionItem struct {
@@ -27,7 +27,7 @@ type PrescriptionItem struct {
 	TakeTimeZone   string    `json:"take_time_zone"`
 	TakeMoment     string    `json:"take_moment"`
 	TakeEtc        string    `json:"take_etc"`
-	TakeAmount     float32   `json:"take_amount"`
+	TakeAmount     float64   `json:"take_amount"`
 	MedicineUnit   string    `json:"medicine_unit"`
 	Memo           string    `json:"memo"`
 	CreatedAt      time.Time `json:"created_at"`
@@ -47,5 +47,6 @@ type PrescriptionRepository interface {
 }
 
 type PrescriptionUseCase interface {
+	GetList(req *GetListRequest) *GetListResponse
 	Register(req *RegisterRequest) *RegisterResponse
 }

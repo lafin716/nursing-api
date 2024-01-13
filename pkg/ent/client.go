@@ -22,6 +22,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -497,6 +498,22 @@ func (c *PrescriptionClient) GetX(ctx context.Context, id uuid.UUID) *Prescripti
 	return obj
 }
 
+// QueryItems queries the items edge of a Prescription.
+func (c *PrescriptionClient) QueryItems(pr *Prescription) *PrescriptionItemQuery {
+	query := (&PrescriptionItemClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(prescription.Table, prescription.FieldID, id),
+			sqlgraph.To(prescriptionitem.Table, prescriptionitem.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, prescription.ItemsTable, prescription.ItemsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PrescriptionClient) Hooks() []Hook {
 	return c.hooks.Prescription
@@ -628,6 +645,22 @@ func (c *PrescriptionItemClient) GetX(ctx context.Context, id uuid.UUID) *Prescr
 		panic(err)
 	}
 	return obj
+}
+
+// QueryPrescription queries the prescription edge of a PrescriptionItem.
+func (c *PrescriptionItemClient) QueryPrescription(pi *PrescriptionItem) *PrescriptionQuery {
+	query := (&PrescriptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pi.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(prescriptionitem.Table, prescriptionitem.FieldID, id),
+			sqlgraph.To(prescription.Table, prescription.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, prescriptionitem.PrescriptionTable, prescriptionitem.PrescriptionColumn),
+		)
+		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

@@ -20,7 +20,8 @@ type RegisterItemRequest struct {
 	TakeTimeZone string  `json:"take_time_zone" validate:"required"`
 	TakeMoment   string  `json:"take_moment"`
 	TakeEtc      string  `json:"take_etc"`
-	TakeAmount   float32 `json:"take_amount"`
+	TakeAmount   float64 `json:"take_amount"`
+	MedicineUnit string  `json:"medicine_unit"`
 }
 
 type RegisterResponse struct {

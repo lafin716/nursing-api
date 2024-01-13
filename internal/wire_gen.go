@@ -49,7 +49,7 @@ func New() (*Server, error) {
 	medicineUseCase := medicine.NewMedicineService(medicineRepository, medicineApi)
 	medicineHttpApi := api.NewMedicineHttpApi(medicineUseCase)
 	prescriptionRepository := prescription.NewPrescriptionRepository(databaseClient)
-	prescriptionUseCase := prescription.NewPrescriptionService(prescriptionRepository)
+	prescriptionUseCase := prescription.NewPrescriptionService(prescriptionRepository, jwtClient)
 	prescriptionApi := api.NewPrescriptionApi(prescriptionUseCase, jwtClient)
 	routable := router.NewRouter(tokenVerifyMiddleware, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi)
 	server := NewServer(fiberConfig, databaseClient, routable)
