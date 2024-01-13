@@ -59,7 +59,6 @@ func (p prescriptionRepository) GetItemListByPrescriptionId(prescriptionId uuid.
 func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, error) {
 	saved, err := p.client.
 		Create().
-		SetID(prescription.ID).
 		SetUserID(prescription.UserId).
 		SetPrescriptionName(prescription.PrescriptionName).
 		SetHospitalName(prescription.HospitalName).
