@@ -14,7 +14,7 @@ git clone https://github.com/lafin716/nursing-api
 cd nursing-api
 
 # DB, DIP 초기화 수행
-./install.sh 
+./init.sh 
 
 go run main.go
 ```
