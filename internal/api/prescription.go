@@ -28,18 +28,26 @@ func NewPrescriptionApi(
 }
 
 func (a *prescriptionApi) GetList(ctx *fiber.Ctx) error {
+	req := new(prescription.GetListRequest)
+	err := ctx.QueryParser(req)
+	if err != nil {
+		return response.New(response.CODE_INVALID_PARAM).SetErrors(err).Error(ctx)
+	}
+
 	userId, err := getUserId(a.jwtClient, ctx)
 	if err != nil {
 		return err
 	}
+	req.UserId = userId
 
-	resp := a.service.GetList(&prescription.GetListRequest{UserId: userId})
+	resp := a.service.GetList(req)
 	if !resp.Success {
 		return response.New(response.CODE_NO_DATA).SetErrors(err).Error(ctx)
 	}
 
 	return response.New(response.CODE_SUCCESS).
 		SetData(resp.Data).
+		SetMessage(resp.Message).
 		Ok(ctx)
 }
 

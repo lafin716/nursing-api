@@ -16,3 +16,9 @@ func text() map[string]string {
 		dialect.Postgres: "text",
 	}
 }
+
+func date() map[string]string {
+	return map[string]string{
+		dialect.Postgres: "date",
+	}
+}

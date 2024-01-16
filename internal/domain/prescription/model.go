@@ -36,8 +36,8 @@ type PrescriptionItem struct {
 
 type PrescriptionRepository interface {
 	GetById(id uuid.UUID) (*Prescription, error)
-	GetListByUserId(userId uuid.UUID) ([]*Prescription, error)
-	GetItemListByPrescriptionId(prescriptionId uuid.UUID) ([]*Prescription, error)
+	GetListByUserId(search *PrescriptionSearch) ([]*Prescription, error)
+	GetItemListByPrescriptionId(prescriptionId uuid.UUID) ([]*PrescriptionItem, error)
 	Add(prescription *Prescription) (*Prescription, error)
 	AddItem(item PrescriptionItem) (*PrescriptionItem, error)
 	Update(prescription *Prescription) (int, error)
@@ -49,4 +49,9 @@ type PrescriptionRepository interface {
 type PrescriptionUseCase interface {
 	GetList(req *GetListRequest) *GetListResponse
 	Register(req *RegisterRequest) *RegisterResponse
+	Update()
+	Remove()
+	AddItem()
+	UpdateItem()
+	DeleteItem()
 }

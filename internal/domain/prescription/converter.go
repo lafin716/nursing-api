@@ -49,7 +49,6 @@ func toDomains(entities []*ent.Prescription) []*Prescription {
 	return domains
 }
 
-// TODO 하위 연관관계 설정
 func toDomain(entity *ent.Prescription) *Prescription {
 	return &Prescription{
 		ID:                entity.ID,
@@ -77,14 +76,16 @@ func toDomainItems(entities []*ent.PrescriptionItem) []*PrescriptionItem {
 
 func toDomainItem(entity *ent.PrescriptionItem) *PrescriptionItem {
 	return &PrescriptionItem{
-		UserId:       entity.UserID,
-		MedicineName: entity.MedicineName,
-		TakeTimeZone: entity.TakeTimeZone,
-		TakeMoment:   entity.TakeMoment,
-		TakeEtc:      entity.TakeEtc,
-		TakeAmount:   entity.TakeAmount,
-		MedicineUnit: entity.MedicineUnit,
-		Memo:         entity.Memo,
-		CreatedAt:    entity.CreatedAt,
+		ID:             entity.ID,
+		UserId:         entity.UserID,
+		PrescriptionId: entity.PrescriptionID,
+		MedicineName:   entity.MedicineName,
+		TakeTimeZone:   entity.TakeTimeZone,
+		TakeMoment:     entity.TakeMoment,
+		TakeEtc:        entity.TakeEtc,
+		TakeAmount:     entity.TakeAmount,
+		MedicineUnit:   entity.MedicineUnit,
+		Memo:           entity.Memo,
+		CreatedAt:      entity.CreatedAt,
 	}
 }

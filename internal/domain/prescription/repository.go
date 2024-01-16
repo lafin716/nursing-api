@@ -8,19 +8,29 @@ import (
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
 	schema "nursing_api/pkg/ent/prescription"
+	"nursing_api/pkg/ent/prescriptionitem"
 	"time"
 )
 
 type prescriptionRepository struct {
+	root       *ent.Client
 	client     *ent.PrescriptionClient
 	itemClient *ent.PrescriptionItemClient
 	ctx        context.Context
+}
+
+type PrescriptionSearch struct {
+	ID         uuid.UUID
+	UserId     uuid.UUID
+	TargetDate time.Time
+	Limit      int
 }
 
 func NewPrescriptionRepository(
 	dbClient *database.DatabaseClient,
 ) PrescriptionRepository {
 	return &prescriptionRepository{
+		root:       dbClient.Client,
 		client:     dbClient.Client.Prescription,
 		itemClient: dbClient.Client.PrescriptionItem,
 		ctx:        dbClient.Ctx,
@@ -41,12 +51,17 @@ func (p prescriptionRepository) GetById(id uuid.UUID) (*Prescription, error) {
 	return toDomain(found), nil
 }
 
-func (p prescriptionRepository) GetListByUserId(userId uuid.UUID) ([]*Prescription, error) {
+func (p prescriptionRepository) GetListByUserId(search *PrescriptionSearch) ([]*Prescription, error) {
 	foundList, err := p.client.
 		Query().
-		Where(schema.UserID(userId)).
-		WithItems().
-		Limit(10).
+		Where(
+			schema.And(
+				schema.UserID(search.UserId),
+				schema.StartedAtLTE(search.TargetDate),
+				schema.FinishedAtGTE(search.TargetDate),
+			),
+		).
+		Limit(search.Limit).
 		All(p.ctx)
 	if err != nil {
 		return nil, err
@@ -55,9 +70,21 @@ func (p prescriptionRepository) GetListByUserId(userId uuid.UUID) ([]*Prescripti
 	return toDomains(foundList), nil
 }
 
-// TODO 연관관계 설정 후 구현
-func (p prescriptionRepository) GetItemListByPrescriptionId(prescriptionId uuid.UUID) ([]*Prescription, error) {
-	return nil, errors.New("아직 미구현")
+func (p prescriptionRepository) GetItemListByPrescriptionId(prescriptionId uuid.UUID) ([]*PrescriptionItem, error) {
+	foundItemList, err := p.root.Debug().
+		PrescriptionItem.
+		Query().
+		Where(
+			prescriptionitem.And(
+				prescriptionitem.PrescriptionID(prescriptionId),
+			),
+		).
+		All(p.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainItems(foundItemList), nil
 }
 
 func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, error) {
