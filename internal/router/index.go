@@ -20,6 +20,7 @@ type middlewares struct {
 }
 
 type handlers struct {
+	main         api.MainHttpApi
 	auth         api.AuthHttpApi
 	user         api.UserHttpApi
 	medicine     api.MedicineHttpApi
@@ -36,6 +37,7 @@ func (c *container) Init(
 	router *fiber.Router,
 ) {
 	c.router = *router
+	c.RegisterMainRoute()
 	c.RegisterUserRoute()
 	c.RegisterAuthRoute()
 	c.RegisterMedicineRoute()
@@ -44,6 +46,7 @@ func (c *container) Init(
 
 func NewRouter(
 	jwtAuth *middleware.TokenVerifyMiddleware,
+	mainApi api.MainHttpApi,
 	authApi api.AuthHttpApi,
 	userApi api.UserHttpApi,
 	medicineApi api.MedicineHttpApi,
@@ -54,6 +57,7 @@ func NewRouter(
 			jwtAuth: jwtAuth,
 		},
 		handler: &handlers{
+			mainApi,
 			authApi,
 			userApi,
 			medicineApi,

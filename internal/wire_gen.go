@@ -38,6 +38,7 @@ func New() (*Server, error) {
 	jwtConfig := config.NewJwtConfig()
 	jwtClient := jwt.NewJwtClient(jwtConfig)
 	tokenVerifyMiddleware := middleware.NewJwtMiddleware(authRepository, jwtClient)
+	mainHttpApi := api.NewMainHttpApi()
 	userRepository := user.NewUserRepository(databaseClient)
 	userUseCase := user.NewUserService(userRepository)
 	authUseCase := auth.NewAuthService(userUseCase, authRepository, jwtClient)
@@ -51,7 +52,7 @@ func New() (*Server, error) {
 	prescriptionRepository := prescription.NewPrescriptionRepository(databaseClient)
 	prescriptionUseCase := prescription.NewPrescriptionService(prescriptionRepository, jwtClient)
 	prescriptionApi := api.NewPrescriptionApi(prescriptionUseCase, jwtClient)
-	routable := router.NewRouter(tokenVerifyMiddleware, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi)
+	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi)
 	server := NewServer(fiberConfig, databaseClient, routable)
 	return server, nil
 }

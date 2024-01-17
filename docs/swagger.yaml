@@ -2,6 +2,8 @@ basePath: /api/v1
 definitions:
   auth.SignInRequest:
     properties:
+      auto_login:
+        type: boolean
       email:
         maxLength: 255
         minLength: 1

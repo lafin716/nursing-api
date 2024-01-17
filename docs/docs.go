@@ -75,6 +75,9 @@ const docTemplate = `{
                 "password"
             ],
             "properties": {
+                "auto_login": {
+                    "type": "boolean"
+                },
                 "email": {
                     "type": "string",
                     "maxLength": 255,

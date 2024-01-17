@@ -8,6 +8,7 @@ import (
 )
 
 var Set = wire.NewSet(
+	NewMainHttpApi,
 	NewUserHttpApi,
 	NewAuthHttpApi,
 	NewMedicineHttpApi,
