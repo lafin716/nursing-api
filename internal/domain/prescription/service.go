@@ -235,3 +235,8 @@ func (p prescriptionService) DeleteItem(req *DeleteItemRequest) *DeleteItemRespo
 
 	return OkDeleteItem()
 }
+
+func (p prescriptionService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
+	//TODO implement me
+	panic("implement me")
+}
