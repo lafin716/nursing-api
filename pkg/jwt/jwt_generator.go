@@ -2,11 +2,7 @@ package jwt
 
 import (
 	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -38,7 +34,7 @@ func (g *JwtGenerator) GenerateNewTokens(request *TokenRequest) (*Tokens, error)
 		return nil, err
 	}
 
-	refreshToken, refreshExpires, err := g.generateNewRefreshToken()
+	refreshToken, refreshExpires, err := g.generateNewRefreshToken(request.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +70,8 @@ func (g *JwtGenerator) generateNewAccessToken(id string, credentials []string) (
 	return t, accessTokenExpires, nil
 }
 
-func (g *JwtGenerator) generateNewRefreshToken() (string, int64, error) {
+func (g *JwtGenerator) generateNewRefreshToken(id string) (string, int64, error) {
+	secret := g.config.RefreshKey
 	hash := sha256.New()
 	refresh := g.config.RefreshKey + time.Now().String()
 
@@ -85,12 +82,15 @@ func (g *JwtGenerator) generateNewRefreshToken() (string, int64, error) {
 
 	hoursCount := g.config.RefreshTokenExpires
 	refreshExpireTime := time.Now().Add(time.Hour * time.Duration(hoursCount)).Unix()
-	t := hex.EncodeToString(hash.Sum(nil)) + "." + fmt.Sprint(refreshExpireTime)
+	claims := jwt.MapClaims{
+		"id":      id,
+		"expires": refreshExpireTime,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	t, err := token.SignedString([]byte(secret))
+	if err != nil {
+		return "", 0, err
+	}
 
 	return t, refreshExpireTime, nil
-}
-
-// TODO 이 함수는 필요는 해보이나 일단 당장은 사용하지 않으므로 대기
-func ParseRefreshToken(refreshToken string) (int64, error) {
-	return strconv.ParseInt(strings.Split(refreshToken, ".")[1], 0, 64)
 }
