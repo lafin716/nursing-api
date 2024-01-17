@@ -87,7 +87,7 @@ func (p *JwtParser) verifyAccessToken(c *fiber.Ctx) (*jwt.Token, error) {
 
 func (p *JwtParser) verifyRefreshToken(c *fiber.Ctx) (*jwt.Token, error) {
 	tokenString := p.extractToken("RefreshToken", c)
-	token, err := jwt.Parse(tokenString, p.jwtKeyFunc)
+	token, err := jwt.Parse(tokenString, p.jwtRefreshKeyFunc)
 	if err != nil {
 		return nil, err
 	}
@@ -107,4 +107,8 @@ func (p *JwtParser) extractToken(headerName string, c *fiber.Ctx) string {
 
 func (p *JwtParser) jwtKeyFunc(token *jwt.Token) (interface{}, error) {
 	return []byte(p.config.SecretKey), nil
+}
+
+func (p *JwtParser) jwtRefreshKeyFunc(token *jwt.Token) (interface{}, error) {
+	return []byte(p.config.RefreshKey), nil
 }
