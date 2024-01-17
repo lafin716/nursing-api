@@ -5,16 +5,19 @@ import (
 	"github.com/google/uuid"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
+	tokenEntity "nursing_api/pkg/ent/token"
 	userEntity "nursing_api/pkg/ent/user"
 )
 
 type userRepository struct {
+	root   *ent.Client
 	client *ent.UserClient
 	ctx    context.Context
 }
 
 func NewUserRepository(dbClient *database.DatabaseClient) UserRepository {
 	return &userRepository{
+		root:   dbClient.Client,
 		client: dbClient.Client.User,
 		ctx:    dbClient.Ctx,
 	}
@@ -71,6 +74,17 @@ func (u userRepository) CountUserByEmail(email string) (int, error) {
 	}
 
 	return emailCount, nil
+}
+
+func (u userRepository) Delete(userId uuid.UUID) (bool, error) {
+	// 의존 관계에 있는 토큰 테이블도 유저토큰 삭제처리를 한다. (예외처리 없음)
+	u.root.Token.Delete().Where(tokenEntity.UserID(userId)).Exec(u.ctx)
+	err := u.client.DeleteOneID(userId).Exec(u.ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func toUserDomain(entity *ent.User) *User {

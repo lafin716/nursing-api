@@ -51,6 +51,12 @@ func (tc *TokenCreate) SetRefreshTokenExpires(t time.Time) *TokenCreate {
 	return tc
 }
 
+// SetAutoLogin sets the "auto_login" field.
+func (tc *TokenCreate) SetAutoLogin(b bool) *TokenCreate {
+	tc.mutation.SetAutoLogin(b)
+	return tc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (tc *TokenCreate) SetCreatedAt(t time.Time) *TokenCreate {
 	tc.mutation.SetCreatedAt(t)
@@ -137,6 +143,9 @@ func (tc *TokenCreate) check() error {
 	if _, ok := tc.mutation.RefreshTokenExpires(); !ok {
 		return &ValidationError{Name: "refresh_token_expires", err: errors.New(`ent: missing required field "Token.refresh_token_expires"`)}
 	}
+	if _, ok := tc.mutation.AutoLogin(); !ok {
+		return &ValidationError{Name: "auto_login", err: errors.New(`ent: missing required field "Token.auto_login"`)}
+	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Token.created_at"`)}
 	}
@@ -185,6 +194,10 @@ func (tc *TokenCreate) createSpec() (*Token, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.RefreshTokenExpires(); ok {
 		_spec.SetField(token.FieldRefreshTokenExpires, field.TypeTime, value)
 		_node.RefreshTokenExpires = value
+	}
+	if value, ok := tc.mutation.AutoLogin(); ok {
+		_spec.SetField(token.FieldAutoLogin, field.TypeBool, value)
+		_node.AutoLogin = value
 	}
 	if value, ok := tc.mutation.CreatedAt(); ok {
 		_spec.SetField(token.FieldCreatedAt, field.TypeTime, value)

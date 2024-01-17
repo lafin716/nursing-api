@@ -4350,6 +4350,7 @@ type TokenMutation struct {
 	refresh_token         *string
 	access_token_expires  *time.Time
 	refresh_token_expires *time.Time
+	auto_login            *bool
 	created_at            *time.Time
 	updated_at            *time.Time
 	clearedFields         map[string]struct{}
@@ -4636,6 +4637,42 @@ func (m *TokenMutation) ResetRefreshTokenExpires() {
 	m.refresh_token_expires = nil
 }
 
+// SetAutoLogin sets the "auto_login" field.
+func (m *TokenMutation) SetAutoLogin(b bool) {
+	m.auto_login = &b
+}
+
+// AutoLogin returns the value of the "auto_login" field in the mutation.
+func (m *TokenMutation) AutoLogin() (r bool, exists bool) {
+	v := m.auto_login
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAutoLogin returns the old "auto_login" field's value of the Token entity.
+// If the Token object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TokenMutation) OldAutoLogin(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAutoLogin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAutoLogin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAutoLogin: %w", err)
+	}
+	return oldValue.AutoLogin, nil
+}
+
+// ResetAutoLogin resets all changes to the "auto_login" field.
+func (m *TokenMutation) ResetAutoLogin() {
+	m.auto_login = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *TokenMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -4755,7 +4792,7 @@ func (m *TokenMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TokenMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.user_id != nil {
 		fields = append(fields, token.FieldUserID)
 	}
@@ -4770,6 +4807,9 @@ func (m *TokenMutation) Fields() []string {
 	}
 	if m.refresh_token_expires != nil {
 		fields = append(fields, token.FieldRefreshTokenExpires)
+	}
+	if m.auto_login != nil {
+		fields = append(fields, token.FieldAutoLogin)
 	}
 	if m.created_at != nil {
 		fields = append(fields, token.FieldCreatedAt)
@@ -4795,6 +4835,8 @@ func (m *TokenMutation) Field(name string) (ent.Value, bool) {
 		return m.AccessTokenExpires()
 	case token.FieldRefreshTokenExpires:
 		return m.RefreshTokenExpires()
+	case token.FieldAutoLogin:
+		return m.AutoLogin()
 	case token.FieldCreatedAt:
 		return m.CreatedAt()
 	case token.FieldUpdatedAt:
@@ -4818,6 +4860,8 @@ func (m *TokenMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldAccessTokenExpires(ctx)
 	case token.FieldRefreshTokenExpires:
 		return m.OldRefreshTokenExpires(ctx)
+	case token.FieldAutoLogin:
+		return m.OldAutoLogin(ctx)
 	case token.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case token.FieldUpdatedAt:
@@ -4865,6 +4909,13 @@ func (m *TokenMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRefreshTokenExpires(v)
+		return nil
+	case token.FieldAutoLogin:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAutoLogin(v)
 		return nil
 	case token.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -4952,6 +5003,9 @@ func (m *TokenMutation) ResetField(name string) error {
 		return nil
 	case token.FieldRefreshTokenExpires:
 		m.ResetRefreshTokenExpires()
+		return nil
+	case token.FieldAutoLogin:
+		m.ResetAutoLogin()
 		return nil
 	case token.FieldCreatedAt:
 		m.ResetCreatedAt()

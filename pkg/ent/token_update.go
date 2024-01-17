@@ -99,6 +99,20 @@ func (tu *TokenUpdate) SetNillableRefreshTokenExpires(t *time.Time) *TokenUpdate
 	return tu
 }
 
+// SetAutoLogin sets the "auto_login" field.
+func (tu *TokenUpdate) SetAutoLogin(b bool) *TokenUpdate {
+	tu.mutation.SetAutoLogin(b)
+	return tu
+}
+
+// SetNillableAutoLogin sets the "auto_login" field if the given value is not nil.
+func (tu *TokenUpdate) SetNillableAutoLogin(b *bool) *TokenUpdate {
+	if b != nil {
+		tu.SetAutoLogin(*b)
+	}
+	return tu
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (tu *TokenUpdate) SetCreatedAt(t time.Time) *TokenUpdate {
 	tu.mutation.SetCreatedAt(t)
@@ -188,6 +202,9 @@ func (tu *TokenUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.RefreshTokenExpires(); ok {
 		_spec.SetField(token.FieldRefreshTokenExpires, field.TypeTime, value)
+	}
+	if value, ok := tu.mutation.AutoLogin(); ok {
+		_spec.SetField(token.FieldAutoLogin, field.TypeBool, value)
 	}
 	if value, ok := tu.mutation.CreatedAt(); ok {
 		_spec.SetField(token.FieldCreatedAt, field.TypeTime, value)
@@ -284,6 +301,20 @@ func (tuo *TokenUpdateOne) SetRefreshTokenExpires(t time.Time) *TokenUpdateOne {
 func (tuo *TokenUpdateOne) SetNillableRefreshTokenExpires(t *time.Time) *TokenUpdateOne {
 	if t != nil {
 		tuo.SetRefreshTokenExpires(*t)
+	}
+	return tuo
+}
+
+// SetAutoLogin sets the "auto_login" field.
+func (tuo *TokenUpdateOne) SetAutoLogin(b bool) *TokenUpdateOne {
+	tuo.mutation.SetAutoLogin(b)
+	return tuo
+}
+
+// SetNillableAutoLogin sets the "auto_login" field if the given value is not nil.
+func (tuo *TokenUpdateOne) SetNillableAutoLogin(b *bool) *TokenUpdateOne {
+	if b != nil {
+		tuo.SetAutoLogin(*b)
 	}
 	return tuo
 }
@@ -407,6 +438,9 @@ func (tuo *TokenUpdateOne) sqlSave(ctx context.Context) (_node *Token, err error
 	}
 	if value, ok := tuo.mutation.RefreshTokenExpires(); ok {
 		_spec.SetField(token.FieldRefreshTokenExpires, field.TypeTime, value)
+	}
+	if value, ok := tuo.mutation.AutoLogin(); ok {
+		_spec.SetField(token.FieldAutoLogin, field.TypeBool, value)
 	}
 	if value, ok := tuo.mutation.CreatedAt(); ok {
 		_spec.SetField(token.FieldCreatedAt, field.TypeTime, value)

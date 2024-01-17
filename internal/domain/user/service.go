@@ -59,3 +59,7 @@ func (u userService) VerifyUser(req *LoginRequest) *LoginResponse {
 	foundUser.PasswordHash = ""
 	return OkLoginUser(foundUser)
 }
+
+func (u userService) Leave(userId uuid.UUID) (bool, error) {
+	return u.userRepo.Delete(userId)
+}

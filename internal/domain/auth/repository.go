@@ -28,6 +28,7 @@ func (u authRepository) SaveToken(userId uuid.UUID, token *Token) (*Token, error
 		SetAccessTokenExpires(time.Unix(token.AccessTokenExpires, 0)).
 		SetRefreshToken(token.RefreshToken).
 		SetRefreshTokenExpires(time.Unix(token.RefreshTokenExpires, 0)).
+		SetAutoLogin(token.AutoLogin).
 		Save(u.ctx)
 	if err != nil {
 		return nil, err

@@ -71,7 +71,7 @@ func init() {
 	tokenFields := schema.Token{}.Fields()
 	_ = tokenFields
 	// tokenDescCreatedAt is the schema descriptor for created_at field.
-	tokenDescCreatedAt := tokenFields[5].Descriptor()
+	tokenDescCreatedAt := tokenFields[6].Descriptor()
 	// token.DefaultCreatedAt holds the default value on creation for the created_at field.
 	token.DefaultCreatedAt = tokenDescCreatedAt.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()

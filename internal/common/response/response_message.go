@@ -16,6 +16,7 @@ const (
 	CODE_ERROR_WITH_MSG = 501
 	CODE_FAIL_SIGN_UP   = 510
 	CODE_FAIL_SIGN_OUT  = 511
+	CODE_FAIL_LEAVE     = 512
 
 	CODE_DUPLICATE_EMAIL = 600
 	CODE_USER_NOTFOUND   = 601
@@ -33,6 +34,7 @@ var codeMessages = map[int]string{
 	CODE_NO_DATA:         "데이터가 없습니다.",
 	CODE_ERROR:           "오류가 발생하였습니다",
 	CODE_ERROR_WITH_MSG:  "오류가 발생하였습니다 :: %s",
+	CODE_FAIL_LEAVE:      "회원탈퇴 중 오류가 발생하였습니다.",
 	CODE_DUPLICATE_EMAIL: "이미 가입된 이메일입니다.",
 	CODE_USER_NOTFOUND:   "회원정보를 찾을 수 없습니다.",
 }

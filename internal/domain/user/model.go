@@ -23,10 +23,12 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*User, error)
 	GetUserById(userId uuid.UUID) (*User, error)
 	CountUserByEmail(email string) (int, error)
+	Delete(userId uuid.UUID) (bool, error)
 }
 
 type UserUseCase interface {
 	RegisterUser(req *RegisterRequest) *RegisterResponse
 	VerifyUser(req *LoginRequest) *LoginResponse
 	GetUser(userId uuid.UUID) *GetUserResponse
+	Leave(userId uuid.UUID) (bool, error)
 }

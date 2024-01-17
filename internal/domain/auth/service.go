@@ -54,6 +54,7 @@ func (a authService) SignIn(req *SignInRequest) *SignInResponse {
 		AccessTokenExpires:  jwtToken.AccessTokenExpires,
 		RefreshToken:        jwtToken.RefreshToken,
 		RefreshTokenExpires: jwtToken.RefreshTokenExpires,
+		AutoLogin:           req.AutoLogin,
 	}
 	a.authRepository.DeleteToken(userId)
 	savedToken, err := a.authRepository.SaveToken(userId, newToken)

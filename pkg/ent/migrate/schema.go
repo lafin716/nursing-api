@@ -114,6 +114,7 @@ var (
 		{Name: "refresh_token", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(200)"}},
 		{Name: "access_token_expires", Type: field.TypeTime},
 		{Name: "refresh_token_expires", Type: field.TypeTime},
+		{Name: "auto_login", Type: field.TypeBool},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 	}
