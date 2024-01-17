@@ -79,6 +79,7 @@ func toDomainItem(entity *ent.PrescriptionItem) *PrescriptionItem {
 		ID:             entity.ID,
 		UserId:         entity.UserID,
 		PrescriptionId: entity.PrescriptionID,
+		MedicineId:     entity.MedicineID,
 		MedicineName:   entity.MedicineName,
 		TakeTimeZone:   entity.TakeTimeZone,
 		TakeMoment:     entity.TakeMoment,

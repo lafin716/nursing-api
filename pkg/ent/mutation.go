@@ -2739,6 +2739,7 @@ type PrescriptionItemMutation struct {
 	typ                 string
 	id                  *uuid.UUID
 	user_id             *uuid.UUID
+	medicine_id         *uuid.UUID
 	medicine_name       *string
 	take_time_zone      *string
 	take_moment         *string
@@ -2931,6 +2932,42 @@ func (m *PrescriptionItemMutation) OldPrescriptionID(ctx context.Context) (v uui
 // ResetPrescriptionID resets all changes to the "prescription_id" field.
 func (m *PrescriptionItemMutation) ResetPrescriptionID() {
 	m.prescription = nil
+}
+
+// SetMedicineID sets the "medicine_id" field.
+func (m *PrescriptionItemMutation) SetMedicineID(u uuid.UUID) {
+	m.medicine_id = &u
+}
+
+// MedicineID returns the value of the "medicine_id" field in the mutation.
+func (m *PrescriptionItemMutation) MedicineID() (r uuid.UUID, exists bool) {
+	v := m.medicine_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMedicineID returns the old "medicine_id" field's value of the PrescriptionItem entity.
+// If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PrescriptionItemMutation) OldMedicineID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMedicineID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMedicineID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMedicineID: %w", err)
+	}
+	return oldValue.MedicineID, nil
+}
+
+// ResetMedicineID resets all changes to the "medicine_id" field.
+func (m *PrescriptionItemMutation) ResetMedicineID() {
+	m.medicine_id = nil
 }
 
 // SetMedicineName sets the "medicine_name" field.
@@ -3416,12 +3453,15 @@ func (m *PrescriptionItemMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PrescriptionItemMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.user_id != nil {
 		fields = append(fields, prescriptionitem.FieldUserID)
 	}
 	if m.prescription != nil {
 		fields = append(fields, prescriptionitem.FieldPrescriptionID)
+	}
+	if m.medicine_id != nil {
+		fields = append(fields, prescriptionitem.FieldMedicineID)
 	}
 	if m.medicine_name != nil {
 		fields = append(fields, prescriptionitem.FieldMedicineName)
@@ -3462,6 +3502,8 @@ func (m *PrescriptionItemMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case prescriptionitem.FieldPrescriptionID:
 		return m.PrescriptionID()
+	case prescriptionitem.FieldMedicineID:
+		return m.MedicineID()
 	case prescriptionitem.FieldMedicineName:
 		return m.MedicineName()
 	case prescriptionitem.FieldTakeTimeZone:
@@ -3493,6 +3535,8 @@ func (m *PrescriptionItemMutation) OldField(ctx context.Context, name string) (e
 		return m.OldUserID(ctx)
 	case prescriptionitem.FieldPrescriptionID:
 		return m.OldPrescriptionID(ctx)
+	case prescriptionitem.FieldMedicineID:
+		return m.OldMedicineID(ctx)
 	case prescriptionitem.FieldMedicineName:
 		return m.OldMedicineName(ctx)
 	case prescriptionitem.FieldTakeTimeZone:
@@ -3533,6 +3577,13 @@ func (m *PrescriptionItemMutation) SetField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPrescriptionID(v)
+		return nil
+	case prescriptionitem.FieldMedicineID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMedicineID(v)
 		return nil
 	case prescriptionitem.FieldMedicineName:
 		v, ok := value.(string)
@@ -3705,6 +3756,9 @@ func (m *PrescriptionItemMutation) ResetField(name string) error {
 		return nil
 	case prescriptionitem.FieldPrescriptionID:
 		m.ResetPrescriptionID()
+		return nil
+	case prescriptionitem.FieldMedicineID:
+		m.ResetMedicineID()
 		return nil
 	case prescriptionitem.FieldMedicineName:
 		m.ResetMedicineName()

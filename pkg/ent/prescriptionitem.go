@@ -23,6 +23,8 @@ type PrescriptionItem struct {
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// PrescriptionID holds the value of the "prescription_id" field.
 	PrescriptionID uuid.UUID `json:"prescription_id,omitempty"`
+	// MedicineID holds the value of the "medicine_id" field.
+	MedicineID uuid.UUID `json:"medicine_id,omitempty"`
 	// MedicineName holds the value of the "medicine_name" field.
 	MedicineName string `json:"medicine_name,omitempty"`
 	// TakeTimeZone holds the value of the "take_time_zone" field.
@@ -80,7 +82,7 @@ func (*PrescriptionItem) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case prescriptionitem.FieldCreatedAt, prescriptionitem.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case prescriptionitem.FieldID, prescriptionitem.FieldUserID, prescriptionitem.FieldPrescriptionID:
+		case prescriptionitem.FieldID, prescriptionitem.FieldUserID, prescriptionitem.FieldPrescriptionID, prescriptionitem.FieldMedicineID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -114,6 +116,12 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field prescription_id", values[i])
 			} else if value != nil {
 				pi.PrescriptionID = *value
+			}
+		case prescriptionitem.FieldMedicineID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field medicine_id", values[i])
+			} else if value != nil {
+				pi.MedicineID = *value
 			}
 		case prescriptionitem.FieldMedicineName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -215,6 +223,9 @@ func (pi *PrescriptionItem) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("prescription_id=")
 	builder.WriteString(fmt.Sprintf("%v", pi.PrescriptionID))
+	builder.WriteString(", ")
+	builder.WriteString("medicine_id=")
+	builder.WriteString(fmt.Sprintf("%v", pi.MedicineID))
 	builder.WriteString(", ")
 	builder.WriteString("medicine_name=")
 	builder.WriteString(pi.MedicineName)

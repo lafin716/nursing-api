@@ -16,12 +16,14 @@ type RegisterRequest struct {
 }
 
 type RegisterItemRequest struct {
-	MedicineName string  `json:"medicine_name" validate:"required"`
-	TakeTimeZone string  `json:"take_time_zone" validate:"required"`
-	TakeMoment   string  `json:"take_moment"`
-	TakeEtc      string  `json:"take_etc"`
-	TakeAmount   float64 `json:"take_amount"`
-	MedicineUnit string  `json:"medicine_unit"`
+	MedicineId   uuid.UUID `json:"medicine_id" validate:"required"`
+	MedicineName string    `json:"medicine_name" validate:"required"`
+	TakeTimeZone string    `json:"take_time_zone" validate:"required"`
+	TakeMoment   string    `json:"take_moment"`
+	TakeEtc      string    `json:"take_etc"`
+	TakeAmount   float64   `json:"take_amount"`
+	MedicineUnit string    `json:"medicine_unit"`
+	Memo         string    `json:"memo"`
 }
 
 type RegisterResponse struct {

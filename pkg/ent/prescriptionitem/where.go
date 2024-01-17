@@ -66,6 +66,11 @@ func PrescriptionID(v uuid.UUID) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldEQ(FieldPrescriptionID, v))
 }
 
+// MedicineID applies equality check predicate on the "medicine_id" field. It's identical to MedicineIDEQ.
+func MedicineID(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldMedicineID, v))
+}
+
 // MedicineName applies equality check predicate on the "medicine_name" field. It's identical to MedicineNameEQ.
 func MedicineName(v string) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldEQ(FieldMedicineName, v))
@@ -169,6 +174,46 @@ func PrescriptionIDIn(vs ...uuid.UUID) predicate.PrescriptionItem {
 // PrescriptionIDNotIn applies the NotIn predicate on the "prescription_id" field.
 func PrescriptionIDNotIn(vs ...uuid.UUID) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldNotIn(FieldPrescriptionID, vs...))
+}
+
+// MedicineIDEQ applies the EQ predicate on the "medicine_id" field.
+func MedicineIDEQ(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldMedicineID, v))
+}
+
+// MedicineIDNEQ applies the NEQ predicate on the "medicine_id" field.
+func MedicineIDNEQ(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldMedicineID, v))
+}
+
+// MedicineIDIn applies the In predicate on the "medicine_id" field.
+func MedicineIDIn(vs ...uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldMedicineID, vs...))
+}
+
+// MedicineIDNotIn applies the NotIn predicate on the "medicine_id" field.
+func MedicineIDNotIn(vs ...uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldMedicineID, vs...))
+}
+
+// MedicineIDGT applies the GT predicate on the "medicine_id" field.
+func MedicineIDGT(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGT(FieldMedicineID, v))
+}
+
+// MedicineIDGTE applies the GTE predicate on the "medicine_id" field.
+func MedicineIDGTE(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGTE(FieldMedicineID, v))
+}
+
+// MedicineIDLT applies the LT predicate on the "medicine_id" field.
+func MedicineIDLT(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLT(FieldMedicineID, v))
+}
+
+// MedicineIDLTE applies the LTE predicate on the "medicine_id" field.
+func MedicineIDLTE(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLTE(FieldMedicineID, v))
 }
 
 // MedicineNameEQ applies the EQ predicate on the "medicine_name" field.

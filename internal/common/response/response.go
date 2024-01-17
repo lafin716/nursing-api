@@ -38,6 +38,11 @@ func (entity *ResponseEntity) SetMessage(message string) *ResponseEntity {
 	return entity
 }
 
+func (entity *ResponseEntity) SetMessageParam(params ...string) *ResponseEntity {
+	entity.MessageParams = params
+	return entity
+}
+
 func (entity *ResponseEntity) SetMessageParams(params []string) *ResponseEntity {
 	entity.MessageParams = params
 	return entity

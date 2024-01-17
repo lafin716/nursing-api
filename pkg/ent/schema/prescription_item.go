@@ -17,6 +17,7 @@ func (PrescriptionItem) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("prescription_id", uuid.UUID{}),
+		field.UUID("medicine_id", uuid.UUID{}),
 		field.String("medicine_name").SchemaType(varchar(50)),
 		field.String("take_time_zone").Optional().SchemaType(varchar(10)),
 		field.String("take_moment").Optional().SchemaType(varchar(10)),

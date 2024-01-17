@@ -58,6 +58,20 @@ func (piu *PrescriptionItemUpdate) SetNillablePrescriptionID(u *uuid.UUID) *Pres
 	return piu
 }
 
+// SetMedicineID sets the "medicine_id" field.
+func (piu *PrescriptionItemUpdate) SetMedicineID(u uuid.UUID) *PrescriptionItemUpdate {
+	piu.mutation.SetMedicineID(u)
+	return piu
+}
+
+// SetNillableMedicineID sets the "medicine_id" field if the given value is not nil.
+func (piu *PrescriptionItemUpdate) SetNillableMedicineID(u *uuid.UUID) *PrescriptionItemUpdate {
+	if u != nil {
+		piu.SetMedicineID(*u)
+	}
+	return piu
+}
+
 // SetMedicineName sets the "medicine_name" field.
 func (piu *PrescriptionItemUpdate) SetMedicineName(s string) *PrescriptionItemUpdate {
 	piu.mutation.SetMedicineName(s)
@@ -293,6 +307,9 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	if value, ok := piu.mutation.UserID(); ok {
 		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
 	}
+	if value, ok := piu.mutation.MedicineID(); ok {
+		_spec.SetField(prescriptionitem.FieldMedicineID, field.TypeUUID, value)
+	}
 	if value, ok := piu.mutation.MedicineName(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineName, field.TypeString, value)
 	}
@@ -414,6 +431,20 @@ func (piuo *PrescriptionItemUpdateOne) SetPrescriptionID(u uuid.UUID) *Prescript
 func (piuo *PrescriptionItemUpdateOne) SetNillablePrescriptionID(u *uuid.UUID) *PrescriptionItemUpdateOne {
 	if u != nil {
 		piuo.SetPrescriptionID(*u)
+	}
+	return piuo
+}
+
+// SetMedicineID sets the "medicine_id" field.
+func (piuo *PrescriptionItemUpdateOne) SetMedicineID(u uuid.UUID) *PrescriptionItemUpdateOne {
+	piuo.mutation.SetMedicineID(u)
+	return piuo
+}
+
+// SetNillableMedicineID sets the "medicine_id" field if the given value is not nil.
+func (piuo *PrescriptionItemUpdateOne) SetNillableMedicineID(u *uuid.UUID) *PrescriptionItemUpdateOne {
+	if u != nil {
+		piuo.SetMedicineID(*u)
 	}
 	return piuo
 }
@@ -682,6 +713,9 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 	}
 	if value, ok := piuo.mutation.UserID(); ok {
 		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
+	}
+	if value, ok := piuo.mutation.MedicineID(); ok {
+		_spec.SetField(prescriptionitem.FieldMedicineID, field.TypeUUID, value)
 	}
 	if value, ok := piuo.mutation.MedicineName(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineName, field.TypeString, value)

@@ -2,7 +2,6 @@ package prescription
 
 import (
 	"context"
-	"errors"
 	"github.com/google/uuid"
 	"log"
 	"nursing_api/pkg/database"
@@ -88,7 +87,12 @@ func (p prescriptionRepository) GetItemListByPrescriptionId(prescriptionId uuid.
 }
 
 func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, error) {
-	saved, err := p.client.
+	tx, err := p.root.Tx(p.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	saved, err := tx.Prescription.
 		Create().
 		SetUserID(prescription.UserId).
 		SetPrescriptionName(prescription.PrescriptionName).
@@ -100,40 +104,36 @@ func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, 
 		SetCreatedAt(prescription.CreatedAt).
 		Save(p.ctx)
 	if err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 
 	savedItems := []*ent.PrescriptionItem{}
 	for _, item := range prescription.PrescriptionItems {
-		saved, err := p.createItem(saved, item)
+		saved, err := tx.PrescriptionItem.
+			Create().
+			SetUserID(item.UserId).
+			SetMedicineID(item.MedicineId).
+			SetMedicineName(item.MedicineName).
+			SetTakeTimeZone(item.TakeTimeZone).
+			SetTakeMoment(item.TakeMoment).
+			SetTakeEtc(item.TakeEtc).
+			SetTakeAmount(item.TakeAmount).
+			SetMedicineUnit(item.MedicineUnit).
+			SetMemo(item.Memo).
+			SetCreatedAt(item.CreatedAt).
+			SetPrescription(saved).
+			Save(p.ctx)
 		if err != nil {
 			log.Printf("아이템 저장 실패:\n %+v\n", item)
-			continue
+			tx.Rollback()
+			return nil, err
 		}
 		savedItems = append(savedItems, saved)
 	}
 
+	tx.Commit()
 	return toDomain(saved), nil
-}
-
-func (p prescriptionRepository) createItem(parent *ent.Prescription, item *PrescriptionItem) (*ent.PrescriptionItem, error) {
-	return p.itemClient.
-		Create().
-		SetUserID(item.UserId).
-		SetMedicineName(item.MedicineName).
-		SetTakeTimeZone(item.TakeTimeZone).
-		SetTakeMoment(item.TakeMoment).
-		SetTakeEtc(item.TakeEtc).
-		SetTakeAmount(item.TakeAmount).
-		SetMedicineUnit(item.MedicineUnit).
-		SetMemo(item.Memo).
-		SetCreatedAt(item.CreatedAt).
-		SetPrescription(parent).
-		Save(p.ctx)
-}
-
-func (p prescriptionRepository) AddItem(item PrescriptionItem) (*PrescriptionItem, error) {
-	return nil, errors.New("아직 미구현")
 }
 
 func (p prescriptionRepository) Update(prescription *Prescription) (int, error) {
@@ -157,19 +157,89 @@ func (p prescriptionRepository) Update(prescription *Prescription) (int, error) 
 	return saved, nil
 }
 
-func (p prescriptionRepository) UpdateItem(itemId uuid.UUID) (int, error) {
-	return 0, errors.New("아직 미구현")
-}
-
 func (p prescriptionRepository) Delete(id uuid.UUID) (bool, error) {
-	_, err := p.client.Delete().Where(schema.ID(id)).Exec(p.ctx)
+	tx, err := p.root.Tx(p.ctx)
 	if err != nil {
 		return false, err
 	}
 
+	// 하위 아이템 모두 삭제
+	_, err = tx.PrescriptionItem.
+		Delete().
+		Where(prescriptionitem.PrescriptionID(id)).
+		Exec(p.ctx)
+	if err != nil {
+		tx.Rollback()
+		return false, err
+	}
+
+	_, err = tx.Prescription.
+		Delete().
+		Where(schema.ID(id)).
+		Exec(p.ctx)
+	if err != nil {
+		tx.Rollback()
+		return false, err
+	}
+
+	tx.Commit()
 	return true, nil
 }
 
+func (p prescriptionRepository) GetItemById(itemId uuid.UUID) (*PrescriptionItem, error) {
+	found, err := p.itemClient.Get(p.ctx, itemId)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainItem(found), nil
+}
+
+func (p prescriptionRepository) AddItem(prescriptionId uuid.UUID, item *PrescriptionItem) (*PrescriptionItem, error) {
+	savedItem, err := p.itemClient.
+		Create().
+		SetPrescriptionID(prescriptionId).
+		SetUserID(item.UserId).
+		SetMedicineID(item.MedicineId).
+		SetMedicineName(item.MedicineName).
+		SetTakeTimeZone(item.TakeTimeZone).
+		SetTakeMoment(item.TakeMoment).
+		SetTakeEtc(item.TakeEtc).
+		SetTakeAmount(item.TakeAmount).
+		SetMedicineUnit(item.MedicineUnit).
+		SetMemo(item.Memo).
+		SetCreatedAt(item.CreatedAt).
+		Save(p.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainItem(savedItem), nil
+}
+
+func (p prescriptionRepository) UpdateItem(prescriptionItem *PrescriptionItem) (int, error) {
+	err := p.itemClient.
+		Update().
+		SetMedicineID(prescriptionItem.MedicineId).
+		SetMedicineName(prescriptionItem.MedicineName).
+		SetTakeTimeZone(prescriptionItem.TakeTimeZone).
+		SetTakeMoment(prescriptionItem.TakeMoment).
+		SetTakeEtc(prescriptionItem.TakeEtc).
+		SetTakeAmount(prescriptionItem.TakeAmount).
+		SetMedicineUnit(prescriptionItem.MedicineUnit).
+		SetMemo(prescriptionItem.Memo).
+		Exec(p.ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	return 1, nil
+}
+
 func (p prescriptionRepository) DeleteItem(itemId uuid.UUID) (bool, error) {
-	return false, errors.New("아직 미구현")
+	_, err := p.itemClient.Delete().Where(prescriptionitem.ID(itemId)).Exec(p.ctx)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

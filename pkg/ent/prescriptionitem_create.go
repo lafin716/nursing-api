@@ -34,6 +34,12 @@ func (pic *PrescriptionItemCreate) SetPrescriptionID(u uuid.UUID) *PrescriptionI
 	return pic
 }
 
+// SetMedicineID sets the "medicine_id" field.
+func (pic *PrescriptionItemCreate) SetMedicineID(u uuid.UUID) *PrescriptionItemCreate {
+	pic.mutation.SetMedicineID(u)
+	return pic
+}
+
 // SetMedicineName sets the "medicine_name" field.
 func (pic *PrescriptionItemCreate) SetMedicineName(s string) *PrescriptionItemCreate {
 	pic.mutation.SetMedicineName(s)
@@ -232,6 +238,9 @@ func (pic *PrescriptionItemCreate) check() error {
 	if _, ok := pic.mutation.PrescriptionID(); !ok {
 		return &ValidationError{Name: "prescription_id", err: errors.New(`ent: missing required field "PrescriptionItem.prescription_id"`)}
 	}
+	if _, ok := pic.mutation.MedicineID(); !ok {
+		return &ValidationError{Name: "medicine_id", err: errors.New(`ent: missing required field "PrescriptionItem.medicine_id"`)}
+	}
 	if _, ok := pic.mutation.MedicineName(); !ok {
 		return &ValidationError{Name: "medicine_name", err: errors.New(`ent: missing required field "PrescriptionItem.medicine_name"`)}
 	}
@@ -282,6 +291,10 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 	if value, ok := pic.mutation.UserID(); ok {
 		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
 		_node.UserID = value
+	}
+	if value, ok := pic.mutation.MedicineID(); ok {
+		_spec.SetField(prescriptionitem.FieldMedicineID, field.TypeUUID, value)
+		_node.MedicineID = value
 	}
 	if value, ok := pic.mutation.MedicineName(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineName, field.TypeString, value)

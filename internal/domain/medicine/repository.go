@@ -90,6 +90,7 @@ func toDomains(entites []*ent.Medicine) []*Medicine {
 
 func toDomain(entity *ent.Medicine) *Medicine {
 	return &Medicine{
+		ID:           entity.ID,
 		Name:         entity.MedicineName,
 		ItemSeq:      entity.ItemSeq,
 		CompanyName:  entity.CompanyName,

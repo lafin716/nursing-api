@@ -10,6 +10,11 @@ import (
 type PrescriptionApi interface {
 	Regist(ctx *fiber.Ctx) error
 	GetList(ctx *fiber.Ctx) error
+	Update(ctx *fiber.Ctx) error
+	Delete(ctx *fiber.Ctx) error
+	AddItem(ctx *fiber.Ctx) error
+	UpdateItem(ctx *fiber.Ctx) error
+	DeleteItem(ctx *fiber.Ctx) error
 }
 
 type prescriptionApi struct {
@@ -75,7 +80,146 @@ func (a *prescriptionApi) Regist(ctx *fiber.Ctx) error {
 
 	resp := a.service.Register(req)
 	if !resp.Success {
+		return response.New(response.CODE_FAIL_ADD_PRESCRIPTION).
+			SetMessage(resp.Message).
+			SetErrors(resp.Error).
+			Error(ctx)
+	}
+
+	return response.New(response.CODE_SUCCESS).
+		SetMessage(resp.Message).
+		Ok(ctx)
+}
+
+func (a *prescriptionApi) Update(ctx *fiber.Ctx) error {
+	req := new(prescription.UpdateRequest)
+	err := ctx.BodyParser(req)
+	if err != nil {
 		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(err.Error()).
+			Error(ctx)
+	}
+
+	errs := validateParameter(req)
+	if errs != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(errs).
+			Error(ctx)
+	}
+
+	resp := a.service.Update(req)
+	if !resp.Success {
+		return response.New(response.CODE_FAIL_UPDATE_PRESCRIPTION).
+			SetMessage(resp.Message).
+			SetErrors(resp.Error).
+			Error(ctx)
+	}
+
+	return response.New(response.CODE_SUCCESS).
+		SetMessage(resp.Message).
+		SetData(resp.Data).
+		Ok(ctx)
+}
+
+func (a *prescriptionApi) Delete(ctx *fiber.Ctx) error {
+	req := new(prescription.DeleteRequest)
+	err := ctx.ParamsParser(req)
+	if err != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(err.Error()).
+			Error(ctx)
+	}
+
+	resp := a.service.Delete(req)
+	if !resp.Success {
+		return response.New(response.CODE_FAIL_DELETE_PRESCRIPTION).
+			SetMessage(resp.Message).
+			SetErrors(resp.Error).
+			Error(ctx)
+	}
+
+	return response.New(response.CODE_SUCCESS).
+		SetMessage(resp.Message).
+		Ok(ctx)
+}
+
+func (a *prescriptionApi) AddItem(ctx *fiber.Ctx) error {
+	req := new(prescription.AddItemRequest)
+	err := ctx.BodyParser(req)
+	if err != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(err.Error()).
+			Error(ctx)
+	}
+
+	errs := validateParameter(req)
+	if errs != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(errs).
+			Error(ctx)
+	}
+
+	resp := a.service.AddItem(req)
+	if !resp.Success {
+		return response.New(response.CODE_FAIL_ADDITEM_PRESCRIPTION).
+			SetMessage(resp.Message).
+			SetErrors(resp.Error).
+			Error(ctx)
+	}
+
+	return response.New(response.CODE_SUCCESS).
+		SetMessage(resp.Message).
+		Ok(ctx)
+}
+
+func (a *prescriptionApi) UpdateItem(ctx *fiber.Ctx) error {
+	req := new(prescription.UpdateItemRequest)
+	err := ctx.BodyParser(req)
+	if err != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(err.Error()).
+			Error(ctx)
+	}
+
+	errs := validateParameter(req)
+	if errs != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(errs).
+			Error(ctx)
+	}
+
+	resp := a.service.UpdateItem(req)
+	if !resp.Success {
+		return response.New(response.CODE_FAIL_UPDATEITEM_PRESCRIPTION).
+			SetMessage(resp.Message).
+			SetErrors(resp.Error).
+			Error(ctx)
+	}
+
+	return response.New(response.CODE_SUCCESS).
+		SetMessage(resp.Message).
+		Ok(ctx)
+}
+
+func (a *prescriptionApi) DeleteItem(ctx *fiber.Ctx) error {
+	req := new(prescription.DeleteItemRequest)
+	err := ctx.ParamsParser(req)
+	if err != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(err.Error()).
+			Error(ctx)
+	}
+
+	errs := validateParameter(req)
+	if errs != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(errs).
+			Error(ctx)
+	}
+
+	resp := a.service.DeleteItem(req)
+	if !resp.Success {
+		return response.New(response.CODE_FAIL_DELETEITEM_PRESCRIPTION).
 			SetMessage(resp.Message).
 			SetErrors(resp.Error).
 			Error(ctx)

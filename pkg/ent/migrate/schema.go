@@ -61,6 +61,7 @@ var (
 	PrescriptionItemsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "medicine_id", Type: field.TypeUUID},
 		{Name: "medicine_name", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(50)"}},
 		{Name: "take_time_zone", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(10)"}},
 		{Name: "take_moment", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(10)"}},
@@ -80,7 +81,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "prescription_items_prescriptions_items",
-				Columns:    []*schema.Column{PrescriptionItemsColumns[11]},
+				Columns:    []*schema.Column{PrescriptionItemsColumns[12]},
 				RefColumns: []*schema.Column{PrescriptionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
