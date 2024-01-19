@@ -6,16 +6,38 @@ import (
 	"fmt"
 	"nursing_api/pkg/ent/takehistoryitem"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // TakeHistoryItem is the model entity for the TakeHistoryItem schema.
 type TakeHistoryItem struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
-	ID           int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
+	// TakeHistoryID holds the value of the "take_history_id" field.
+	TakeHistoryID uuid.UUID `json:"take_history_id,omitempty"`
+	// PrescriptionItemID holds the value of the "prescription_item_id" field.
+	PrescriptionItemID uuid.UUID `json:"prescription_item_id,omitempty"`
+	// TakeStatus holds the value of the "take_status" field.
+	TakeStatus string `json:"take_status,omitempty"`
+	// TakeAmount holds the value of the "take_amount" field.
+	TakeAmount float64 `json:"take_amount,omitempty"`
+	// TakeTimeZone holds the value of the "take_time_zone" field.
+	TakeTimeZone string `json:"take_time_zone,omitempty"`
+	// TakeMoment holds the value of the "take_moment" field.
+	TakeMoment string `json:"take_moment,omitempty"`
+	// TakeEtc holds the value of the "take_etc" field.
+	TakeEtc string `json:"take_etc,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -24,8 +46,14 @@ func (*TakeHistoryItem) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case takehistoryitem.FieldID:
-			values[i] = new(sql.NullInt64)
+		case takehistoryitem.FieldTakeAmount:
+			values[i] = new(sql.NullFloat64)
+		case takehistoryitem.FieldTakeStatus, takehistoryitem.FieldTakeTimeZone, takehistoryitem.FieldTakeMoment, takehistoryitem.FieldTakeEtc:
+			values[i] = new(sql.NullString)
+		case takehistoryitem.FieldCreatedAt, takehistoryitem.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
+		case takehistoryitem.FieldID, takehistoryitem.FieldUserID, takehistoryitem.FieldTakeHistoryID, takehistoryitem.FieldPrescriptionItemID:
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -42,11 +70,71 @@ func (thi *TakeHistoryItem) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case takehistoryitem.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				thi.ID = *value
 			}
-			thi.ID = int(value.Int64)
+		case takehistoryitem.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				thi.UserID = *value
+			}
+		case takehistoryitem.FieldTakeHistoryID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field take_history_id", values[i])
+			} else if value != nil {
+				thi.TakeHistoryID = *value
+			}
+		case takehistoryitem.FieldPrescriptionItemID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field prescription_item_id", values[i])
+			} else if value != nil {
+				thi.PrescriptionItemID = *value
+			}
+		case takehistoryitem.FieldTakeStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field take_status", values[i])
+			} else if value.Valid {
+				thi.TakeStatus = value.String
+			}
+		case takehistoryitem.FieldTakeAmount:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field take_amount", values[i])
+			} else if value.Valid {
+				thi.TakeAmount = value.Float64
+			}
+		case takehistoryitem.FieldTakeTimeZone:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field take_time_zone", values[i])
+			} else if value.Valid {
+				thi.TakeTimeZone = value.String
+			}
+		case takehistoryitem.FieldTakeMoment:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field take_moment", values[i])
+			} else if value.Valid {
+				thi.TakeMoment = value.String
+			}
+		case takehistoryitem.FieldTakeEtc:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field take_etc", values[i])
+			} else if value.Valid {
+				thi.TakeEtc = value.String
+			}
+		case takehistoryitem.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				thi.CreatedAt = value.Time
+			}
+		case takehistoryitem.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				thi.UpdatedAt = value.Time
+			}
 		default:
 			thi.selectValues.Set(columns[i], values[i])
 		}
@@ -82,7 +170,36 @@ func (thi *TakeHistoryItem) Unwrap() *TakeHistoryItem {
 func (thi *TakeHistoryItem) String() string {
 	var builder strings.Builder
 	builder.WriteString("TakeHistoryItem(")
-	builder.WriteString(fmt.Sprintf("id=%v", thi.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", thi.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", thi.UserID))
+	builder.WriteString(", ")
+	builder.WriteString("take_history_id=")
+	builder.WriteString(fmt.Sprintf("%v", thi.TakeHistoryID))
+	builder.WriteString(", ")
+	builder.WriteString("prescription_item_id=")
+	builder.WriteString(fmt.Sprintf("%v", thi.PrescriptionItemID))
+	builder.WriteString(", ")
+	builder.WriteString("take_status=")
+	builder.WriteString(thi.TakeStatus)
+	builder.WriteString(", ")
+	builder.WriteString("take_amount=")
+	builder.WriteString(fmt.Sprintf("%v", thi.TakeAmount))
+	builder.WriteString(", ")
+	builder.WriteString("take_time_zone=")
+	builder.WriteString(thi.TakeTimeZone)
+	builder.WriteString(", ")
+	builder.WriteString("take_moment=")
+	builder.WriteString(thi.TakeMoment)
+	builder.WriteString(", ")
+	builder.WriteString("take_etc=")
+	builder.WriteString(thi.TakeEtc)
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(thi.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(thi.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

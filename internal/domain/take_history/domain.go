@@ -32,7 +32,7 @@ type TakeHistoryItem struct {
 }
 
 type TakeHistoryRepository interface {
-	GetList() ([]*TakeHistory, error)
+	GetList(userId uuid.UUID) ([]*TakeHistory, error)
 	GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory, error)
 	GetById(id uuid.UUID) (*TakeHistory, error)
 	Add(newData *TakeHistory) (bool, error)

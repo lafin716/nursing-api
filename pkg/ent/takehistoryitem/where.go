@@ -4,53 +4,645 @@ package takehistoryitem
 
 import (
 	"nursing_api/pkg/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.TakeHistoryItem {
+func ID(id uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.TakeHistoryItem {
+func IDEQ(id uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.TakeHistoryItem {
+func IDNEQ(id uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.TakeHistoryItem {
+func IDIn(ids ...uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.TakeHistoryItem {
+func IDNotIn(ids ...uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.TakeHistoryItem {
+func IDGT(id uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.TakeHistoryItem {
+func IDGTE(id uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.TakeHistoryItem {
+func IDLT(id uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.TakeHistoryItem {
+func IDLTE(id uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldLTE(FieldID, id))
+}
+
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldUserID, v))
+}
+
+// TakeHistoryID applies equality check predicate on the "take_history_id" field. It's identical to TakeHistoryIDEQ.
+func TakeHistoryID(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeHistoryID, v))
+}
+
+// PrescriptionItemID applies equality check predicate on the "prescription_item_id" field. It's identical to PrescriptionItemIDEQ.
+func PrescriptionItemID(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldPrescriptionItemID, v))
+}
+
+// TakeStatus applies equality check predicate on the "take_status" field. It's identical to TakeStatusEQ.
+func TakeStatus(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeStatus, v))
+}
+
+// TakeAmount applies equality check predicate on the "take_amount" field. It's identical to TakeAmountEQ.
+func TakeAmount(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeAmount, v))
+}
+
+// TakeTimeZone applies equality check predicate on the "take_time_zone" field. It's identical to TakeTimeZoneEQ.
+func TakeTimeZone(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeTimeZone, v))
+}
+
+// TakeMoment applies equality check predicate on the "take_moment" field. It's identical to TakeMomentEQ.
+func TakeMoment(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeMoment, v))
+}
+
+// TakeEtc applies equality check predicate on the "take_etc" field. It's identical to TakeEtcEQ.
+func TakeEtc(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeEtc, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// UserIDGT applies the GT predicate on the "user_id" field.
+func UserIDGT(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldUserID, v))
+}
+
+// UserIDGTE applies the GTE predicate on the "user_id" field.
+func UserIDGTE(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldUserID, v))
+}
+
+// UserIDLT applies the LT predicate on the "user_id" field.
+func UserIDLT(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldUserID, v))
+}
+
+// UserIDLTE applies the LTE predicate on the "user_id" field.
+func UserIDLTE(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldUserID, v))
+}
+
+// TakeHistoryIDEQ applies the EQ predicate on the "take_history_id" field.
+func TakeHistoryIDEQ(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeHistoryID, v))
+}
+
+// TakeHistoryIDNEQ applies the NEQ predicate on the "take_history_id" field.
+func TakeHistoryIDNEQ(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldTakeHistoryID, v))
+}
+
+// TakeHistoryIDIn applies the In predicate on the "take_history_id" field.
+func TakeHistoryIDIn(vs ...uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldTakeHistoryID, vs...))
+}
+
+// TakeHistoryIDNotIn applies the NotIn predicate on the "take_history_id" field.
+func TakeHistoryIDNotIn(vs ...uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldTakeHistoryID, vs...))
+}
+
+// TakeHistoryIDGT applies the GT predicate on the "take_history_id" field.
+func TakeHistoryIDGT(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldTakeHistoryID, v))
+}
+
+// TakeHistoryIDGTE applies the GTE predicate on the "take_history_id" field.
+func TakeHistoryIDGTE(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldTakeHistoryID, v))
+}
+
+// TakeHistoryIDLT applies the LT predicate on the "take_history_id" field.
+func TakeHistoryIDLT(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldTakeHistoryID, v))
+}
+
+// TakeHistoryIDLTE applies the LTE predicate on the "take_history_id" field.
+func TakeHistoryIDLTE(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTakeHistoryID, v))
+}
+
+// PrescriptionItemIDEQ applies the EQ predicate on the "prescription_item_id" field.
+func PrescriptionItemIDEQ(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldPrescriptionItemID, v))
+}
+
+// PrescriptionItemIDNEQ applies the NEQ predicate on the "prescription_item_id" field.
+func PrescriptionItemIDNEQ(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldPrescriptionItemID, v))
+}
+
+// PrescriptionItemIDIn applies the In predicate on the "prescription_item_id" field.
+func PrescriptionItemIDIn(vs ...uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldPrescriptionItemID, vs...))
+}
+
+// PrescriptionItemIDNotIn applies the NotIn predicate on the "prescription_item_id" field.
+func PrescriptionItemIDNotIn(vs ...uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldPrescriptionItemID, vs...))
+}
+
+// PrescriptionItemIDGT applies the GT predicate on the "prescription_item_id" field.
+func PrescriptionItemIDGT(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldPrescriptionItemID, v))
+}
+
+// PrescriptionItemIDGTE applies the GTE predicate on the "prescription_item_id" field.
+func PrescriptionItemIDGTE(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldPrescriptionItemID, v))
+}
+
+// PrescriptionItemIDLT applies the LT predicate on the "prescription_item_id" field.
+func PrescriptionItemIDLT(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldPrescriptionItemID, v))
+}
+
+// PrescriptionItemIDLTE applies the LTE predicate on the "prescription_item_id" field.
+func PrescriptionItemIDLTE(v uuid.UUID) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldPrescriptionItemID, v))
+}
+
+// TakeStatusEQ applies the EQ predicate on the "take_status" field.
+func TakeStatusEQ(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeStatus, v))
+}
+
+// TakeStatusNEQ applies the NEQ predicate on the "take_status" field.
+func TakeStatusNEQ(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldTakeStatus, v))
+}
+
+// TakeStatusIn applies the In predicate on the "take_status" field.
+func TakeStatusIn(vs ...string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldTakeStatus, vs...))
+}
+
+// TakeStatusNotIn applies the NotIn predicate on the "take_status" field.
+func TakeStatusNotIn(vs ...string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldTakeStatus, vs...))
+}
+
+// TakeStatusGT applies the GT predicate on the "take_status" field.
+func TakeStatusGT(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldTakeStatus, v))
+}
+
+// TakeStatusGTE applies the GTE predicate on the "take_status" field.
+func TakeStatusGTE(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldTakeStatus, v))
+}
+
+// TakeStatusLT applies the LT predicate on the "take_status" field.
+func TakeStatusLT(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldTakeStatus, v))
+}
+
+// TakeStatusLTE applies the LTE predicate on the "take_status" field.
+func TakeStatusLTE(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTakeStatus, v))
+}
+
+// TakeStatusContains applies the Contains predicate on the "take_status" field.
+func TakeStatusContains(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContains(FieldTakeStatus, v))
+}
+
+// TakeStatusHasPrefix applies the HasPrefix predicate on the "take_status" field.
+func TakeStatusHasPrefix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasPrefix(FieldTakeStatus, v))
+}
+
+// TakeStatusHasSuffix applies the HasSuffix predicate on the "take_status" field.
+func TakeStatusHasSuffix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasSuffix(FieldTakeStatus, v))
+}
+
+// TakeStatusEqualFold applies the EqualFold predicate on the "take_status" field.
+func TakeStatusEqualFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEqualFold(FieldTakeStatus, v))
+}
+
+// TakeStatusContainsFold applies the ContainsFold predicate on the "take_status" field.
+func TakeStatusContainsFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContainsFold(FieldTakeStatus, v))
+}
+
+// TakeAmountEQ applies the EQ predicate on the "take_amount" field.
+func TakeAmountEQ(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeAmount, v))
+}
+
+// TakeAmountNEQ applies the NEQ predicate on the "take_amount" field.
+func TakeAmountNEQ(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldTakeAmount, v))
+}
+
+// TakeAmountIn applies the In predicate on the "take_amount" field.
+func TakeAmountIn(vs ...float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldTakeAmount, vs...))
+}
+
+// TakeAmountNotIn applies the NotIn predicate on the "take_amount" field.
+func TakeAmountNotIn(vs ...float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldTakeAmount, vs...))
+}
+
+// TakeAmountGT applies the GT predicate on the "take_amount" field.
+func TakeAmountGT(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldTakeAmount, v))
+}
+
+// TakeAmountGTE applies the GTE predicate on the "take_amount" field.
+func TakeAmountGTE(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldTakeAmount, v))
+}
+
+// TakeAmountLT applies the LT predicate on the "take_amount" field.
+func TakeAmountLT(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldTakeAmount, v))
+}
+
+// TakeAmountLTE applies the LTE predicate on the "take_amount" field.
+func TakeAmountLTE(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTakeAmount, v))
+}
+
+// TakeTimeZoneEQ applies the EQ predicate on the "take_time_zone" field.
+func TakeTimeZoneEQ(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneNEQ applies the NEQ predicate on the "take_time_zone" field.
+func TakeTimeZoneNEQ(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneIn applies the In predicate on the "take_time_zone" field.
+func TakeTimeZoneIn(vs ...string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldTakeTimeZone, vs...))
+}
+
+// TakeTimeZoneNotIn applies the NotIn predicate on the "take_time_zone" field.
+func TakeTimeZoneNotIn(vs ...string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldTakeTimeZone, vs...))
+}
+
+// TakeTimeZoneGT applies the GT predicate on the "take_time_zone" field.
+func TakeTimeZoneGT(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneGTE applies the GTE predicate on the "take_time_zone" field.
+func TakeTimeZoneGTE(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneLT applies the LT predicate on the "take_time_zone" field.
+func TakeTimeZoneLT(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneLTE applies the LTE predicate on the "take_time_zone" field.
+func TakeTimeZoneLTE(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneContains applies the Contains predicate on the "take_time_zone" field.
+func TakeTimeZoneContains(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContains(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneHasPrefix applies the HasPrefix predicate on the "take_time_zone" field.
+func TakeTimeZoneHasPrefix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasPrefix(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneHasSuffix applies the HasSuffix predicate on the "take_time_zone" field.
+func TakeTimeZoneHasSuffix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasSuffix(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneIsNil applies the IsNil predicate on the "take_time_zone" field.
+func TakeTimeZoneIsNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIsNull(FieldTakeTimeZone))
+}
+
+// TakeTimeZoneNotNil applies the NotNil predicate on the "take_time_zone" field.
+func TakeTimeZoneNotNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldTakeTimeZone))
+}
+
+// TakeTimeZoneEqualFold applies the EqualFold predicate on the "take_time_zone" field.
+func TakeTimeZoneEqualFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEqualFold(FieldTakeTimeZone, v))
+}
+
+// TakeTimeZoneContainsFold applies the ContainsFold predicate on the "take_time_zone" field.
+func TakeTimeZoneContainsFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContainsFold(FieldTakeTimeZone, v))
+}
+
+// TakeMomentEQ applies the EQ predicate on the "take_moment" field.
+func TakeMomentEQ(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeMoment, v))
+}
+
+// TakeMomentNEQ applies the NEQ predicate on the "take_moment" field.
+func TakeMomentNEQ(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldTakeMoment, v))
+}
+
+// TakeMomentIn applies the In predicate on the "take_moment" field.
+func TakeMomentIn(vs ...string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldTakeMoment, vs...))
+}
+
+// TakeMomentNotIn applies the NotIn predicate on the "take_moment" field.
+func TakeMomentNotIn(vs ...string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldTakeMoment, vs...))
+}
+
+// TakeMomentGT applies the GT predicate on the "take_moment" field.
+func TakeMomentGT(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldTakeMoment, v))
+}
+
+// TakeMomentGTE applies the GTE predicate on the "take_moment" field.
+func TakeMomentGTE(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldTakeMoment, v))
+}
+
+// TakeMomentLT applies the LT predicate on the "take_moment" field.
+func TakeMomentLT(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldTakeMoment, v))
+}
+
+// TakeMomentLTE applies the LTE predicate on the "take_moment" field.
+func TakeMomentLTE(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTakeMoment, v))
+}
+
+// TakeMomentContains applies the Contains predicate on the "take_moment" field.
+func TakeMomentContains(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContains(FieldTakeMoment, v))
+}
+
+// TakeMomentHasPrefix applies the HasPrefix predicate on the "take_moment" field.
+func TakeMomentHasPrefix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasPrefix(FieldTakeMoment, v))
+}
+
+// TakeMomentHasSuffix applies the HasSuffix predicate on the "take_moment" field.
+func TakeMomentHasSuffix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasSuffix(FieldTakeMoment, v))
+}
+
+// TakeMomentIsNil applies the IsNil predicate on the "take_moment" field.
+func TakeMomentIsNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIsNull(FieldTakeMoment))
+}
+
+// TakeMomentNotNil applies the NotNil predicate on the "take_moment" field.
+func TakeMomentNotNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldTakeMoment))
+}
+
+// TakeMomentEqualFold applies the EqualFold predicate on the "take_moment" field.
+func TakeMomentEqualFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEqualFold(FieldTakeMoment, v))
+}
+
+// TakeMomentContainsFold applies the ContainsFold predicate on the "take_moment" field.
+func TakeMomentContainsFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContainsFold(FieldTakeMoment, v))
+}
+
+// TakeEtcEQ applies the EQ predicate on the "take_etc" field.
+func TakeEtcEQ(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeEtc, v))
+}
+
+// TakeEtcNEQ applies the NEQ predicate on the "take_etc" field.
+func TakeEtcNEQ(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldTakeEtc, v))
+}
+
+// TakeEtcIn applies the In predicate on the "take_etc" field.
+func TakeEtcIn(vs ...string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldTakeEtc, vs...))
+}
+
+// TakeEtcNotIn applies the NotIn predicate on the "take_etc" field.
+func TakeEtcNotIn(vs ...string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldTakeEtc, vs...))
+}
+
+// TakeEtcGT applies the GT predicate on the "take_etc" field.
+func TakeEtcGT(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldTakeEtc, v))
+}
+
+// TakeEtcGTE applies the GTE predicate on the "take_etc" field.
+func TakeEtcGTE(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldTakeEtc, v))
+}
+
+// TakeEtcLT applies the LT predicate on the "take_etc" field.
+func TakeEtcLT(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldTakeEtc, v))
+}
+
+// TakeEtcLTE applies the LTE predicate on the "take_etc" field.
+func TakeEtcLTE(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTakeEtc, v))
+}
+
+// TakeEtcContains applies the Contains predicate on the "take_etc" field.
+func TakeEtcContains(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContains(FieldTakeEtc, v))
+}
+
+// TakeEtcHasPrefix applies the HasPrefix predicate on the "take_etc" field.
+func TakeEtcHasPrefix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasPrefix(FieldTakeEtc, v))
+}
+
+// TakeEtcHasSuffix applies the HasSuffix predicate on the "take_etc" field.
+func TakeEtcHasSuffix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasSuffix(FieldTakeEtc, v))
+}
+
+// TakeEtcIsNil applies the IsNil predicate on the "take_etc" field.
+func TakeEtcIsNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIsNull(FieldTakeEtc))
+}
+
+// TakeEtcNotNil applies the NotNil predicate on the "take_etc" field.
+func TakeEtcNotNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldTakeEtc))
+}
+
+// TakeEtcEqualFold applies the EqualFold predicate on the "take_etc" field.
+func TakeEtcEqualFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEqualFold(FieldTakeEtc, v))
+}
+
+// TakeEtcContainsFold applies the ContainsFold predicate on the "take_etc" field.
+func TakeEtcContainsFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContainsFold(FieldTakeEtc, v))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIsNil applies the IsNil predicate on the "updated_at" field.
+func UpdatedAtIsNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIsNull(FieldUpdatedAt))
+}
+
+// UpdatedAtNotNil applies the NotNil predicate on the "updated_at" field.
+func UpdatedAtNotNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldUpdatedAt))
 }
 
 // And groups predicates with the AND operator between them.

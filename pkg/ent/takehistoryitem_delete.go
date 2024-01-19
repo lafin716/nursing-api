@@ -40,7 +40,7 @@ func (thid *TakeHistoryItemDelete) ExecX(ctx context.Context) int {
 }
 
 func (thid *TakeHistoryItemDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(takehistoryitem.Table, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewDeleteSpec(takehistoryitem.Table, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID))
 	if ps := thid.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

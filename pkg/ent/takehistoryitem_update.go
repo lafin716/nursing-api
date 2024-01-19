@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"nursing_api/pkg/ent/predicate"
 	"nursing_api/pkg/ent/takehistoryitem"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // TakeHistoryItemUpdate is the builder for updating TakeHistoryItem entities.
@@ -24,6 +26,177 @@ type TakeHistoryItemUpdate struct {
 // Where appends a list predicates to the TakeHistoryItemUpdate builder.
 func (thiu *TakeHistoryItemUpdate) Where(ps ...predicate.TakeHistoryItem) *TakeHistoryItemUpdate {
 	thiu.mutation.Where(ps...)
+	return thiu
+}
+
+// SetUserID sets the "user_id" field.
+func (thiu *TakeHistoryItemUpdate) SetUserID(u uuid.UUID) *TakeHistoryItemUpdate {
+	thiu.mutation.SetUserID(u)
+	return thiu
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableUserID(u *uuid.UUID) *TakeHistoryItemUpdate {
+	if u != nil {
+		thiu.SetUserID(*u)
+	}
+	return thiu
+}
+
+// SetTakeHistoryID sets the "take_history_id" field.
+func (thiu *TakeHistoryItemUpdate) SetTakeHistoryID(u uuid.UUID) *TakeHistoryItemUpdate {
+	thiu.mutation.SetTakeHistoryID(u)
+	return thiu
+}
+
+// SetNillableTakeHistoryID sets the "take_history_id" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableTakeHistoryID(u *uuid.UUID) *TakeHistoryItemUpdate {
+	if u != nil {
+		thiu.SetTakeHistoryID(*u)
+	}
+	return thiu
+}
+
+// SetPrescriptionItemID sets the "prescription_item_id" field.
+func (thiu *TakeHistoryItemUpdate) SetPrescriptionItemID(u uuid.UUID) *TakeHistoryItemUpdate {
+	thiu.mutation.SetPrescriptionItemID(u)
+	return thiu
+}
+
+// SetNillablePrescriptionItemID sets the "prescription_item_id" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillablePrescriptionItemID(u *uuid.UUID) *TakeHistoryItemUpdate {
+	if u != nil {
+		thiu.SetPrescriptionItemID(*u)
+	}
+	return thiu
+}
+
+// SetTakeStatus sets the "take_status" field.
+func (thiu *TakeHistoryItemUpdate) SetTakeStatus(s string) *TakeHistoryItemUpdate {
+	thiu.mutation.SetTakeStatus(s)
+	return thiu
+}
+
+// SetNillableTakeStatus sets the "take_status" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableTakeStatus(s *string) *TakeHistoryItemUpdate {
+	if s != nil {
+		thiu.SetTakeStatus(*s)
+	}
+	return thiu
+}
+
+// SetTakeAmount sets the "take_amount" field.
+func (thiu *TakeHistoryItemUpdate) SetTakeAmount(f float64) *TakeHistoryItemUpdate {
+	thiu.mutation.ResetTakeAmount()
+	thiu.mutation.SetTakeAmount(f)
+	return thiu
+}
+
+// SetNillableTakeAmount sets the "take_amount" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableTakeAmount(f *float64) *TakeHistoryItemUpdate {
+	if f != nil {
+		thiu.SetTakeAmount(*f)
+	}
+	return thiu
+}
+
+// AddTakeAmount adds f to the "take_amount" field.
+func (thiu *TakeHistoryItemUpdate) AddTakeAmount(f float64) *TakeHistoryItemUpdate {
+	thiu.mutation.AddTakeAmount(f)
+	return thiu
+}
+
+// SetTakeTimeZone sets the "take_time_zone" field.
+func (thiu *TakeHistoryItemUpdate) SetTakeTimeZone(s string) *TakeHistoryItemUpdate {
+	thiu.mutation.SetTakeTimeZone(s)
+	return thiu
+}
+
+// SetNillableTakeTimeZone sets the "take_time_zone" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableTakeTimeZone(s *string) *TakeHistoryItemUpdate {
+	if s != nil {
+		thiu.SetTakeTimeZone(*s)
+	}
+	return thiu
+}
+
+// ClearTakeTimeZone clears the value of the "take_time_zone" field.
+func (thiu *TakeHistoryItemUpdate) ClearTakeTimeZone() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearTakeTimeZone()
+	return thiu
+}
+
+// SetTakeMoment sets the "take_moment" field.
+func (thiu *TakeHistoryItemUpdate) SetTakeMoment(s string) *TakeHistoryItemUpdate {
+	thiu.mutation.SetTakeMoment(s)
+	return thiu
+}
+
+// SetNillableTakeMoment sets the "take_moment" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableTakeMoment(s *string) *TakeHistoryItemUpdate {
+	if s != nil {
+		thiu.SetTakeMoment(*s)
+	}
+	return thiu
+}
+
+// ClearTakeMoment clears the value of the "take_moment" field.
+func (thiu *TakeHistoryItemUpdate) ClearTakeMoment() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearTakeMoment()
+	return thiu
+}
+
+// SetTakeEtc sets the "take_etc" field.
+func (thiu *TakeHistoryItemUpdate) SetTakeEtc(s string) *TakeHistoryItemUpdate {
+	thiu.mutation.SetTakeEtc(s)
+	return thiu
+}
+
+// SetNillableTakeEtc sets the "take_etc" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableTakeEtc(s *string) *TakeHistoryItemUpdate {
+	if s != nil {
+		thiu.SetTakeEtc(*s)
+	}
+	return thiu
+}
+
+// ClearTakeEtc clears the value of the "take_etc" field.
+func (thiu *TakeHistoryItemUpdate) ClearTakeEtc() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearTakeEtc()
+	return thiu
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (thiu *TakeHistoryItemUpdate) SetCreatedAt(t time.Time) *TakeHistoryItemUpdate {
+	thiu.mutation.SetCreatedAt(t)
+	return thiu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableCreatedAt(t *time.Time) *TakeHistoryItemUpdate {
+	if t != nil {
+		thiu.SetCreatedAt(*t)
+	}
+	return thiu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (thiu *TakeHistoryItemUpdate) SetUpdatedAt(t time.Time) *TakeHistoryItemUpdate {
+	thiu.mutation.SetUpdatedAt(t)
+	return thiu
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableUpdatedAt(t *time.Time) *TakeHistoryItemUpdate {
+	if t != nil {
+		thiu.SetUpdatedAt(*t)
+	}
+	return thiu
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (thiu *TakeHistoryItemUpdate) ClearUpdatedAt() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearUpdatedAt()
 	return thiu
 }
 
@@ -60,13 +233,58 @@ func (thiu *TakeHistoryItemUpdate) ExecX(ctx context.Context) {
 }
 
 func (thiu *TakeHistoryItemUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(takehistoryitem.Table, takehistoryitem.Columns, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(takehistoryitem.Table, takehistoryitem.Columns, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID))
 	if ps := thiu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := thiu.mutation.UserID(); ok {
+		_spec.SetField(takehistoryitem.FieldUserID, field.TypeUUID, value)
+	}
+	if value, ok := thiu.mutation.TakeHistoryID(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeHistoryID, field.TypeUUID, value)
+	}
+	if value, ok := thiu.mutation.PrescriptionItemID(); ok {
+		_spec.SetField(takehistoryitem.FieldPrescriptionItemID, field.TypeUUID, value)
+	}
+	if value, ok := thiu.mutation.TakeStatus(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeStatus, field.TypeString, value)
+	}
+	if value, ok := thiu.mutation.TakeAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiu.mutation.AddedTakeAmount(); ok {
+		_spec.AddField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiu.mutation.TakeTimeZone(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeTimeZone, field.TypeString, value)
+	}
+	if thiu.mutation.TakeTimeZoneCleared() {
+		_spec.ClearField(takehistoryitem.FieldTakeTimeZone, field.TypeString)
+	}
+	if value, ok := thiu.mutation.TakeMoment(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeMoment, field.TypeString, value)
+	}
+	if thiu.mutation.TakeMomentCleared() {
+		_spec.ClearField(takehistoryitem.FieldTakeMoment, field.TypeString)
+	}
+	if value, ok := thiu.mutation.TakeEtc(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeEtc, field.TypeString, value)
+	}
+	if thiu.mutation.TakeEtcCleared() {
+		_spec.ClearField(takehistoryitem.FieldTakeEtc, field.TypeString)
+	}
+	if value, ok := thiu.mutation.CreatedAt(); ok {
+		_spec.SetField(takehistoryitem.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := thiu.mutation.UpdatedAt(); ok {
+		_spec.SetField(takehistoryitem.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if thiu.mutation.UpdatedAtCleared() {
+		_spec.ClearField(takehistoryitem.FieldUpdatedAt, field.TypeTime)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, thiu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -86,6 +304,177 @@ type TakeHistoryItemUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *TakeHistoryItemMutation
+}
+
+// SetUserID sets the "user_id" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetUserID(u uuid.UUID) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetUserID(u)
+	return thiuo
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableUserID(u *uuid.UUID) *TakeHistoryItemUpdateOne {
+	if u != nil {
+		thiuo.SetUserID(*u)
+	}
+	return thiuo
+}
+
+// SetTakeHistoryID sets the "take_history_id" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetTakeHistoryID(u uuid.UUID) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetTakeHistoryID(u)
+	return thiuo
+}
+
+// SetNillableTakeHistoryID sets the "take_history_id" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeHistoryID(u *uuid.UUID) *TakeHistoryItemUpdateOne {
+	if u != nil {
+		thiuo.SetTakeHistoryID(*u)
+	}
+	return thiuo
+}
+
+// SetPrescriptionItemID sets the "prescription_item_id" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetPrescriptionItemID(u uuid.UUID) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetPrescriptionItemID(u)
+	return thiuo
+}
+
+// SetNillablePrescriptionItemID sets the "prescription_item_id" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillablePrescriptionItemID(u *uuid.UUID) *TakeHistoryItemUpdateOne {
+	if u != nil {
+		thiuo.SetPrescriptionItemID(*u)
+	}
+	return thiuo
+}
+
+// SetTakeStatus sets the "take_status" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetTakeStatus(s string) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetTakeStatus(s)
+	return thiuo
+}
+
+// SetNillableTakeStatus sets the "take_status" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeStatus(s *string) *TakeHistoryItemUpdateOne {
+	if s != nil {
+		thiuo.SetTakeStatus(*s)
+	}
+	return thiuo
+}
+
+// SetTakeAmount sets the "take_amount" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetTakeAmount(f float64) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ResetTakeAmount()
+	thiuo.mutation.SetTakeAmount(f)
+	return thiuo
+}
+
+// SetNillableTakeAmount sets the "take_amount" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeAmount(f *float64) *TakeHistoryItemUpdateOne {
+	if f != nil {
+		thiuo.SetTakeAmount(*f)
+	}
+	return thiuo
+}
+
+// AddTakeAmount adds f to the "take_amount" field.
+func (thiuo *TakeHistoryItemUpdateOne) AddTakeAmount(f float64) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.AddTakeAmount(f)
+	return thiuo
+}
+
+// SetTakeTimeZone sets the "take_time_zone" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetTakeTimeZone(s string) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetTakeTimeZone(s)
+	return thiuo
+}
+
+// SetNillableTakeTimeZone sets the "take_time_zone" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeTimeZone(s *string) *TakeHistoryItemUpdateOne {
+	if s != nil {
+		thiuo.SetTakeTimeZone(*s)
+	}
+	return thiuo
+}
+
+// ClearTakeTimeZone clears the value of the "take_time_zone" field.
+func (thiuo *TakeHistoryItemUpdateOne) ClearTakeTimeZone() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearTakeTimeZone()
+	return thiuo
+}
+
+// SetTakeMoment sets the "take_moment" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetTakeMoment(s string) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetTakeMoment(s)
+	return thiuo
+}
+
+// SetNillableTakeMoment sets the "take_moment" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeMoment(s *string) *TakeHistoryItemUpdateOne {
+	if s != nil {
+		thiuo.SetTakeMoment(*s)
+	}
+	return thiuo
+}
+
+// ClearTakeMoment clears the value of the "take_moment" field.
+func (thiuo *TakeHistoryItemUpdateOne) ClearTakeMoment() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearTakeMoment()
+	return thiuo
+}
+
+// SetTakeEtc sets the "take_etc" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetTakeEtc(s string) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetTakeEtc(s)
+	return thiuo
+}
+
+// SetNillableTakeEtc sets the "take_etc" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeEtc(s *string) *TakeHistoryItemUpdateOne {
+	if s != nil {
+		thiuo.SetTakeEtc(*s)
+	}
+	return thiuo
+}
+
+// ClearTakeEtc clears the value of the "take_etc" field.
+func (thiuo *TakeHistoryItemUpdateOne) ClearTakeEtc() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearTakeEtc()
+	return thiuo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetCreatedAt(t time.Time) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetCreatedAt(t)
+	return thiuo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableCreatedAt(t *time.Time) *TakeHistoryItemUpdateOne {
+	if t != nil {
+		thiuo.SetCreatedAt(*t)
+	}
+	return thiuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetUpdatedAt(t time.Time) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetUpdatedAt(t)
+	return thiuo
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableUpdatedAt(t *time.Time) *TakeHistoryItemUpdateOne {
+	if t != nil {
+		thiuo.SetUpdatedAt(*t)
+	}
+	return thiuo
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (thiuo *TakeHistoryItemUpdateOne) ClearUpdatedAt() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearUpdatedAt()
+	return thiuo
 }
 
 // Mutation returns the TakeHistoryItemMutation object of the builder.
@@ -134,7 +523,7 @@ func (thiuo *TakeHistoryItemUpdateOne) ExecX(ctx context.Context) {
 }
 
 func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *TakeHistoryItem, err error) {
-	_spec := sqlgraph.NewUpdateSpec(takehistoryitem.Table, takehistoryitem.Columns, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(takehistoryitem.Table, takehistoryitem.Columns, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID))
 	id, ok := thiuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "TakeHistoryItem.id" for update`)}
@@ -158,6 +547,51 @@ func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *Take
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := thiuo.mutation.UserID(); ok {
+		_spec.SetField(takehistoryitem.FieldUserID, field.TypeUUID, value)
+	}
+	if value, ok := thiuo.mutation.TakeHistoryID(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeHistoryID, field.TypeUUID, value)
+	}
+	if value, ok := thiuo.mutation.PrescriptionItemID(); ok {
+		_spec.SetField(takehistoryitem.FieldPrescriptionItemID, field.TypeUUID, value)
+	}
+	if value, ok := thiuo.mutation.TakeStatus(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeStatus, field.TypeString, value)
+	}
+	if value, ok := thiuo.mutation.TakeAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiuo.mutation.AddedTakeAmount(); ok {
+		_spec.AddField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiuo.mutation.TakeTimeZone(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeTimeZone, field.TypeString, value)
+	}
+	if thiuo.mutation.TakeTimeZoneCleared() {
+		_spec.ClearField(takehistoryitem.FieldTakeTimeZone, field.TypeString)
+	}
+	if value, ok := thiuo.mutation.TakeMoment(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeMoment, field.TypeString, value)
+	}
+	if thiuo.mutation.TakeMomentCleared() {
+		_spec.ClearField(takehistoryitem.FieldTakeMoment, field.TypeString)
+	}
+	if value, ok := thiuo.mutation.TakeEtc(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeEtc, field.TypeString, value)
+	}
+	if thiuo.mutation.TakeEtcCleared() {
+		_spec.ClearField(takehistoryitem.FieldTakeEtc, field.TypeString)
+	}
+	if value, ok := thiuo.mutation.CreatedAt(); ok {
+		_spec.SetField(takehistoryitem.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := thiuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(takehistoryitem.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if thiuo.mutation.UpdatedAtCleared() {
+		_spec.ClearField(takehistoryitem.FieldUpdatedAt, field.TypeTime)
 	}
 	_node = &TakeHistoryItem{config: thiuo.config}
 	_spec.Assign = _node.assignValues

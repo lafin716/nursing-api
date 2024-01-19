@@ -11,7 +11,7 @@ type TakeHistoryItem struct {
 	ent.Schema
 }
 
-func (TakeHistoryItem) Field() []ent.Field {
+func (TakeHistoryItem) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("user_id", uuid.UUID{}),

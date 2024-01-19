@@ -3,7 +3,10 @@
 package takehistoryitem
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 const (
@@ -11,6 +14,26 @@ const (
 	Label = "take_history_item"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
+	// FieldTakeHistoryID holds the string denoting the take_history_id field in the database.
+	FieldTakeHistoryID = "take_history_id"
+	// FieldPrescriptionItemID holds the string denoting the prescription_item_id field in the database.
+	FieldPrescriptionItemID = "prescription_item_id"
+	// FieldTakeStatus holds the string denoting the take_status field in the database.
+	FieldTakeStatus = "take_status"
+	// FieldTakeAmount holds the string denoting the take_amount field in the database.
+	FieldTakeAmount = "take_amount"
+	// FieldTakeTimeZone holds the string denoting the take_time_zone field in the database.
+	FieldTakeTimeZone = "take_time_zone"
+	// FieldTakeMoment holds the string denoting the take_moment field in the database.
+	FieldTakeMoment = "take_moment"
+	// FieldTakeEtc holds the string denoting the take_etc field in the database.
+	FieldTakeEtc = "take_etc"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the takehistoryitem in the database.
 	Table = "take_history_items"
 )
@@ -18,6 +41,16 @@ const (
 // Columns holds all SQL columns for takehistoryitem fields.
 var Columns = []string{
 	FieldID,
+	FieldUserID,
+	FieldTakeHistoryID,
+	FieldPrescriptionItemID,
+	FieldTakeStatus,
+	FieldTakeAmount,
+	FieldTakeTimeZone,
+	FieldTakeMoment,
+	FieldTakeEtc,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -30,10 +63,71 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+var (
+	// DefaultTakeStatus holds the default value on creation for the "take_status" field.
+	DefaultTakeStatus string
+	// DefaultTakeAmount holds the default value on creation for the "take_amount" field.
+	DefaultTakeAmount float64
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)
+
 // OrderOption defines the ordering options for the TakeHistoryItem queries.
 type OrderOption func(*sql.Selector)
 
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
+}
+
+// ByTakeHistoryID orders the results by the take_history_id field.
+func ByTakeHistoryID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeHistoryID, opts...).ToFunc()
+}
+
+// ByPrescriptionItemID orders the results by the prescription_item_id field.
+func ByPrescriptionItemID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPrescriptionItemID, opts...).ToFunc()
+}
+
+// ByTakeStatus orders the results by the take_status field.
+func ByTakeStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeStatus, opts...).ToFunc()
+}
+
+// ByTakeAmount orders the results by the take_amount field.
+func ByTakeAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeAmount, opts...).ToFunc()
+}
+
+// ByTakeTimeZone orders the results by the take_time_zone field.
+func ByTakeTimeZone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeTimeZone, opts...).ToFunc()
+}
+
+// ByTakeMoment orders the results by the take_moment field.
+func ByTakeMoment(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeMoment, opts...).ToFunc()
+}
+
+// ByTakeEtc orders the results by the take_etc field.
+func ByTakeEtc(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeEtc, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }

@@ -4,11 +4,14 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/takehistory"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // TakeHistoryCreate is the builder for creating a TakeHistory entity.
@@ -18,6 +21,102 @@ type TakeHistoryCreate struct {
 	hooks    []Hook
 }
 
+// SetUserID sets the "user_id" field.
+func (thc *TakeHistoryCreate) SetUserID(u uuid.UUID) *TakeHistoryCreate {
+	thc.mutation.SetUserID(u)
+	return thc
+}
+
+// SetPrescriptionID sets the "prescription_id" field.
+func (thc *TakeHistoryCreate) SetPrescriptionID(u uuid.UUID) *TakeHistoryCreate {
+	thc.mutation.SetPrescriptionID(u)
+	return thc
+}
+
+// SetTakeDate sets the "take_date" field.
+func (thc *TakeHistoryCreate) SetTakeDate(t time.Time) *TakeHistoryCreate {
+	thc.mutation.SetTakeDate(t)
+	return thc
+}
+
+// SetNillableTakeDate sets the "take_date" field if the given value is not nil.
+func (thc *TakeHistoryCreate) SetNillableTakeDate(t *time.Time) *TakeHistoryCreate {
+	if t != nil {
+		thc.SetTakeDate(*t)
+	}
+	return thc
+}
+
+// SetTakeStatus sets the "take_status" field.
+func (thc *TakeHistoryCreate) SetTakeStatus(s string) *TakeHistoryCreate {
+	thc.mutation.SetTakeStatus(s)
+	return thc
+}
+
+// SetNillableTakeStatus sets the "take_status" field if the given value is not nil.
+func (thc *TakeHistoryCreate) SetNillableTakeStatus(s *string) *TakeHistoryCreate {
+	if s != nil {
+		thc.SetTakeStatus(*s)
+	}
+	return thc
+}
+
+// SetMemo sets the "memo" field.
+func (thc *TakeHistoryCreate) SetMemo(s string) *TakeHistoryCreate {
+	thc.mutation.SetMemo(s)
+	return thc
+}
+
+// SetNillableMemo sets the "memo" field if the given value is not nil.
+func (thc *TakeHistoryCreate) SetNillableMemo(s *string) *TakeHistoryCreate {
+	if s != nil {
+		thc.SetMemo(*s)
+	}
+	return thc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (thc *TakeHistoryCreate) SetCreatedAt(t time.Time) *TakeHistoryCreate {
+	thc.mutation.SetCreatedAt(t)
+	return thc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (thc *TakeHistoryCreate) SetNillableCreatedAt(t *time.Time) *TakeHistoryCreate {
+	if t != nil {
+		thc.SetCreatedAt(*t)
+	}
+	return thc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (thc *TakeHistoryCreate) SetUpdatedAt(t time.Time) *TakeHistoryCreate {
+	thc.mutation.SetUpdatedAt(t)
+	return thc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (thc *TakeHistoryCreate) SetNillableUpdatedAt(t *time.Time) *TakeHistoryCreate {
+	if t != nil {
+		thc.SetUpdatedAt(*t)
+	}
+	return thc
+}
+
+// SetID sets the "id" field.
+func (thc *TakeHistoryCreate) SetID(u uuid.UUID) *TakeHistoryCreate {
+	thc.mutation.SetID(u)
+	return thc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (thc *TakeHistoryCreate) SetNillableID(u *uuid.UUID) *TakeHistoryCreate {
+	if u != nil {
+		thc.SetID(*u)
+	}
+	return thc
+}
+
 // Mutation returns the TakeHistoryMutation object of the builder.
 func (thc *TakeHistoryCreate) Mutation() *TakeHistoryMutation {
 	return thc.mutation
@@ -25,6 +124,7 @@ func (thc *TakeHistoryCreate) Mutation() *TakeHistoryMutation {
 
 // Save creates the TakeHistory in the database.
 func (thc *TakeHistoryCreate) Save(ctx context.Context) (*TakeHistory, error) {
+	thc.defaults()
 	return withHooks(ctx, thc.sqlSave, thc.mutation, thc.hooks)
 }
 
@@ -50,8 +150,33 @@ func (thc *TakeHistoryCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (thc *TakeHistoryCreate) defaults() {
+	if _, ok := thc.mutation.TakeStatus(); !ok {
+		v := takehistory.DefaultTakeStatus
+		thc.mutation.SetTakeStatus(v)
+	}
+	if _, ok := thc.mutation.CreatedAt(); !ok {
+		v := takehistory.DefaultCreatedAt()
+		thc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := thc.mutation.ID(); !ok {
+		v := takehistory.DefaultID()
+		thc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (thc *TakeHistoryCreate) check() error {
+	if _, ok := thc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "TakeHistory.user_id"`)}
+	}
+	if _, ok := thc.mutation.PrescriptionID(); !ok {
+		return &ValidationError{Name: "prescription_id", err: errors.New(`ent: missing required field "TakeHistory.prescription_id"`)}
+	}
+	if _, ok := thc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "TakeHistory.created_at"`)}
+	}
 	return nil
 }
 
@@ -66,8 +191,13 @@ func (thc *TakeHistoryCreate) sqlSave(ctx context.Context) (*TakeHistory, error)
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	thc.mutation.id = &_node.ID
 	thc.mutation.done = true
 	return _node, nil
@@ -76,8 +206,40 @@ func (thc *TakeHistoryCreate) sqlSave(ctx context.Context) (*TakeHistory, error)
 func (thc *TakeHistoryCreate) createSpec() (*TakeHistory, *sqlgraph.CreateSpec) {
 	var (
 		_node = &TakeHistory{config: thc.config}
-		_spec = sqlgraph.NewCreateSpec(takehistory.Table, sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(takehistory.Table, sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID))
 	)
+	if id, ok := thc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := thc.mutation.UserID(); ok {
+		_spec.SetField(takehistory.FieldUserID, field.TypeUUID, value)
+		_node.UserID = value
+	}
+	if value, ok := thc.mutation.PrescriptionID(); ok {
+		_spec.SetField(takehistory.FieldPrescriptionID, field.TypeUUID, value)
+		_node.PrescriptionID = value
+	}
+	if value, ok := thc.mutation.TakeDate(); ok {
+		_spec.SetField(takehistory.FieldTakeDate, field.TypeTime, value)
+		_node.TakeDate = value
+	}
+	if value, ok := thc.mutation.TakeStatus(); ok {
+		_spec.SetField(takehistory.FieldTakeStatus, field.TypeString, value)
+		_node.TakeStatus = value
+	}
+	if value, ok := thc.mutation.Memo(); ok {
+		_spec.SetField(takehistory.FieldMemo, field.TypeString, value)
+		_node.Memo = value
+	}
+	if value, ok := thc.mutation.CreatedAt(); ok {
+		_spec.SetField(takehistory.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := thc.mutation.UpdatedAt(); ok {
+		_spec.SetField(takehistory.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	return _node, _spec
 }
 
@@ -99,6 +261,7 @@ func (thcb *TakeHistoryCreateBulk) Save(ctx context.Context) ([]*TakeHistory, er
 	for i := range thcb.builders {
 		func(i int, root context.Context) {
 			builder := thcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*TakeHistoryMutation)
 				if !ok {
@@ -125,10 +288,6 @@ func (thcb *TakeHistoryCreateBulk) Save(ctx context.Context) ([]*TakeHistory, er
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

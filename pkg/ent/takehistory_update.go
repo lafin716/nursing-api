@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"nursing_api/pkg/ent/predicate"
 	"nursing_api/pkg/ent/takehistory"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // TakeHistoryUpdate is the builder for updating TakeHistory entities.
@@ -24,6 +26,128 @@ type TakeHistoryUpdate struct {
 // Where appends a list predicates to the TakeHistoryUpdate builder.
 func (thu *TakeHistoryUpdate) Where(ps ...predicate.TakeHistory) *TakeHistoryUpdate {
 	thu.mutation.Where(ps...)
+	return thu
+}
+
+// SetUserID sets the "user_id" field.
+func (thu *TakeHistoryUpdate) SetUserID(u uuid.UUID) *TakeHistoryUpdate {
+	thu.mutation.SetUserID(u)
+	return thu
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (thu *TakeHistoryUpdate) SetNillableUserID(u *uuid.UUID) *TakeHistoryUpdate {
+	if u != nil {
+		thu.SetUserID(*u)
+	}
+	return thu
+}
+
+// SetPrescriptionID sets the "prescription_id" field.
+func (thu *TakeHistoryUpdate) SetPrescriptionID(u uuid.UUID) *TakeHistoryUpdate {
+	thu.mutation.SetPrescriptionID(u)
+	return thu
+}
+
+// SetNillablePrescriptionID sets the "prescription_id" field if the given value is not nil.
+func (thu *TakeHistoryUpdate) SetNillablePrescriptionID(u *uuid.UUID) *TakeHistoryUpdate {
+	if u != nil {
+		thu.SetPrescriptionID(*u)
+	}
+	return thu
+}
+
+// SetTakeDate sets the "take_date" field.
+func (thu *TakeHistoryUpdate) SetTakeDate(t time.Time) *TakeHistoryUpdate {
+	thu.mutation.SetTakeDate(t)
+	return thu
+}
+
+// SetNillableTakeDate sets the "take_date" field if the given value is not nil.
+func (thu *TakeHistoryUpdate) SetNillableTakeDate(t *time.Time) *TakeHistoryUpdate {
+	if t != nil {
+		thu.SetTakeDate(*t)
+	}
+	return thu
+}
+
+// ClearTakeDate clears the value of the "take_date" field.
+func (thu *TakeHistoryUpdate) ClearTakeDate() *TakeHistoryUpdate {
+	thu.mutation.ClearTakeDate()
+	return thu
+}
+
+// SetTakeStatus sets the "take_status" field.
+func (thu *TakeHistoryUpdate) SetTakeStatus(s string) *TakeHistoryUpdate {
+	thu.mutation.SetTakeStatus(s)
+	return thu
+}
+
+// SetNillableTakeStatus sets the "take_status" field if the given value is not nil.
+func (thu *TakeHistoryUpdate) SetNillableTakeStatus(s *string) *TakeHistoryUpdate {
+	if s != nil {
+		thu.SetTakeStatus(*s)
+	}
+	return thu
+}
+
+// ClearTakeStatus clears the value of the "take_status" field.
+func (thu *TakeHistoryUpdate) ClearTakeStatus() *TakeHistoryUpdate {
+	thu.mutation.ClearTakeStatus()
+	return thu
+}
+
+// SetMemo sets the "memo" field.
+func (thu *TakeHistoryUpdate) SetMemo(s string) *TakeHistoryUpdate {
+	thu.mutation.SetMemo(s)
+	return thu
+}
+
+// SetNillableMemo sets the "memo" field if the given value is not nil.
+func (thu *TakeHistoryUpdate) SetNillableMemo(s *string) *TakeHistoryUpdate {
+	if s != nil {
+		thu.SetMemo(*s)
+	}
+	return thu
+}
+
+// ClearMemo clears the value of the "memo" field.
+func (thu *TakeHistoryUpdate) ClearMemo() *TakeHistoryUpdate {
+	thu.mutation.ClearMemo()
+	return thu
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (thu *TakeHistoryUpdate) SetCreatedAt(t time.Time) *TakeHistoryUpdate {
+	thu.mutation.SetCreatedAt(t)
+	return thu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (thu *TakeHistoryUpdate) SetNillableCreatedAt(t *time.Time) *TakeHistoryUpdate {
+	if t != nil {
+		thu.SetCreatedAt(*t)
+	}
+	return thu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (thu *TakeHistoryUpdate) SetUpdatedAt(t time.Time) *TakeHistoryUpdate {
+	thu.mutation.SetUpdatedAt(t)
+	return thu
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (thu *TakeHistoryUpdate) SetNillableUpdatedAt(t *time.Time) *TakeHistoryUpdate {
+	if t != nil {
+		thu.SetUpdatedAt(*t)
+	}
+	return thu
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (thu *TakeHistoryUpdate) ClearUpdatedAt() *TakeHistoryUpdate {
+	thu.mutation.ClearUpdatedAt()
 	return thu
 }
 
@@ -60,13 +184,46 @@ func (thu *TakeHistoryUpdate) ExecX(ctx context.Context) {
 }
 
 func (thu *TakeHistoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(takehistory.Table, takehistory.Columns, sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(takehistory.Table, takehistory.Columns, sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID))
 	if ps := thu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := thu.mutation.UserID(); ok {
+		_spec.SetField(takehistory.FieldUserID, field.TypeUUID, value)
+	}
+	if value, ok := thu.mutation.PrescriptionID(); ok {
+		_spec.SetField(takehistory.FieldPrescriptionID, field.TypeUUID, value)
+	}
+	if value, ok := thu.mutation.TakeDate(); ok {
+		_spec.SetField(takehistory.FieldTakeDate, field.TypeTime, value)
+	}
+	if thu.mutation.TakeDateCleared() {
+		_spec.ClearField(takehistory.FieldTakeDate, field.TypeTime)
+	}
+	if value, ok := thu.mutation.TakeStatus(); ok {
+		_spec.SetField(takehistory.FieldTakeStatus, field.TypeString, value)
+	}
+	if thu.mutation.TakeStatusCleared() {
+		_spec.ClearField(takehistory.FieldTakeStatus, field.TypeString)
+	}
+	if value, ok := thu.mutation.Memo(); ok {
+		_spec.SetField(takehistory.FieldMemo, field.TypeString, value)
+	}
+	if thu.mutation.MemoCleared() {
+		_spec.ClearField(takehistory.FieldMemo, field.TypeString)
+	}
+	if value, ok := thu.mutation.CreatedAt(); ok {
+		_spec.SetField(takehistory.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := thu.mutation.UpdatedAt(); ok {
+		_spec.SetField(takehistory.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if thu.mutation.UpdatedAtCleared() {
+		_spec.ClearField(takehistory.FieldUpdatedAt, field.TypeTime)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, thu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -86,6 +243,128 @@ type TakeHistoryUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *TakeHistoryMutation
+}
+
+// SetUserID sets the "user_id" field.
+func (thuo *TakeHistoryUpdateOne) SetUserID(u uuid.UUID) *TakeHistoryUpdateOne {
+	thuo.mutation.SetUserID(u)
+	return thuo
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (thuo *TakeHistoryUpdateOne) SetNillableUserID(u *uuid.UUID) *TakeHistoryUpdateOne {
+	if u != nil {
+		thuo.SetUserID(*u)
+	}
+	return thuo
+}
+
+// SetPrescriptionID sets the "prescription_id" field.
+func (thuo *TakeHistoryUpdateOne) SetPrescriptionID(u uuid.UUID) *TakeHistoryUpdateOne {
+	thuo.mutation.SetPrescriptionID(u)
+	return thuo
+}
+
+// SetNillablePrescriptionID sets the "prescription_id" field if the given value is not nil.
+func (thuo *TakeHistoryUpdateOne) SetNillablePrescriptionID(u *uuid.UUID) *TakeHistoryUpdateOne {
+	if u != nil {
+		thuo.SetPrescriptionID(*u)
+	}
+	return thuo
+}
+
+// SetTakeDate sets the "take_date" field.
+func (thuo *TakeHistoryUpdateOne) SetTakeDate(t time.Time) *TakeHistoryUpdateOne {
+	thuo.mutation.SetTakeDate(t)
+	return thuo
+}
+
+// SetNillableTakeDate sets the "take_date" field if the given value is not nil.
+func (thuo *TakeHistoryUpdateOne) SetNillableTakeDate(t *time.Time) *TakeHistoryUpdateOne {
+	if t != nil {
+		thuo.SetTakeDate(*t)
+	}
+	return thuo
+}
+
+// ClearTakeDate clears the value of the "take_date" field.
+func (thuo *TakeHistoryUpdateOne) ClearTakeDate() *TakeHistoryUpdateOne {
+	thuo.mutation.ClearTakeDate()
+	return thuo
+}
+
+// SetTakeStatus sets the "take_status" field.
+func (thuo *TakeHistoryUpdateOne) SetTakeStatus(s string) *TakeHistoryUpdateOne {
+	thuo.mutation.SetTakeStatus(s)
+	return thuo
+}
+
+// SetNillableTakeStatus sets the "take_status" field if the given value is not nil.
+func (thuo *TakeHistoryUpdateOne) SetNillableTakeStatus(s *string) *TakeHistoryUpdateOne {
+	if s != nil {
+		thuo.SetTakeStatus(*s)
+	}
+	return thuo
+}
+
+// ClearTakeStatus clears the value of the "take_status" field.
+func (thuo *TakeHistoryUpdateOne) ClearTakeStatus() *TakeHistoryUpdateOne {
+	thuo.mutation.ClearTakeStatus()
+	return thuo
+}
+
+// SetMemo sets the "memo" field.
+func (thuo *TakeHistoryUpdateOne) SetMemo(s string) *TakeHistoryUpdateOne {
+	thuo.mutation.SetMemo(s)
+	return thuo
+}
+
+// SetNillableMemo sets the "memo" field if the given value is not nil.
+func (thuo *TakeHistoryUpdateOne) SetNillableMemo(s *string) *TakeHistoryUpdateOne {
+	if s != nil {
+		thuo.SetMemo(*s)
+	}
+	return thuo
+}
+
+// ClearMemo clears the value of the "memo" field.
+func (thuo *TakeHistoryUpdateOne) ClearMemo() *TakeHistoryUpdateOne {
+	thuo.mutation.ClearMemo()
+	return thuo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (thuo *TakeHistoryUpdateOne) SetCreatedAt(t time.Time) *TakeHistoryUpdateOne {
+	thuo.mutation.SetCreatedAt(t)
+	return thuo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (thuo *TakeHistoryUpdateOne) SetNillableCreatedAt(t *time.Time) *TakeHistoryUpdateOne {
+	if t != nil {
+		thuo.SetCreatedAt(*t)
+	}
+	return thuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (thuo *TakeHistoryUpdateOne) SetUpdatedAt(t time.Time) *TakeHistoryUpdateOne {
+	thuo.mutation.SetUpdatedAt(t)
+	return thuo
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (thuo *TakeHistoryUpdateOne) SetNillableUpdatedAt(t *time.Time) *TakeHistoryUpdateOne {
+	if t != nil {
+		thuo.SetUpdatedAt(*t)
+	}
+	return thuo
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (thuo *TakeHistoryUpdateOne) ClearUpdatedAt() *TakeHistoryUpdateOne {
+	thuo.mutation.ClearUpdatedAt()
+	return thuo
 }
 
 // Mutation returns the TakeHistoryMutation object of the builder.
@@ -134,7 +413,7 @@ func (thuo *TakeHistoryUpdateOne) ExecX(ctx context.Context) {
 }
 
 func (thuo *TakeHistoryUpdateOne) sqlSave(ctx context.Context) (_node *TakeHistory, err error) {
-	_spec := sqlgraph.NewUpdateSpec(takehistory.Table, takehistory.Columns, sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewUpdateSpec(takehistory.Table, takehistory.Columns, sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID))
 	id, ok := thuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "TakeHistory.id" for update`)}
@@ -158,6 +437,39 @@ func (thuo *TakeHistoryUpdateOne) sqlSave(ctx context.Context) (_node *TakeHisto
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := thuo.mutation.UserID(); ok {
+		_spec.SetField(takehistory.FieldUserID, field.TypeUUID, value)
+	}
+	if value, ok := thuo.mutation.PrescriptionID(); ok {
+		_spec.SetField(takehistory.FieldPrescriptionID, field.TypeUUID, value)
+	}
+	if value, ok := thuo.mutation.TakeDate(); ok {
+		_spec.SetField(takehistory.FieldTakeDate, field.TypeTime, value)
+	}
+	if thuo.mutation.TakeDateCleared() {
+		_spec.ClearField(takehistory.FieldTakeDate, field.TypeTime)
+	}
+	if value, ok := thuo.mutation.TakeStatus(); ok {
+		_spec.SetField(takehistory.FieldTakeStatus, field.TypeString, value)
+	}
+	if thuo.mutation.TakeStatusCleared() {
+		_spec.ClearField(takehistory.FieldTakeStatus, field.TypeString)
+	}
+	if value, ok := thuo.mutation.Memo(); ok {
+		_spec.SetField(takehistory.FieldMemo, field.TypeString, value)
+	}
+	if thuo.mutation.MemoCleared() {
+		_spec.ClearField(takehistory.FieldMemo, field.TypeString)
+	}
+	if value, ok := thuo.mutation.CreatedAt(); ok {
+		_spec.SetField(takehistory.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := thuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(takehistory.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if thuo.mutation.UpdatedAtCleared() {
+		_spec.ClearField(takehistory.FieldUpdatedAt, field.TypeTime)
 	}
 	_node = &TakeHistory{config: thuo.config}
 	_spec.Assign = _node.assignValues

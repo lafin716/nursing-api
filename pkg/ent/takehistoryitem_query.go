@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // TakeHistoryItemQuery is the builder for querying TakeHistoryItem entities.
@@ -81,8 +82,8 @@ func (thiq *TakeHistoryItemQuery) FirstX(ctx context.Context) *TakeHistoryItem {
 
 // FirstID returns the first TakeHistoryItem ID from the query.
 // Returns a *NotFoundError when no TakeHistoryItem ID was found.
-func (thiq *TakeHistoryItemQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (thiq *TakeHistoryItemQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = thiq.Limit(1).IDs(setContextOp(ctx, thiq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -94,7 +95,7 @@ func (thiq *TakeHistoryItemQuery) FirstID(ctx context.Context) (id int, err erro
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (thiq *TakeHistoryItemQuery) FirstIDX(ctx context.Context) int {
+func (thiq *TakeHistoryItemQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := thiq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -132,8 +133,8 @@ func (thiq *TakeHistoryItemQuery) OnlyX(ctx context.Context) *TakeHistoryItem {
 // OnlyID is like Only, but returns the only TakeHistoryItem ID in the query.
 // Returns a *NotSingularError when more than one TakeHistoryItem ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (thiq *TakeHistoryItemQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (thiq *TakeHistoryItemQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = thiq.Limit(2).IDs(setContextOp(ctx, thiq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -149,7 +150,7 @@ func (thiq *TakeHistoryItemQuery) OnlyID(ctx context.Context) (id int, err error
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (thiq *TakeHistoryItemQuery) OnlyIDX(ctx context.Context) int {
+func (thiq *TakeHistoryItemQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := thiq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -177,7 +178,7 @@ func (thiq *TakeHistoryItemQuery) AllX(ctx context.Context) []*TakeHistoryItem {
 }
 
 // IDs executes the query and returns a list of TakeHistoryItem IDs.
-func (thiq *TakeHistoryItemQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (thiq *TakeHistoryItemQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if thiq.ctx.Unique == nil && thiq.path != nil {
 		thiq.Unique(true)
 	}
@@ -189,7 +190,7 @@ func (thiq *TakeHistoryItemQuery) IDs(ctx context.Context) (ids []int, err error
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (thiq *TakeHistoryItemQuery) IDsX(ctx context.Context) []int {
+func (thiq *TakeHistoryItemQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := thiq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -257,6 +258,18 @@ func (thiq *TakeHistoryItemQuery) Clone() *TakeHistoryItemQuery {
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		UserID uuid.UUID `json:"user_id,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.TakeHistoryItem.Query().
+//		GroupBy(takehistoryitem.FieldUserID).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (thiq *TakeHistoryItemQuery) GroupBy(field string, fields ...string) *TakeHistoryItemGroupBy {
 	thiq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &TakeHistoryItemGroupBy{build: thiq}
@@ -268,6 +281,16 @@ func (thiq *TakeHistoryItemQuery) GroupBy(field string, fields ...string) *TakeH
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		UserID uuid.UUID `json:"user_id,omitempty"`
+//	}
+//
+//	client.TakeHistoryItem.Query().
+//		Select(takehistoryitem.FieldUserID).
+//		Scan(ctx, &v)
 func (thiq *TakeHistoryItemQuery) Select(fields ...string) *TakeHistoryItemSelect {
 	thiq.ctx.Fields = append(thiq.ctx.Fields, fields...)
 	sbuild := &TakeHistoryItemSelect{TakeHistoryItemQuery: thiq}
@@ -342,7 +365,7 @@ func (thiq *TakeHistoryItemQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (thiq *TakeHistoryItemQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(takehistoryitem.Table, takehistoryitem.Columns, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(takehistoryitem.Table, takehistoryitem.Columns, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID))
 	_spec.From = thiq.sql
 	if unique := thiq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

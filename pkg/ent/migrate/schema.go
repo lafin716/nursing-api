@@ -89,7 +89,14 @@ var (
 	}
 	// TakeHistoriesColumns holds the columns for the "take_histories" table.
 	TakeHistoriesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "prescription_id", Type: field.TypeUUID},
+		{Name: "take_date", Type: field.TypeTime, Nullable: true},
+		{Name: "take_status", Type: field.TypeString, Nullable: true, Default: "NEVER", SchemaType: map[string]string{"postgres": "varchar(10)"}},
+		{Name: "memo", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 	}
 	// TakeHistoriesTable holds the schema information for the "take_histories" table.
 	TakeHistoriesTable = &schema.Table{
@@ -99,7 +106,17 @@ var (
 	}
 	// TakeHistoryItemsColumns holds the columns for the "take_history_items" table.
 	TakeHistoryItemsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "take_history_id", Type: field.TypeUUID},
+		{Name: "prescription_item_id", Type: field.TypeUUID},
+		{Name: "take_status", Type: field.TypeString, Default: "N", SchemaType: map[string]string{"postgres": "varchar(1)"}},
+		{Name: "take_amount", Type: field.TypeFloat64, Default: 0},
+		{Name: "take_time_zone", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(10)"}},
+		{Name: "take_moment", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(10)"}},
+		{Name: "take_etc", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 	}
 	// TakeHistoryItemsTable holds the schema information for the "take_history_items" table.
 	TakeHistoryItemsTable = &schema.Table{

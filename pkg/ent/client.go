@@ -749,7 +749,7 @@ func (c *TakeHistoryClient) UpdateOne(th *TakeHistory) *TakeHistoryUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TakeHistoryClient) UpdateOneID(id int) *TakeHistoryUpdateOne {
+func (c *TakeHistoryClient) UpdateOneID(id uuid.UUID) *TakeHistoryUpdateOne {
 	mutation := newTakeHistoryMutation(c.config, OpUpdateOne, withTakeHistoryID(id))
 	return &TakeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -766,7 +766,7 @@ func (c *TakeHistoryClient) DeleteOne(th *TakeHistory) *TakeHistoryDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *TakeHistoryClient) DeleteOneID(id int) *TakeHistoryDeleteOne {
+func (c *TakeHistoryClient) DeleteOneID(id uuid.UUID) *TakeHistoryDeleteOne {
 	builder := c.Delete().Where(takehistory.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -783,12 +783,12 @@ func (c *TakeHistoryClient) Query() *TakeHistoryQuery {
 }
 
 // Get returns a TakeHistory entity by its id.
-func (c *TakeHistoryClient) Get(ctx context.Context, id int) (*TakeHistory, error) {
+func (c *TakeHistoryClient) Get(ctx context.Context, id uuid.UUID) (*TakeHistory, error) {
 	return c.Query().Where(takehistory.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TakeHistoryClient) GetX(ctx context.Context, id int) *TakeHistory {
+func (c *TakeHistoryClient) GetX(ctx context.Context, id uuid.UUID) *TakeHistory {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -882,7 +882,7 @@ func (c *TakeHistoryItemClient) UpdateOne(thi *TakeHistoryItem) *TakeHistoryItem
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TakeHistoryItemClient) UpdateOneID(id int) *TakeHistoryItemUpdateOne {
+func (c *TakeHistoryItemClient) UpdateOneID(id uuid.UUID) *TakeHistoryItemUpdateOne {
 	mutation := newTakeHistoryItemMutation(c.config, OpUpdateOne, withTakeHistoryItemID(id))
 	return &TakeHistoryItemUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -899,7 +899,7 @@ func (c *TakeHistoryItemClient) DeleteOne(thi *TakeHistoryItem) *TakeHistoryItem
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *TakeHistoryItemClient) DeleteOneID(id int) *TakeHistoryItemDeleteOne {
+func (c *TakeHistoryItemClient) DeleteOneID(id uuid.UUID) *TakeHistoryItemDeleteOne {
 	builder := c.Delete().Where(takehistoryitem.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -916,12 +916,12 @@ func (c *TakeHistoryItemClient) Query() *TakeHistoryItemQuery {
 }
 
 // Get returns a TakeHistoryItem entity by its id.
-func (c *TakeHistoryItemClient) Get(ctx context.Context, id int) (*TakeHistoryItem, error) {
+func (c *TakeHistoryItemClient) Get(ctx context.Context, id uuid.UUID) (*TakeHistoryItem, error) {
 	return c.Query().Where(takehistoryitem.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TakeHistoryItemClient) GetX(ctx context.Context, id int) *TakeHistoryItem {
+func (c *TakeHistoryItemClient) GetX(ctx context.Context, id uuid.UUID) *TakeHistoryItem {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

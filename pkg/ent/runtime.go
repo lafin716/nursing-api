@@ -7,6 +7,8 @@ import (
 	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/schema"
+	"nursing_api/pkg/ent/takehistory"
+	"nursing_api/pkg/ent/takehistoryitem"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
 	"time"
@@ -68,6 +70,38 @@ func init() {
 	prescriptionitemDescID := prescriptionitemFields[0].Descriptor()
 	// prescriptionitem.DefaultID holds the default value on creation for the id field.
 	prescriptionitem.DefaultID = prescriptionitemDescID.Default.(func() uuid.UUID)
+	takehistoryFields := schema.TakeHistory{}.Fields()
+	_ = takehistoryFields
+	// takehistoryDescTakeStatus is the schema descriptor for take_status field.
+	takehistoryDescTakeStatus := takehistoryFields[4].Descriptor()
+	// takehistory.DefaultTakeStatus holds the default value on creation for the take_status field.
+	takehistory.DefaultTakeStatus = takehistoryDescTakeStatus.Default.(string)
+	// takehistoryDescCreatedAt is the schema descriptor for created_at field.
+	takehistoryDescCreatedAt := takehistoryFields[6].Descriptor()
+	// takehistory.DefaultCreatedAt holds the default value on creation for the created_at field.
+	takehistory.DefaultCreatedAt = takehistoryDescCreatedAt.Default.(func() time.Time)
+	// takehistoryDescID is the schema descriptor for id field.
+	takehistoryDescID := takehistoryFields[0].Descriptor()
+	// takehistory.DefaultID holds the default value on creation for the id field.
+	takehistory.DefaultID = takehistoryDescID.Default.(func() uuid.UUID)
+	takehistoryitemFields := schema.TakeHistoryItem{}.Fields()
+	_ = takehistoryitemFields
+	// takehistoryitemDescTakeStatus is the schema descriptor for take_status field.
+	takehistoryitemDescTakeStatus := takehistoryitemFields[4].Descriptor()
+	// takehistoryitem.DefaultTakeStatus holds the default value on creation for the take_status field.
+	takehistoryitem.DefaultTakeStatus = takehistoryitemDescTakeStatus.Default.(string)
+	// takehistoryitemDescTakeAmount is the schema descriptor for take_amount field.
+	takehistoryitemDescTakeAmount := takehistoryitemFields[5].Descriptor()
+	// takehistoryitem.DefaultTakeAmount holds the default value on creation for the take_amount field.
+	takehistoryitem.DefaultTakeAmount = takehistoryitemDescTakeAmount.Default.(float64)
+	// takehistoryitemDescCreatedAt is the schema descriptor for created_at field.
+	takehistoryitemDescCreatedAt := takehistoryitemFields[9].Descriptor()
+	// takehistoryitem.DefaultCreatedAt holds the default value on creation for the created_at field.
+	takehistoryitem.DefaultCreatedAt = takehistoryitemDescCreatedAt.Default.(func() time.Time)
+	// takehistoryitemDescID is the schema descriptor for id field.
+	takehistoryitemDescID := takehistoryitemFields[0].Descriptor()
+	// takehistoryitem.DefaultID holds the default value on creation for the id field.
+	takehistoryitem.DefaultID = takehistoryitemDescID.Default.(func() uuid.UUID)
 	tokenFields := schema.Token{}.Fields()
 	_ = tokenFields
 	// tokenDescCreatedAt is the schema descriptor for created_at field.

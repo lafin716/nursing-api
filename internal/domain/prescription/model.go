@@ -36,7 +36,6 @@ type PrescriptionItem struct {
 }
 
 type PrescriptionRepository interface {
-	GetByDate(userId uuid.UUID, date time.Time) (*Prescription, error)
 	GetById(id uuid.UUID) (*Prescription, error)
 	GetListByUserId(search *PrescriptionSearch) ([]*Prescription, error)
 	GetItemListByPrescriptionId(prescriptionId uuid.UUID) ([]*PrescriptionItem, error)

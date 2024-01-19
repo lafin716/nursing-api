@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
+	schema "nursing_api/pkg/ent/takehistory"
 	"time"
 )
 
@@ -23,14 +24,33 @@ func NewTakeHistoryRepository(
 		ctx:        dbClient.Ctx,
 	}
 }
-func (t takeHistoryRepository) GetList() ([]*TakeHistory, error) {
-	//TODO implement me
-	panic("implement me")
+func (t takeHistoryRepository) GetList(userId uuid.UUID) ([]*TakeHistory, error) {
+	list, err := t.client.
+		Query().
+		Where(
+			schema.UserID(userId),
+		).
+		All(t.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toModelList(list), nil
 }
 
 func (t takeHistoryRepository) GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory, error) {
-	//TODO implement me
-	panic("implement me")
+	found, err := t.client.
+		Query().
+		Where(
+			schema.UserID(userId),
+			schema.TakeDateEQ(today),
+		).
+		Only(t.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toModel(found), nil
 }
 
 func (t takeHistoryRepository) GetById(id uuid.UUID) (*TakeHistory, error) {
