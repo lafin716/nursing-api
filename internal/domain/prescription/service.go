@@ -26,10 +26,9 @@ func NewPrescriptionService(
 }
 
 func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
-	defaultFormat := "2006-01-02"
-	targetDate, err := time.Parse(defaultFormat, req.Date)
+	targetDate, err := time.Parse(DATE_LAYOUT, req.Date)
 	if err != nil {
-		targetDate, _ = time.Parse(defaultFormat, time.Now().Format(defaultFormat))
+		targetDate, _ = time.Parse(DATE_LAYOUT, time.Now().Format(DATE_LAYOUT))
 	}
 	if req.Limit == 0 {
 		req.Limit = 10

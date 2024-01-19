@@ -6,14 +6,15 @@ import (
 )
 
 type TakeHistory struct {
-	ID             uuid.UUID `json:"id"`
-	UserId         uuid.UUID `json:"user_id"`
-	PrescriptionId uuid.UUID `json:"prescription_id"`
-	TakeDate       time.Time `json:"take_date"`
-	TakeStatus     string    `json:"take_status"`
-	Memo           string    `json:"memo"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	ID               uuid.UUID          `json:"id"`
+	UserId           uuid.UUID          `json:"user_id"`
+	PrescriptionId   uuid.UUID          `json:"prescription_id"`
+	TakeDate         time.Time          `json:"take_date"`
+	TakeStatus       string             `json:"take_status"`
+	Memo             string             `json:"memo"`
+	CreatedAt        time.Time          `json:"created_at"`
+	UpdatedAt        time.Time          `json:"updated_at"`
+	TakeHistoryItems []*TakeHistoryItem `json:"items"`
 }
 
 type TakeHistoryItem struct {
@@ -31,20 +32,20 @@ type TakeHistoryItem struct {
 }
 
 type TakeHistoryRepository interface {
-	GetList()
-	GetByToday(userId uuid.UUID, today time.Time)
-	GetById(id uuid.UUID)
-	Add()
-	Update()
-	Delete()
-	AddItem()
-	UpdateItem()
-	DeleteItem()
+	GetList() ([]*TakeHistory, error)
+	GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory, error)
+	GetById(id uuid.UUID) (*TakeHistory, error)
+	Add(newData *TakeHistory) (bool, error)
+	Update(newData *TakeHistory) (bool, error)
+	Delete(takeHistoryId uuid.UUID) (bool, error)
+	AddItem(item *TakeHistoryItem) (bool, error)
+	UpdateItem(item *TakeHistoryItem) (bool, error)
+	DeleteItem(takeHistoryItemId uuid.UUID) (bool, error)
 }
 
 type TakeHistoryUseCase interface {
-	GetList()
-	GetDetail()
+	GetList(req *GetListRequest) *GetListResponse
+	GetDetail(req *GetDetailRequest) *GetDetailResponse
 	Take()
 	UnTake()
 	UpdateItem()
