@@ -1,4 +1,4 @@
-package take_history
+package takehistory
 
 import (
 	"context"
@@ -54,23 +54,60 @@ func (t takeHistoryRepository) GetByToday(userId uuid.UUID, today time.Time) (*T
 }
 
 func (t takeHistoryRepository) GetById(id uuid.UUID) (*TakeHistory, error) {
-	//TODO implement me
-	panic("implement me")
+	found, err := t.client.
+		Query().
+		Where(schema.ID(id)).
+		Only(t.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toModel(found), nil
 }
 
 func (t takeHistoryRepository) Add(newData *TakeHistory) (bool, error) {
-	//TODO implement me
-	panic("implement me")
+	_, err := t.client.
+		Create().
+		SetID(newData.ID).
+		SetUserID(newData.UserId).
+		SetPrescriptionID(newData.PrescriptionId).
+		SetTakeDate(newData.TakeDate).
+		SetTakeStatus(newData.TakeStatus).
+		SetMemo(newData.Memo).
+		SetCreatedAt(newData.CreatedAt).
+		Save(t.ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (t takeHistoryRepository) Update(newData *TakeHistory) (bool, error) {
-	//TODO implement me
-	panic("implement me")
+	result, err := t.client.
+		Update().
+		SetTakeDate(newData.TakeDate).
+		SetTakeStatus(newData.TakeStatus).
+		SetMemo(newData.Memo).
+		SetUpdatedAt(newData.UpdatedAt).
+		Where(
+			schema.UserID(newData.ID),
+		).
+		Save(t.ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return result > 0, nil
 }
 
 func (t takeHistoryRepository) Delete(takeHistoryId uuid.UUID) (bool, error) {
-	//TODO implement me
-	panic("implement me")
+	result, err := t.client.Delete().Where(schema.ID(takeHistoryId)).Exec(t.ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return result > 0, nil
 }
 
 func (t takeHistoryRepository) AddItem(item *TakeHistoryItem) (bool, error) {

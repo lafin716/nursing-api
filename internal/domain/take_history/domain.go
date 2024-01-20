@@ -1,4 +1,4 @@
-package take_history
+package takehistory
 
 import (
 	"github.com/google/uuid"
@@ -46,8 +46,6 @@ type TakeHistoryRepository interface {
 type TakeHistoryUseCase interface {
 	GetList(req *GetListRequest) *GetListResponse
 	GetDetail(req *GetDetailRequest) *GetDetailResponse
-	Take()
-	UnTake()
-	UpdateItem()
-	UpdateMemo()
+	TakePlanToggle(req *TakePlanRequest) *TakePlanResponse
+	TakePillToggle(req *TakePillRequest) *TakePillResponse
 }

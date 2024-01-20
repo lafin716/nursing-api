@@ -1,4 +1,4 @@
-package take_history
+package takehistory
 
 import (
 	"github.com/google/uuid"

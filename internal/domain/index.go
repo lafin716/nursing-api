@@ -5,6 +5,7 @@ import (
 	"nursing_api/internal/domain/auth"
 	"nursing_api/internal/domain/medicine"
 	"nursing_api/internal/domain/prescription"
+	"nursing_api/internal/domain/take_history"
 	"nursing_api/internal/domain/user"
 	medicine_api "nursing_api/pkg/api/medicine"
 	"nursing_api/pkg/database"
@@ -22,6 +23,7 @@ var repository = wire.NewSet(
 	user.NewUserRepository,
 	medicine.NewAuthRepository,
 	prescription.NewPrescriptionRepository,
+	takehistory.NewTakeHistoryRepository,
 )
 
 var service = wire.NewSet(
@@ -29,6 +31,7 @@ var service = wire.NewSet(
 	user.NewUserService,
 	medicine.NewMedicineService,
 	prescription.NewPrescriptionService,
+	takehistory.NewTakeHistoryService,
 )
 
 var gateway = wire.NewSet(
