@@ -2,12 +2,11 @@ package plan
 
 import (
 	"github.com/google/uuid"
-	"time"
 )
 
 type GetByDateRequest struct {
 	UserId      uuid.UUID
-	CurrentDate time.Time `json:"current_date" validate:"required"`
+	CurrentDate string `query:"current_date"`
 }
 
 type GetByDateResponse struct {

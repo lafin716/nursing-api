@@ -51,7 +51,7 @@ func (p prescriptionRepository) GetById(id uuid.UUID) (*Prescription, error) {
 }
 
 func (p prescriptionRepository) GetListByUserId(search *PrescriptionSearch) ([]*Prescription, error) {
-	foundList, err := p.client.
+	foundList, err := p.root.Debug().Prescription.
 		Query().
 		Where(
 			schema.And(
@@ -84,6 +84,24 @@ func (p prescriptionRepository) GetItemListByPrescriptionId(prescriptionId uuid.
 	}
 
 	return toDomainItems(foundItemList), nil
+}
+
+func (p prescriptionRepository) GetItemListBySearch(search *PrescriptionSearch) ([]*PrescriptionItem, error) {
+	found, err := p.root.Debug().PrescriptionItem.
+		Query().
+		WithPrescription(func(q *ent.PrescriptionQuery) {
+			q.Where(
+				schema.UserID(search.UserId),
+				schema.StartedAtLTE(search.TargetDate),
+				schema.FinishedAtGTE(search.TargetDate),
+			)
+		}).
+		All(p.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainItems(found), nil
 }
 
 func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, error) {

@@ -39,6 +39,7 @@ type PrescriptionRepository interface {
 	GetById(id uuid.UUID) (*Prescription, error)
 	GetListByUserId(search *PrescriptionSearch) ([]*Prescription, error)
 	GetItemListByPrescriptionId(prescriptionId uuid.UUID) ([]*PrescriptionItem, error)
+	GetItemListBySearch(search *PrescriptionSearch) ([]*PrescriptionItem, error)
 	Add(prescription *Prescription) (*Prescription, error)
 	Update(prescription *Prescription) (int, error)
 	Delete(id uuid.UUID) (bool, error)

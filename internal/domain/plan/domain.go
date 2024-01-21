@@ -2,35 +2,34 @@ package plan
 
 import (
 	"github.com/google/uuid"
-	"time"
 )
 
 type TakePlan struct {
-	CurrentDate time.Time   `json:"current_date"`
-	Plans       []*PlanItem `json:"plans"`
+	CurrentDate string     `json:"current_date"`
+	Plans       []PlanItem `json:"plans"`
 }
 
 type PlanItem struct {
-	PlanName     string      `json:"plan_name"`
-	TakeTimeZone string      `json:"take_time_zone"`
-	TakeStatus   bool        `json:"take_status"`
-	TakeDate     time.Time   `json:"take_date"`
-	Pills        []*PillItem `json:"pills"`
-	Memo         string      `json:"memo"`
+	PlanName     string     `json:"plan_name"`
+	TakeTimeZone string     `json:"take_time_zone"`
+	TakeStatus   bool       `json:"take_status"`
+	TakeDate     string     `json:"take_date"`
+	Pills        []PillItem `json:"pills"`
+	Memo         string     `json:"memo"`
 }
 
 type PillItem struct {
 	PillName   string    `json:"pill_name"`
 	MedicineId uuid.UUID `json:"medicine_id"`
 	TakeStatus bool      `json:"take_status"`
-	TakeDate   time.Time `json:"take_date"`
+	TakeDate   string    `json:"take_date"`
 	TakeAmount float64   `json:"take_amount"`
 }
 
 type PlanSummary struct {
-	Year  string             `json:"year"`
-	Month string             `json:"month"`
-	Items []*PlanSummaryItem `json:"items"`
+	Year  string            `json:"year"`
+	Month string            `json:"month"`
+	Items []PlanSummaryItem `json:"items"`
 }
 
 type PlanSummaryItem struct {
