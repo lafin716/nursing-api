@@ -10,7 +10,7 @@ type RegisterRequest struct {
 	HospitalName     string                `json:"hospital_name" validate:"required"`
 	TakeDays         int                   `json:"take_days" validate:"required"`
 	StartedAt        string                `json:"started_at" validate:"required"`
-	FinishedAt       string                `json:"finished_at" validate:"required"`
+	FinishedAt       string                `json:"finished_at"`
 	Memo             string                `json:"memo"`
 	Items            []RegisterItemRequest `json:"items" validate:"required"`
 }

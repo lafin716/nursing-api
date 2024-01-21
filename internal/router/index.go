@@ -25,6 +25,8 @@ type handlers struct {
 	user         api.UserHttpApi
 	medicine     api.MedicineHttpApi
 	prescription api.PrescriptionApi
+	takehistory  api.TakeHistoryHttpApi
+	plan         api.PlanHttpApi
 }
 
 type container struct {
@@ -42,26 +44,32 @@ func (c *container) Init(
 	c.RegisterAuthRoute()
 	c.RegisterMedicineRoute()
 	c.RegisterPrescriptionRoute()
+	c.RegisterTakeHistoryRoute()
+	c.RegisterPlanRoute()
 }
 
 func NewRouter(
 	jwtAuth *middleware.TokenVerifyMiddleware,
-	mainApi api.MainHttpApi,
-	authApi api.AuthHttpApi,
-	userApi api.UserHttpApi,
-	medicineApi api.MedicineHttpApi,
+	main api.MainHttpApi,
+	auth api.AuthHttpApi,
+	user api.UserHttpApi,
+	medicine api.MedicineHttpApi,
 	prescription api.PrescriptionApi,
+	takehistory api.TakeHistoryHttpApi,
+	plan api.PlanHttpApi,
 ) Routable {
 	return &container{
 		middleware: &middlewares{
 			jwtAuth: jwtAuth,
 		},
 		handler: &handlers{
-			mainApi,
-			authApi,
-			userApi,
-			medicineApi,
-			prescription,
+			main:         main,
+			auth:         auth,
+			user:         user,
+			medicine:     medicine,
+			prescription: prescription,
+			takehistory:  takehistory,
+			plan:         plan,
 		},
 	}
 }

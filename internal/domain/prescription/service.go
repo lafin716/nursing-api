@@ -1,8 +1,8 @@
 package prescription
 
 import (
-	"fmt"
 	"nursing_api/pkg/jwt"
+	"strings"
 	"time"
 )
 
@@ -57,19 +57,24 @@ func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
 	return OkGetList(resp)
 }
 
-// TODO 처방전 날짜 다시 협의 필요 복용일, 복용시작, 복용종료
 func (p prescriptionService) Register(req *RegisterRequest) *RegisterResponse {
 	started, err := time.Parse(DATE_LAYOUT, req.StartedAt)
 	if err != nil {
 		return FailRegister("복용시작 날짜형식이 맞지않습니다.", err)
 	}
 
-	finished, err := time.Parse(DATE_LAYOUT, req.FinishedAt)
-	if err != nil {
-		return FailRegister("복용종료 날짜형식이 맞지않습니다.", err)
+	// 복용 종료일 계산
+	var finished time.Time
+	if strings.TrimSpace(req.FinishedAt) != "" {
+		// 복용 종료일이 파라미터에 있는 경우 그대로 사용
+		finished, err = time.Parse(DATE_LAYOUT, req.FinishedAt)
+		if err != nil {
+			return FailRegister("복용종료 날짜형식이 맞지않습니다.", err)
+		}
+	} else {
+		// 복용종료일시가 없는 경우 복용시작일시를 기준으로 복용일을 더한다
+		finished = started.AddDate(0, 0, 1*req.TakeDays)
 	}
-
-	fmt.Printf("처방전 등록 파라미터: %+v", req)
 
 	items := []*PrescriptionItem{}
 	for _, item := range req.Items {

@@ -6,8 +6,8 @@ import (
 )
 
 type GetListRequest struct {
-	userId     uuid.UUID
-	targetDate time.Time
+	UserId     uuid.UUID `json:"-"`
+	TargetDate time.Time `json:"target_date" validate:"required"`
 }
 
 type GetListResponse struct {

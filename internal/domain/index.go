@@ -4,6 +4,7 @@ import (
 	"github.com/google/wire"
 	"nursing_api/internal/domain/auth"
 	"nursing_api/internal/domain/medicine"
+	"nursing_api/internal/domain/plan"
 	"nursing_api/internal/domain/prescription"
 	"nursing_api/internal/domain/take_history"
 	"nursing_api/internal/domain/user"
@@ -32,6 +33,7 @@ var service = wire.NewSet(
 	medicine.NewMedicineService,
 	prescription.NewPrescriptionService,
 	takehistory.NewTakeHistoryService,
+	plan.NewPlanService,
 )
 
 var gateway = wire.NewSet(

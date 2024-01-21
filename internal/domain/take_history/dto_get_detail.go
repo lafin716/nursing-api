@@ -6,8 +6,8 @@ import (
 )
 
 type GetDetailRequest struct {
-	userId     uuid.UUID
-	targetDate time.Time
+	UserId     uuid.UUID
+	TargetDate time.Time
 }
 
 type GetDetailResponse struct {

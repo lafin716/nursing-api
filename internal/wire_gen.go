@@ -14,6 +14,7 @@ import (
 	"nursing_api/internal/domain/auth"
 	"nursing_api/internal/domain/medicine"
 	"nursing_api/internal/domain/prescription"
+	"nursing_api/internal/domain/take_history"
 	"nursing_api/internal/domain/user"
 	"nursing_api/internal/middleware"
 	"nursing_api/internal/router"
@@ -52,7 +53,10 @@ func New() (*Server, error) {
 	prescriptionRepository := prescription.NewPrescriptionRepository(databaseClient)
 	prescriptionUseCase := prescription.NewPrescriptionService(prescriptionRepository, jwtClient)
 	prescriptionApi := api.NewPrescriptionApi(prescriptionUseCase, jwtClient)
-	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi)
+	takeHistoryRepository := takehistory.NewTakeHistoryRepository(databaseClient)
+	takeHistoryUseCase := takehistory.NewTakeHistoryService(takeHistoryRepository, prescriptionRepository)
+	takeHistoryHttpApi := api.NewTakeHistoryHttpApi(takeHistoryUseCase, jwtClient)
+	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi, takeHistoryHttpApi)
 	server := NewServer(fiberConfig, databaseClient, routable)
 	return server, nil
 }
