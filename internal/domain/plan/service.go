@@ -1,6 +1,7 @@
 package plan
 
 import (
+	"fmt"
 	"log"
 	"nursing_api/internal/domain/prescription"
 	takehistory "nursing_api/internal/domain/take_history"
@@ -45,10 +46,12 @@ func (p planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
 	}
 
 	// 당일 복용내역 조회
-	//log, err := p.takeHistoryRepo.GetByToday(req.UserId, currentDate)
-	//if err != nil {
-	//	return FailGetByDate("복용내역 조회 중 오류가 발생하였습니다.", err)
-	//}
+	log, err := p.takeHistoryRepo.GetByToday(req.UserId, currentDate)
+	if err != nil {
+		return FailGetByDate("복용내역 조회 중 오류가 발생하였습니다.", err)
+	}
+
+	fmt.Printf("로그 : %+v", log)
 
 	// 데이터 조합 및 가공처리
 	var mapPills = map[string][]PillItem{}
