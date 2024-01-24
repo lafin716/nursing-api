@@ -98,6 +98,11 @@ func (a authHttpApi) SignUp(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// @summary 로그아웃
+// @description 로그아웃 처리, 로그인 된 상태에서만 사용가능 (JWT토큰 폐기처리)
+// @accept json
+// @produce json
+// @router /auth/signout [post]
 func (a authHttpApi) SignOut(ctx *fiber.Ctx) error {
 	claims, err := a.jwtClient.Parser.ExtractTokenMetadata(ctx)
 	if err != nil {

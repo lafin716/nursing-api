@@ -27,6 +27,11 @@ func NewUserHttpApi(
 	}
 }
 
+// @summary 내 정보 조회
+// @description 회원정보를 조회하는 엔드포인트
+// @accept json
+// @produce json
+// @router /user/me [get]
 func (h *userHttpApi) Me(ctx *fiber.Ctx) error {
 	claims, err := h.jwtClient.Parser.ExtractTokenMetadata(ctx)
 	if err != nil {
@@ -49,6 +54,11 @@ func (h *userHttpApi) Me(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// @summary 회원탈퇴
+// @description 회원탈퇴 엔드포인트
+// @accept json
+// @produce json
+// @router /user/leave [delete]
 func (a userHttpApi) Leave(ctx *fiber.Ctx) error {
 	claims, err := a.jwtClient.Parser.ExtractTokenMetadata(ctx)
 	if err != nil {
