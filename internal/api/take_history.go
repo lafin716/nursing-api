@@ -29,6 +29,11 @@ func NewTakeHistoryHttpApi(
 	}
 }
 
+// @summary 복용내역 목록
+// @description 복용내역을 조회하는 엔드포인트
+// @accept json
+// @produce json
+// @router /takehistory takehistory.GetListRequest [get]
 func (t takeHistoryHttpApi) GetList(ctx *fiber.Ctx) error {
 	req := new(takehistory.GetListRequest)
 	err := ctx.QueryParser(req)
@@ -53,6 +58,11 @@ func (t takeHistoryHttpApi) GetList(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// @summary 복용내역 상세
+// @description 복용내역 상세를 조회하는 엔드포인트
+// @accept json
+// @produce json
+// @router /takehistory/:id [get]
 func (t takeHistoryHttpApi) GetDetail(ctx *fiber.Ctx) error {
 	//TODO implement me
 	panic("implement me")
