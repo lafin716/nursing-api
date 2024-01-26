@@ -18,8 +18,6 @@ func (Prescription) Fields() []ent.Field {
 		field.UUID("user_id", uuid.UUID{}),
 		field.String("prescription_name").Optional().SchemaType(varchar(30)),
 		field.String("hospital_name").Optional().SchemaType(varchar(50)),
-		field.String("take_time_zone").Optional().SchemaType(varchar(10)),
-		field.String("take_moment").Optional().SchemaType(varchar(10)),
 		field.Int("take_days").Default(0),
 		field.Time("started_at").Optional().Default(time.Now).SchemaType(date()),
 		field.Time("finished_at").Optional().Default(time.Now).SchemaType(date()),
