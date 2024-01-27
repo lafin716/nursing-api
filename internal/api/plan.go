@@ -20,6 +20,12 @@ type planHttpApi struct {
 	jwtClient *jwt.JwtClient
 }
 
+// @summary 날짜별 복약 계획
+// @description 해당 날짜의 복약계획을 조회하는 엔드포인트, 복용상태 및 복용시간을 같이 응답한다.
+// @accept json
+// @produce json
+// @param current_date query string true "조회날짜 (YYYY-MM-DD)"
+// @router /plan [get]
 func (p planHttpApi) Today(ctx *fiber.Ctx) error {
 	req := new(plan.GetByDateRequest)
 	err := ctx.QueryParser(req)
