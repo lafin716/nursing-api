@@ -56,6 +56,7 @@ func (a *prescriptionApi) GetList(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// 처방전 등록
 func (a *prescriptionApi) Regist(ctx *fiber.Ctx) error {
 	userId, err := getUserId(a.jwtClient, ctx)
 	if err != nil {
@@ -91,6 +92,7 @@ func (a *prescriptionApi) Regist(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// 처방전 업데이트
 func (a *prescriptionApi) Update(ctx *fiber.Ctx) error {
 	req := new(prescription.UpdateRequest)
 	err := ctx.BodyParser(req)
@@ -121,6 +123,7 @@ func (a *prescriptionApi) Update(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// 처방전 삭제
 func (a *prescriptionApi) Delete(ctx *fiber.Ctx) error {
 	req := new(prescription.DeleteRequest)
 	err := ctx.ParamsParser(req)
@@ -143,6 +146,7 @@ func (a *prescriptionApi) Delete(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// 처방전 의약품 추가
 func (a *prescriptionApi) AddItem(ctx *fiber.Ctx) error {
 	req := new(prescription.AddItemRequest)
 	err := ctx.BodyParser(req)
@@ -172,6 +176,7 @@ func (a *prescriptionApi) AddItem(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// 처방전 의약품 업데이트
 func (a *prescriptionApi) UpdateItem(ctx *fiber.Ctx) error {
 	req := new(prescription.UpdateItemRequest)
 	err := ctx.BodyParser(req)
