@@ -38,6 +38,22 @@ var (
 		Columns:    MedicinesColumns,
 		PrimaryKey: []*schema.Column{MedicinesColumns[0]},
 	}
+	// PlanTimeZonesColumns holds the columns for the "plan_time_zones" table.
+	PlanTimeZonesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "timezone_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
+		{Name: "use_alerm", Type: field.TypeString, Default: "N", SchemaType: map[string]string{"postgres": "varchar(1)"}},
+		{Name: "scheduled_at", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+	}
+	// PlanTimeZonesTable holds the schema information for the "plan_time_zones" table.
+	PlanTimeZonesTable = &schema.Table{
+		Name:       "plan_time_zones",
+		Columns:    PlanTimeZonesColumns,
+		PrimaryKey: []*schema.Column{PlanTimeZonesColumns[0]},
+	}
 	// PrescriptionsColumns holds the columns for the "prescriptions" table.
 	PrescriptionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -164,6 +180,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		MedicinesTable,
+		PlanTimeZonesTable,
 		PrescriptionsTable,
 		PrescriptionItemsTable,
 		TakeHistoriesTable,

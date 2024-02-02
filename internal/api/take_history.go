@@ -33,7 +33,8 @@ func NewTakeHistoryHttpApi(
 // @description 복용내역을 조회하는 엔드포인트
 // @accept json
 // @produce json
-// @router /takehistory takehistory.GetListRequest [get]
+// @param dto query takehistory.GetListRequest true "복용내역 조회 조건 파라미터"
+// @router /takehistory [get]
 func (t takeHistoryHttpApi) GetList(ctx *fiber.Ctx) error {
 	req := new(takehistory.GetListRequest)
 	err := ctx.QueryParser(req)

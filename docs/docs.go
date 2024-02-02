@@ -42,6 +42,19 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/auth/signout": {
+            "post": {
+                "description": "로그아웃 처리, 로그인 된 상태에서만 사용가능 (JWT토큰 폐기처리)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "로그아웃",
+                "responses": {}
+            }
+        },
         "/auth/signup": {
             "post": {
                 "description": "회원가입을 처리하는 엔드포인트. 회원가입 성공 시 JWT 토큰 반환.",
@@ -63,6 +76,110 @@ const docTemplate = `{
                         }
                     }
                 ],
+                "responses": {}
+            }
+        },
+        "/medicine/search": {
+            "get": {
+                "description": "의약품을 검색하는 엔드포인트. 공공 API를 통해 조회하며, 1번 조회 시 DB에 캐싱처리함",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "의약품 검색",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "의약품 이름(like 검색)",
+                        "name": "dto",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/plan": {
+            "get": {
+                "description": "해당 날짜의 복약계획을 조회하는 엔드포인트, 복용상태 및 복용시간을 같이 응답한다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "날짜별 복약 계획",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "조회날짜 (YYYY-MM-DD)",
+                        "name": "current_date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/takehistory": {
+            "get": {
+                "description": "복용내역을 조회하는 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복용내역 목록",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "target_date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/takehistory/:id": {
+            "get": {
+                "description": "복용내역 상세를 조회하는 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복용내역 상세",
+                "responses": {}
+            }
+        },
+        "/user/leave": {
+            "delete": {
+                "description": "회원탈퇴 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "회원탈퇴",
+                "responses": {}
+            }
+        },
+        "/user/me": {
+            "get": {
+                "description": "회원정보를 조회하는 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "내 정보 조회",
                 "responses": {}
             }
         }

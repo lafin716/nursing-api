@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/medicine"
+	"nursing_api/pkg/ent/plantimezone"
 	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/takehistory"
@@ -80,6 +81,7 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			medicine.Table:         medicine.ValidColumn,
+			plantimezone.Table:     plantimezone.ValidColumn,
 			prescription.Table:     prescription.ValidColumn,
 			prescriptionitem.Table: prescriptionitem.ValidColumn,
 			takehistory.Table:      takehistory.ValidColumn,

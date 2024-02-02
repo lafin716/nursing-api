@@ -4,6 +4,7 @@ package ent
 
 import (
 	"nursing_api/pkg/ent/medicine"
+	"nursing_api/pkg/ent/plantimezone"
 	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/schema"
@@ -30,6 +31,20 @@ func init() {
 	medicineDescID := medicineFields[0].Descriptor()
 	// medicine.DefaultID holds the default value on creation for the id field.
 	medicine.DefaultID = medicineDescID.Default.(func() uuid.UUID)
+	plantimezoneFields := schema.PlanTimeZone{}.Fields()
+	_ = plantimezoneFields
+	// plantimezoneDescUseAlerm is the schema descriptor for use_alerm field.
+	plantimezoneDescUseAlerm := plantimezoneFields[3].Descriptor()
+	// plantimezone.DefaultUseAlerm holds the default value on creation for the use_alerm field.
+	plantimezone.DefaultUseAlerm = plantimezoneDescUseAlerm.Default.(string)
+	// plantimezoneDescCreatedAt is the schema descriptor for created_at field.
+	plantimezoneDescCreatedAt := plantimezoneFields[5].Descriptor()
+	// plantimezone.DefaultCreatedAt holds the default value on creation for the created_at field.
+	plantimezone.DefaultCreatedAt = plantimezoneDescCreatedAt.Default.(func() time.Time)
+	// plantimezoneDescID is the schema descriptor for id field.
+	plantimezoneDescID := plantimezoneFields[0].Descriptor()
+	// plantimezone.DefaultID holds the default value on creation for the id field.
+	plantimezone.DefaultID = plantimezoneDescID.Default.(func() uuid.UUID)
 	prescriptionFields := schema.Prescription{}.Fields()
 	_ = prescriptionFields
 	// prescriptionDescTakeDays is the schema descriptor for take_days field.

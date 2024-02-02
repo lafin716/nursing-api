@@ -9,6 +9,9 @@ import (
 // Medicine is the predicate function for medicine builders.
 type Medicine func(*sql.Selector)
 
+// PlanTimeZone is the predicate function for plantimezone builders.
+type PlanTimeZone func(*sql.Selector)
+
 // Prescription is the predicate function for prescription builders.
 type Prescription func(*sql.Selector)
 

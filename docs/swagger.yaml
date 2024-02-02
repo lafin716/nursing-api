@@ -56,6 +56,15 @@ paths:
       - application/json
       responses: {}
       summary: 로그인 인증
+  /auth/signout:
+    post:
+      consumes:
+      - application/json
+      description: 로그아웃 처리, 로그인 된 상태에서만 사용가능 (JWT토큰 폐기처리)
+      produces:
+      - application/json
+      responses: {}
+      summary: 로그아웃
   /auth/signup:
     post:
       consumes:
@@ -72,4 +81,75 @@ paths:
       - application/json
       responses: {}
       summary: 회원가입
+  /medicine/search:
+    get:
+      consumes:
+      - application/json
+      description: 의약품을 검색하는 엔드포인트. 공공 API를 통해 조회하며, 1번 조회 시 DB에 캐싱처리함
+      parameters:
+      - description: 의약품 이름(like 검색)
+        in: query
+        name: dto
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: 의약품 검색
+  /plan:
+    get:
+      consumes:
+      - application/json
+      description: 해당 날짜의 복약계획을 조회하는 엔드포인트, 복용상태 및 복용시간을 같이 응답한다.
+      parameters:
+      - description: 조회날짜 (YYYY-MM-DD)
+        in: query
+        name: current_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: 날짜별 복약 계획
+  /takehistory:
+    get:
+      consumes:
+      - application/json
+      description: 복용내역을 조회하는 엔드포인트
+      parameters:
+      - in: query
+        name: target_date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: 복용내역 목록
+  /takehistory/:id:
+    get:
+      consumes:
+      - application/json
+      description: 복용내역 상세를 조회하는 엔드포인트
+      produces:
+      - application/json
+      responses: {}
+      summary: 복용내역 상세
+  /user/leave:
+    delete:
+      consumes:
+      - application/json
+      description: 회원탈퇴 엔드포인트
+      produces:
+      - application/json
+      responses: {}
+      summary: 회원탈퇴
+  /user/me:
+    get:
+      consumes:
+      - application/json
+      description: 회원정보를 조회하는 엔드포인트
+      produces:
+      - application/json
+      responses: {}
+      summary: 내 정보 조회
 swagger: "2.0"
