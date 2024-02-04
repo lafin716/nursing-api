@@ -18,7 +18,9 @@ func (PlanTimeZone) Fields() []ent.Field {
 		field.String("timezone_name").Optional().SchemaType(varchar(50)),
 		field.Bool("is_default").Default(false),
 		field.Bool("use_alert").Default(false),
-		field.Time("scheduled_at").Optional(),
+		field.String("meridiem").SchemaType(varchar(2)),
+		field.String("hour").SchemaType(varchar(2)),
+		field.String("minute").SchemaType(varchar(2)),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Optional(),
 	}

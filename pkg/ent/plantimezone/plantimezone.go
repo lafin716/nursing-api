@@ -22,8 +22,12 @@ const (
 	FieldIsDefault = "is_default"
 	// FieldUseAlert holds the string denoting the use_alert field in the database.
 	FieldUseAlert = "use_alert"
-	// FieldScheduledAt holds the string denoting the scheduled_at field in the database.
-	FieldScheduledAt = "scheduled_at"
+	// FieldMeridiem holds the string denoting the meridiem field in the database.
+	FieldMeridiem = "meridiem"
+	// FieldHour holds the string denoting the hour field in the database.
+	FieldHour = "hour"
+	// FieldMinute holds the string denoting the minute field in the database.
+	FieldMinute = "minute"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -39,7 +43,9 @@ var Columns = []string{
 	FieldTimezoneName,
 	FieldIsDefault,
 	FieldUseAlert,
-	FieldScheduledAt,
+	FieldMeridiem,
+	FieldHour,
+	FieldMinute,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -93,9 +99,19 @@ func ByUseAlert(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUseAlert, opts...).ToFunc()
 }
 
-// ByScheduledAt orders the results by the scheduled_at field.
-func ByScheduledAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldScheduledAt, opts...).ToFunc()
+// ByMeridiem orders the results by the meridiem field.
+func ByMeridiem(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMeridiem, opts...).ToFunc()
+}
+
+// ByHour orders the results by the hour field.
+func ByHour(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHour, opts...).ToFunc()
+}
+
+// ByMinute orders the results by the minute field.
+func ByMinute(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMinute, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

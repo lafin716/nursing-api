@@ -1736,7 +1736,9 @@ type PlanTimeZoneMutation struct {
 	timezone_name *string
 	is_default    *bool
 	use_alert     *bool
-	scheduled_at  *time.Time
+	meridiem      *string
+	hour          *string
+	minute        *string
 	created_at    *time.Time
 	updated_at    *time.Time
 	clearedFields map[string]struct{}
@@ -2006,53 +2008,112 @@ func (m *PlanTimeZoneMutation) ResetUseAlert() {
 	m.use_alert = nil
 }
 
-// SetScheduledAt sets the "scheduled_at" field.
-func (m *PlanTimeZoneMutation) SetScheduledAt(t time.Time) {
-	m.scheduled_at = &t
+// SetMeridiem sets the "meridiem" field.
+func (m *PlanTimeZoneMutation) SetMeridiem(s string) {
+	m.meridiem = &s
 }
 
-// ScheduledAt returns the value of the "scheduled_at" field in the mutation.
-func (m *PlanTimeZoneMutation) ScheduledAt() (r time.Time, exists bool) {
-	v := m.scheduled_at
+// Meridiem returns the value of the "meridiem" field in the mutation.
+func (m *PlanTimeZoneMutation) Meridiem() (r string, exists bool) {
+	v := m.meridiem
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldScheduledAt returns the old "scheduled_at" field's value of the PlanTimeZone entity.
+// OldMeridiem returns the old "meridiem" field's value of the PlanTimeZone entity.
 // If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldScheduledAt(ctx context.Context) (v time.Time, err error) {
+func (m *PlanTimeZoneMutation) OldMeridiem(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldScheduledAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldMeridiem is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldScheduledAt requires an ID field in the mutation")
+		return v, errors.New("OldMeridiem requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldScheduledAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldMeridiem: %w", err)
 	}
-	return oldValue.ScheduledAt, nil
+	return oldValue.Meridiem, nil
 }
 
-// ClearScheduledAt clears the value of the "scheduled_at" field.
-func (m *PlanTimeZoneMutation) ClearScheduledAt() {
-	m.scheduled_at = nil
-	m.clearedFields[plantimezone.FieldScheduledAt] = struct{}{}
+// ResetMeridiem resets all changes to the "meridiem" field.
+func (m *PlanTimeZoneMutation) ResetMeridiem() {
+	m.meridiem = nil
 }
 
-// ScheduledAtCleared returns if the "scheduled_at" field was cleared in this mutation.
-func (m *PlanTimeZoneMutation) ScheduledAtCleared() bool {
-	_, ok := m.clearedFields[plantimezone.FieldScheduledAt]
-	return ok
+// SetHour sets the "hour" field.
+func (m *PlanTimeZoneMutation) SetHour(s string) {
+	m.hour = &s
 }
 
-// ResetScheduledAt resets all changes to the "scheduled_at" field.
-func (m *PlanTimeZoneMutation) ResetScheduledAt() {
-	m.scheduled_at = nil
-	delete(m.clearedFields, plantimezone.FieldScheduledAt)
+// Hour returns the value of the "hour" field in the mutation.
+func (m *PlanTimeZoneMutation) Hour() (r string, exists bool) {
+	v := m.hour
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHour returns the old "hour" field's value of the PlanTimeZone entity.
+// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanTimeZoneMutation) OldHour(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHour is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHour requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHour: %w", err)
+	}
+	return oldValue.Hour, nil
+}
+
+// ResetHour resets all changes to the "hour" field.
+func (m *PlanTimeZoneMutation) ResetHour() {
+	m.hour = nil
+}
+
+// SetMinute sets the "minute" field.
+func (m *PlanTimeZoneMutation) SetMinute(s string) {
+	m.minute = &s
+}
+
+// Minute returns the value of the "minute" field in the mutation.
+func (m *PlanTimeZoneMutation) Minute() (r string, exists bool) {
+	v := m.minute
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMinute returns the old "minute" field's value of the PlanTimeZone entity.
+// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanTimeZoneMutation) OldMinute(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMinute is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMinute requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMinute: %w", err)
+	}
+	return oldValue.Minute, nil
+}
+
+// ResetMinute resets all changes to the "minute" field.
+func (m *PlanTimeZoneMutation) ResetMinute() {
+	m.minute = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -2174,7 +2235,7 @@ func (m *PlanTimeZoneMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PlanTimeZoneMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 9)
 	if m.user_id != nil {
 		fields = append(fields, plantimezone.FieldUserID)
 	}
@@ -2187,8 +2248,14 @@ func (m *PlanTimeZoneMutation) Fields() []string {
 	if m.use_alert != nil {
 		fields = append(fields, plantimezone.FieldUseAlert)
 	}
-	if m.scheduled_at != nil {
-		fields = append(fields, plantimezone.FieldScheduledAt)
+	if m.meridiem != nil {
+		fields = append(fields, plantimezone.FieldMeridiem)
+	}
+	if m.hour != nil {
+		fields = append(fields, plantimezone.FieldHour)
+	}
+	if m.minute != nil {
+		fields = append(fields, plantimezone.FieldMinute)
 	}
 	if m.created_at != nil {
 		fields = append(fields, plantimezone.FieldCreatedAt)
@@ -2212,8 +2279,12 @@ func (m *PlanTimeZoneMutation) Field(name string) (ent.Value, bool) {
 		return m.IsDefault()
 	case plantimezone.FieldUseAlert:
 		return m.UseAlert()
-	case plantimezone.FieldScheduledAt:
-		return m.ScheduledAt()
+	case plantimezone.FieldMeridiem:
+		return m.Meridiem()
+	case plantimezone.FieldHour:
+		return m.Hour()
+	case plantimezone.FieldMinute:
+		return m.Minute()
 	case plantimezone.FieldCreatedAt:
 		return m.CreatedAt()
 	case plantimezone.FieldUpdatedAt:
@@ -2235,8 +2306,12 @@ func (m *PlanTimeZoneMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldIsDefault(ctx)
 	case plantimezone.FieldUseAlert:
 		return m.OldUseAlert(ctx)
-	case plantimezone.FieldScheduledAt:
-		return m.OldScheduledAt(ctx)
+	case plantimezone.FieldMeridiem:
+		return m.OldMeridiem(ctx)
+	case plantimezone.FieldHour:
+		return m.OldHour(ctx)
+	case plantimezone.FieldMinute:
+		return m.OldMinute(ctx)
 	case plantimezone.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case plantimezone.FieldUpdatedAt:
@@ -2278,12 +2353,26 @@ func (m *PlanTimeZoneMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUseAlert(v)
 		return nil
-	case plantimezone.FieldScheduledAt:
-		v, ok := value.(time.Time)
+	case plantimezone.FieldMeridiem:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetScheduledAt(v)
+		m.SetMeridiem(v)
+		return nil
+	case plantimezone.FieldHour:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHour(v)
+		return nil
+	case plantimezone.FieldMinute:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMinute(v)
 		return nil
 	case plantimezone.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -2332,9 +2421,6 @@ func (m *PlanTimeZoneMutation) ClearedFields() []string {
 	if m.FieldCleared(plantimezone.FieldTimezoneName) {
 		fields = append(fields, plantimezone.FieldTimezoneName)
 	}
-	if m.FieldCleared(plantimezone.FieldScheduledAt) {
-		fields = append(fields, plantimezone.FieldScheduledAt)
-	}
 	if m.FieldCleared(plantimezone.FieldUpdatedAt) {
 		fields = append(fields, plantimezone.FieldUpdatedAt)
 	}
@@ -2354,9 +2440,6 @@ func (m *PlanTimeZoneMutation) ClearField(name string) error {
 	switch name {
 	case plantimezone.FieldTimezoneName:
 		m.ClearTimezoneName()
-		return nil
-	case plantimezone.FieldScheduledAt:
-		m.ClearScheduledAt()
 		return nil
 	case plantimezone.FieldUpdatedAt:
 		m.ClearUpdatedAt()
@@ -2381,8 +2464,14 @@ func (m *PlanTimeZoneMutation) ResetField(name string) error {
 	case plantimezone.FieldUseAlert:
 		m.ResetUseAlert()
 		return nil
-	case plantimezone.FieldScheduledAt:
-		m.ResetScheduledAt()
+	case plantimezone.FieldMeridiem:
+		m.ResetMeridiem()
+		return nil
+	case plantimezone.FieldHour:
+		m.ResetHour()
+		return nil
+	case plantimezone.FieldMinute:
+		m.ResetMinute()
 		return nil
 	case plantimezone.FieldCreatedAt:
 		m.ResetCreatedAt()

@@ -6,14 +6,16 @@ import (
 )
 
 type PlanTimeZone struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
-	Name        string    `json:"name"`
-	IsDefault   bool      `json:"is_default"`
-	UseAlerm    bool      `json:"use_alerm"`
-	ScheduledAt time.Time `json:"scheduled_at"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID        uuid.UUID `json:"id"`
+	UserID    uuid.UUID `json:"user_id"`
+	Name      string    `json:"name"`
+	IsDefault bool      `json:"is_default"`
+	UseAlert  bool      `json:"use_alert"`
+	Meridiem  string    `json:"meridiem"`
+	Hour      string    `json:"hour"`
+	Minute    string    `json:"minute"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type TakePlan struct {
@@ -56,6 +58,7 @@ type PlanRepository interface {
 	CreateTimeZone(model *PlanTimeZone) (*PlanTimeZone, error)
 	UpdateTimeZone(model *PlanTimeZone) (bool, error)
 	DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, error)
+	GetDuplicate(userId uuid.UUID, name string, meridiem string, hour string, minute string) (*PlanTimeZone, error)
 }
 
 // 복용계획 시간대 로직

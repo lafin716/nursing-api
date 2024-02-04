@@ -91,23 +91,45 @@ func (ptzu *PlanTimeZoneUpdate) SetNillableUseAlert(b *bool) *PlanTimeZoneUpdate
 	return ptzu
 }
 
-// SetScheduledAt sets the "scheduled_at" field.
-func (ptzu *PlanTimeZoneUpdate) SetScheduledAt(t time.Time) *PlanTimeZoneUpdate {
-	ptzu.mutation.SetScheduledAt(t)
+// SetMeridiem sets the "meridiem" field.
+func (ptzu *PlanTimeZoneUpdate) SetMeridiem(s string) *PlanTimeZoneUpdate {
+	ptzu.mutation.SetMeridiem(s)
 	return ptzu
 }
 
-// SetNillableScheduledAt sets the "scheduled_at" field if the given value is not nil.
-func (ptzu *PlanTimeZoneUpdate) SetNillableScheduledAt(t *time.Time) *PlanTimeZoneUpdate {
-	if t != nil {
-		ptzu.SetScheduledAt(*t)
+// SetNillableMeridiem sets the "meridiem" field if the given value is not nil.
+func (ptzu *PlanTimeZoneUpdate) SetNillableMeridiem(s *string) *PlanTimeZoneUpdate {
+	if s != nil {
+		ptzu.SetMeridiem(*s)
 	}
 	return ptzu
 }
 
-// ClearScheduledAt clears the value of the "scheduled_at" field.
-func (ptzu *PlanTimeZoneUpdate) ClearScheduledAt() *PlanTimeZoneUpdate {
-	ptzu.mutation.ClearScheduledAt()
+// SetHour sets the "hour" field.
+func (ptzu *PlanTimeZoneUpdate) SetHour(s string) *PlanTimeZoneUpdate {
+	ptzu.mutation.SetHour(s)
+	return ptzu
+}
+
+// SetNillableHour sets the "hour" field if the given value is not nil.
+func (ptzu *PlanTimeZoneUpdate) SetNillableHour(s *string) *PlanTimeZoneUpdate {
+	if s != nil {
+		ptzu.SetHour(*s)
+	}
+	return ptzu
+}
+
+// SetMinute sets the "minute" field.
+func (ptzu *PlanTimeZoneUpdate) SetMinute(s string) *PlanTimeZoneUpdate {
+	ptzu.mutation.SetMinute(s)
+	return ptzu
+}
+
+// SetNillableMinute sets the "minute" field if the given value is not nil.
+func (ptzu *PlanTimeZoneUpdate) SetNillableMinute(s *string) *PlanTimeZoneUpdate {
+	if s != nil {
+		ptzu.SetMinute(*s)
+	}
 	return ptzu
 }
 
@@ -201,11 +223,14 @@ func (ptzu *PlanTimeZoneUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := ptzu.mutation.UseAlert(); ok {
 		_spec.SetField(plantimezone.FieldUseAlert, field.TypeBool, value)
 	}
-	if value, ok := ptzu.mutation.ScheduledAt(); ok {
-		_spec.SetField(plantimezone.FieldScheduledAt, field.TypeTime, value)
+	if value, ok := ptzu.mutation.Meridiem(); ok {
+		_spec.SetField(plantimezone.FieldMeridiem, field.TypeString, value)
 	}
-	if ptzu.mutation.ScheduledAtCleared() {
-		_spec.ClearField(plantimezone.FieldScheduledAt, field.TypeTime)
+	if value, ok := ptzu.mutation.Hour(); ok {
+		_spec.SetField(plantimezone.FieldHour, field.TypeString, value)
+	}
+	if value, ok := ptzu.mutation.Minute(); ok {
+		_spec.SetField(plantimezone.FieldMinute, field.TypeString, value)
 	}
 	if value, ok := ptzu.mutation.CreatedAt(); ok {
 		_spec.SetField(plantimezone.FieldCreatedAt, field.TypeTime, value)
@@ -298,23 +323,45 @@ func (ptzuo *PlanTimeZoneUpdateOne) SetNillableUseAlert(b *bool) *PlanTimeZoneUp
 	return ptzuo
 }
 
-// SetScheduledAt sets the "scheduled_at" field.
-func (ptzuo *PlanTimeZoneUpdateOne) SetScheduledAt(t time.Time) *PlanTimeZoneUpdateOne {
-	ptzuo.mutation.SetScheduledAt(t)
+// SetMeridiem sets the "meridiem" field.
+func (ptzuo *PlanTimeZoneUpdateOne) SetMeridiem(s string) *PlanTimeZoneUpdateOne {
+	ptzuo.mutation.SetMeridiem(s)
 	return ptzuo
 }
 
-// SetNillableScheduledAt sets the "scheduled_at" field if the given value is not nil.
-func (ptzuo *PlanTimeZoneUpdateOne) SetNillableScheduledAt(t *time.Time) *PlanTimeZoneUpdateOne {
-	if t != nil {
-		ptzuo.SetScheduledAt(*t)
+// SetNillableMeridiem sets the "meridiem" field if the given value is not nil.
+func (ptzuo *PlanTimeZoneUpdateOne) SetNillableMeridiem(s *string) *PlanTimeZoneUpdateOne {
+	if s != nil {
+		ptzuo.SetMeridiem(*s)
 	}
 	return ptzuo
 }
 
-// ClearScheduledAt clears the value of the "scheduled_at" field.
-func (ptzuo *PlanTimeZoneUpdateOne) ClearScheduledAt() *PlanTimeZoneUpdateOne {
-	ptzuo.mutation.ClearScheduledAt()
+// SetHour sets the "hour" field.
+func (ptzuo *PlanTimeZoneUpdateOne) SetHour(s string) *PlanTimeZoneUpdateOne {
+	ptzuo.mutation.SetHour(s)
+	return ptzuo
+}
+
+// SetNillableHour sets the "hour" field if the given value is not nil.
+func (ptzuo *PlanTimeZoneUpdateOne) SetNillableHour(s *string) *PlanTimeZoneUpdateOne {
+	if s != nil {
+		ptzuo.SetHour(*s)
+	}
+	return ptzuo
+}
+
+// SetMinute sets the "minute" field.
+func (ptzuo *PlanTimeZoneUpdateOne) SetMinute(s string) *PlanTimeZoneUpdateOne {
+	ptzuo.mutation.SetMinute(s)
+	return ptzuo
+}
+
+// SetNillableMinute sets the "minute" field if the given value is not nil.
+func (ptzuo *PlanTimeZoneUpdateOne) SetNillableMinute(s *string) *PlanTimeZoneUpdateOne {
+	if s != nil {
+		ptzuo.SetMinute(*s)
+	}
 	return ptzuo
 }
 
@@ -438,11 +485,14 @@ func (ptzuo *PlanTimeZoneUpdateOne) sqlSave(ctx context.Context) (_node *PlanTim
 	if value, ok := ptzuo.mutation.UseAlert(); ok {
 		_spec.SetField(plantimezone.FieldUseAlert, field.TypeBool, value)
 	}
-	if value, ok := ptzuo.mutation.ScheduledAt(); ok {
-		_spec.SetField(plantimezone.FieldScheduledAt, field.TypeTime, value)
+	if value, ok := ptzuo.mutation.Meridiem(); ok {
+		_spec.SetField(plantimezone.FieldMeridiem, field.TypeString, value)
 	}
-	if ptzuo.mutation.ScheduledAtCleared() {
-		_spec.ClearField(plantimezone.FieldScheduledAt, field.TypeTime)
+	if value, ok := ptzuo.mutation.Hour(); ok {
+		_spec.SetField(plantimezone.FieldHour, field.TypeString, value)
+	}
+	if value, ok := ptzuo.mutation.Minute(); ok {
+		_spec.SetField(plantimezone.FieldMinute, field.TypeString, value)
 	}
 	if value, ok := ptzuo.mutation.CreatedAt(); ok {
 		_spec.SetField(plantimezone.FieldCreatedAt, field.TypeTime, value)

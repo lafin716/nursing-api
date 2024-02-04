@@ -69,17 +69,21 @@ func (ptzc *PlanTimeZoneCreate) SetNillableUseAlert(b *bool) *PlanTimeZoneCreate
 	return ptzc
 }
 
-// SetScheduledAt sets the "scheduled_at" field.
-func (ptzc *PlanTimeZoneCreate) SetScheduledAt(t time.Time) *PlanTimeZoneCreate {
-	ptzc.mutation.SetScheduledAt(t)
+// SetMeridiem sets the "meridiem" field.
+func (ptzc *PlanTimeZoneCreate) SetMeridiem(s string) *PlanTimeZoneCreate {
+	ptzc.mutation.SetMeridiem(s)
 	return ptzc
 }
 
-// SetNillableScheduledAt sets the "scheduled_at" field if the given value is not nil.
-func (ptzc *PlanTimeZoneCreate) SetNillableScheduledAt(t *time.Time) *PlanTimeZoneCreate {
-	if t != nil {
-		ptzc.SetScheduledAt(*t)
-	}
+// SetHour sets the "hour" field.
+func (ptzc *PlanTimeZoneCreate) SetHour(s string) *PlanTimeZoneCreate {
+	ptzc.mutation.SetHour(s)
+	return ptzc
+}
+
+// SetMinute sets the "minute" field.
+func (ptzc *PlanTimeZoneCreate) SetMinute(s string) *PlanTimeZoneCreate {
+	ptzc.mutation.SetMinute(s)
 	return ptzc
 }
 
@@ -189,6 +193,15 @@ func (ptzc *PlanTimeZoneCreate) check() error {
 	if _, ok := ptzc.mutation.UseAlert(); !ok {
 		return &ValidationError{Name: "use_alert", err: errors.New(`ent: missing required field "PlanTimeZone.use_alert"`)}
 	}
+	if _, ok := ptzc.mutation.Meridiem(); !ok {
+		return &ValidationError{Name: "meridiem", err: errors.New(`ent: missing required field "PlanTimeZone.meridiem"`)}
+	}
+	if _, ok := ptzc.mutation.Hour(); !ok {
+		return &ValidationError{Name: "hour", err: errors.New(`ent: missing required field "PlanTimeZone.hour"`)}
+	}
+	if _, ok := ptzc.mutation.Minute(); !ok {
+		return &ValidationError{Name: "minute", err: errors.New(`ent: missing required field "PlanTimeZone.minute"`)}
+	}
 	if _, ok := ptzc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PlanTimeZone.created_at"`)}
 	}
@@ -243,9 +256,17 @@ func (ptzc *PlanTimeZoneCreate) createSpec() (*PlanTimeZone, *sqlgraph.CreateSpe
 		_spec.SetField(plantimezone.FieldUseAlert, field.TypeBool, value)
 		_node.UseAlert = value
 	}
-	if value, ok := ptzc.mutation.ScheduledAt(); ok {
-		_spec.SetField(plantimezone.FieldScheduledAt, field.TypeTime, value)
-		_node.ScheduledAt = value
+	if value, ok := ptzc.mutation.Meridiem(); ok {
+		_spec.SetField(plantimezone.FieldMeridiem, field.TypeString, value)
+		_node.Meridiem = value
+	}
+	if value, ok := ptzc.mutation.Hour(); ok {
+		_spec.SetField(plantimezone.FieldHour, field.TypeString, value)
+		_node.Hour = value
+	}
+	if value, ok := ptzc.mutation.Minute(); ok {
+		_spec.SetField(plantimezone.FieldMinute, field.TypeString, value)
+		_node.Minute = value
 	}
 	if value, ok := ptzc.mutation.CreatedAt(); ok {
 		_spec.SetField(plantimezone.FieldCreatedAt, field.TypeTime, value)

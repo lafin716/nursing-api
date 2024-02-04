@@ -42,7 +42,7 @@ func init() {
 	// plantimezone.DefaultUseAlert holds the default value on creation for the use_alert field.
 	plantimezone.DefaultUseAlert = plantimezoneDescUseAlert.Default.(bool)
 	// plantimezoneDescCreatedAt is the schema descriptor for created_at field.
-	plantimezoneDescCreatedAt := plantimezoneFields[6].Descriptor()
+	plantimezoneDescCreatedAt := plantimezoneFields[8].Descriptor()
 	// plantimezone.DefaultCreatedAt holds the default value on creation for the created_at field.
 	plantimezone.DefaultCreatedAt = plantimezoneDescCreatedAt.Default.(func() time.Time)
 	// plantimezoneDescID is the schema descriptor for id field.

@@ -45,7 +45,9 @@ var (
 		{Name: "timezone_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
 		{Name: "is_default", Type: field.TypeBool, Default: false},
 		{Name: "use_alert", Type: field.TypeBool, Default: false},
-		{Name: "scheduled_at", Type: field.TypeTime, Nullable: true},
+		{Name: "meridiem", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
+		{Name: "hour", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
+		{Name: "minute", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
 	}
