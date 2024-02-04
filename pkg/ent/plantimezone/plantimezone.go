@@ -18,8 +18,10 @@ const (
 	FieldUserID = "user_id"
 	// FieldTimezoneName holds the string denoting the timezone_name field in the database.
 	FieldTimezoneName = "timezone_name"
-	// FieldUseAlerm holds the string denoting the use_alerm field in the database.
-	FieldUseAlerm = "use_alerm"
+	// FieldIsDefault holds the string denoting the is_default field in the database.
+	FieldIsDefault = "is_default"
+	// FieldUseAlert holds the string denoting the use_alert field in the database.
+	FieldUseAlert = "use_alert"
 	// FieldScheduledAt holds the string denoting the scheduled_at field in the database.
 	FieldScheduledAt = "scheduled_at"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -35,7 +37,8 @@ var Columns = []string{
 	FieldID,
 	FieldUserID,
 	FieldTimezoneName,
-	FieldUseAlerm,
+	FieldIsDefault,
+	FieldUseAlert,
 	FieldScheduledAt,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -52,8 +55,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultUseAlerm holds the default value on creation for the "use_alerm" field.
-	DefaultUseAlerm string
+	// DefaultIsDefault holds the default value on creation for the "is_default" field.
+	DefaultIsDefault bool
+	// DefaultUseAlert holds the default value on creation for the "use_alert" field.
+	DefaultUseAlert bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -78,9 +83,14 @@ func ByTimezoneName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimezoneName, opts...).ToFunc()
 }
 
-// ByUseAlerm orders the results by the use_alerm field.
-func ByUseAlerm(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUseAlerm, opts...).ToFunc()
+// ByIsDefault orders the results by the is_default field.
+func ByIsDefault(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsDefault, opts...).ToFunc()
+}
+
+// ByUseAlert orders the results by the use_alert field.
+func ByUseAlert(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUseAlert, opts...).ToFunc()
 }
 
 // ByScheduledAt orders the results by the scheduled_at field.

@@ -1734,7 +1734,8 @@ type PlanTimeZoneMutation struct {
 	id            *uuid.UUID
 	user_id       *uuid.UUID
 	timezone_name *string
-	use_alerm     *string
+	is_default    *bool
+	use_alert     *bool
 	scheduled_at  *time.Time
 	created_at    *time.Time
 	updated_at    *time.Time
@@ -1933,40 +1934,76 @@ func (m *PlanTimeZoneMutation) ResetTimezoneName() {
 	delete(m.clearedFields, plantimezone.FieldTimezoneName)
 }
 
-// SetUseAlerm sets the "use_alerm" field.
-func (m *PlanTimeZoneMutation) SetUseAlerm(s string) {
-	m.use_alerm = &s
+// SetIsDefault sets the "is_default" field.
+func (m *PlanTimeZoneMutation) SetIsDefault(b bool) {
+	m.is_default = &b
 }
 
-// UseAlerm returns the value of the "use_alerm" field in the mutation.
-func (m *PlanTimeZoneMutation) UseAlerm() (r string, exists bool) {
-	v := m.use_alerm
+// IsDefault returns the value of the "is_default" field in the mutation.
+func (m *PlanTimeZoneMutation) IsDefault() (r bool, exists bool) {
+	v := m.is_default
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldUseAlerm returns the old "use_alerm" field's value of the PlanTimeZone entity.
+// OldIsDefault returns the old "is_default" field's value of the PlanTimeZone entity.
 // If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldUseAlerm(ctx context.Context) (v string, err error) {
+func (m *PlanTimeZoneMutation) OldIsDefault(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUseAlerm is only allowed on UpdateOne operations")
+		return v, errors.New("OldIsDefault is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUseAlerm requires an ID field in the mutation")
+		return v, errors.New("OldIsDefault requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUseAlerm: %w", err)
+		return v, fmt.Errorf("querying old value for OldIsDefault: %w", err)
 	}
-	return oldValue.UseAlerm, nil
+	return oldValue.IsDefault, nil
 }
 
-// ResetUseAlerm resets all changes to the "use_alerm" field.
-func (m *PlanTimeZoneMutation) ResetUseAlerm() {
-	m.use_alerm = nil
+// ResetIsDefault resets all changes to the "is_default" field.
+func (m *PlanTimeZoneMutation) ResetIsDefault() {
+	m.is_default = nil
+}
+
+// SetUseAlert sets the "use_alert" field.
+func (m *PlanTimeZoneMutation) SetUseAlert(b bool) {
+	m.use_alert = &b
+}
+
+// UseAlert returns the value of the "use_alert" field in the mutation.
+func (m *PlanTimeZoneMutation) UseAlert() (r bool, exists bool) {
+	v := m.use_alert
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUseAlert returns the old "use_alert" field's value of the PlanTimeZone entity.
+// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlanTimeZoneMutation) OldUseAlert(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUseAlert is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUseAlert requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUseAlert: %w", err)
+	}
+	return oldValue.UseAlert, nil
+}
+
+// ResetUseAlert resets all changes to the "use_alert" field.
+func (m *PlanTimeZoneMutation) ResetUseAlert() {
+	m.use_alert = nil
 }
 
 // SetScheduledAt sets the "scheduled_at" field.
@@ -2137,15 +2174,18 @@ func (m *PlanTimeZoneMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PlanTimeZoneMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.user_id != nil {
 		fields = append(fields, plantimezone.FieldUserID)
 	}
 	if m.timezone_name != nil {
 		fields = append(fields, plantimezone.FieldTimezoneName)
 	}
-	if m.use_alerm != nil {
-		fields = append(fields, plantimezone.FieldUseAlerm)
+	if m.is_default != nil {
+		fields = append(fields, plantimezone.FieldIsDefault)
+	}
+	if m.use_alert != nil {
+		fields = append(fields, plantimezone.FieldUseAlert)
 	}
 	if m.scheduled_at != nil {
 		fields = append(fields, plantimezone.FieldScheduledAt)
@@ -2168,8 +2208,10 @@ func (m *PlanTimeZoneMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case plantimezone.FieldTimezoneName:
 		return m.TimezoneName()
-	case plantimezone.FieldUseAlerm:
-		return m.UseAlerm()
+	case plantimezone.FieldIsDefault:
+		return m.IsDefault()
+	case plantimezone.FieldUseAlert:
+		return m.UseAlert()
 	case plantimezone.FieldScheduledAt:
 		return m.ScheduledAt()
 	case plantimezone.FieldCreatedAt:
@@ -2189,8 +2231,10 @@ func (m *PlanTimeZoneMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldUserID(ctx)
 	case plantimezone.FieldTimezoneName:
 		return m.OldTimezoneName(ctx)
-	case plantimezone.FieldUseAlerm:
-		return m.OldUseAlerm(ctx)
+	case plantimezone.FieldIsDefault:
+		return m.OldIsDefault(ctx)
+	case plantimezone.FieldUseAlert:
+		return m.OldUseAlert(ctx)
 	case plantimezone.FieldScheduledAt:
 		return m.OldScheduledAt(ctx)
 	case plantimezone.FieldCreatedAt:
@@ -2220,12 +2264,19 @@ func (m *PlanTimeZoneMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTimezoneName(v)
 		return nil
-	case plantimezone.FieldUseAlerm:
-		v, ok := value.(string)
+	case plantimezone.FieldIsDefault:
+		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetUseAlerm(v)
+		m.SetIsDefault(v)
+		return nil
+	case plantimezone.FieldUseAlert:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUseAlert(v)
 		return nil
 	case plantimezone.FieldScheduledAt:
 		v, ok := value.(time.Time)
@@ -2324,8 +2375,11 @@ func (m *PlanTimeZoneMutation) ResetField(name string) error {
 	case plantimezone.FieldTimezoneName:
 		m.ResetTimezoneName()
 		return nil
-	case plantimezone.FieldUseAlerm:
-		m.ResetUseAlerm()
+	case plantimezone.FieldIsDefault:
+		m.ResetIsDefault()
+		return nil
+	case plantimezone.FieldUseAlert:
+		m.ResetUseAlert()
 		return nil
 	case plantimezone.FieldScheduledAt:
 		m.ResetScheduledAt()

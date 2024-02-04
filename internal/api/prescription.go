@@ -151,16 +151,12 @@ func (a *prescriptionApi) AddItem(ctx *fiber.Ctx) error {
 	req := new(prescription.AddItemRequest)
 	err := ctx.BodyParser(req)
 	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(err.Error()).
-			Error(ctx)
+		return FailParam(err.Error(), ctx)
 	}
 
 	errs := validateParameter(req)
 	if errs != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(errs).
-			Error(ctx)
+		return FailParam(errs, ctx)
 	}
 
 	resp := a.service.AddItem(req)

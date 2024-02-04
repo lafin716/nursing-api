@@ -63,16 +63,30 @@ func (ptzu *PlanTimeZoneUpdate) ClearTimezoneName() *PlanTimeZoneUpdate {
 	return ptzu
 }
 
-// SetUseAlerm sets the "use_alerm" field.
-func (ptzu *PlanTimeZoneUpdate) SetUseAlerm(s string) *PlanTimeZoneUpdate {
-	ptzu.mutation.SetUseAlerm(s)
+// SetIsDefault sets the "is_default" field.
+func (ptzu *PlanTimeZoneUpdate) SetIsDefault(b bool) *PlanTimeZoneUpdate {
+	ptzu.mutation.SetIsDefault(b)
 	return ptzu
 }
 
-// SetNillableUseAlerm sets the "use_alerm" field if the given value is not nil.
-func (ptzu *PlanTimeZoneUpdate) SetNillableUseAlerm(s *string) *PlanTimeZoneUpdate {
-	if s != nil {
-		ptzu.SetUseAlerm(*s)
+// SetNillableIsDefault sets the "is_default" field if the given value is not nil.
+func (ptzu *PlanTimeZoneUpdate) SetNillableIsDefault(b *bool) *PlanTimeZoneUpdate {
+	if b != nil {
+		ptzu.SetIsDefault(*b)
+	}
+	return ptzu
+}
+
+// SetUseAlert sets the "use_alert" field.
+func (ptzu *PlanTimeZoneUpdate) SetUseAlert(b bool) *PlanTimeZoneUpdate {
+	ptzu.mutation.SetUseAlert(b)
+	return ptzu
+}
+
+// SetNillableUseAlert sets the "use_alert" field if the given value is not nil.
+func (ptzu *PlanTimeZoneUpdate) SetNillableUseAlert(b *bool) *PlanTimeZoneUpdate {
+	if b != nil {
+		ptzu.SetUseAlert(*b)
 	}
 	return ptzu
 }
@@ -181,8 +195,11 @@ func (ptzu *PlanTimeZoneUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if ptzu.mutation.TimezoneNameCleared() {
 		_spec.ClearField(plantimezone.FieldTimezoneName, field.TypeString)
 	}
-	if value, ok := ptzu.mutation.UseAlerm(); ok {
-		_spec.SetField(plantimezone.FieldUseAlerm, field.TypeString, value)
+	if value, ok := ptzu.mutation.IsDefault(); ok {
+		_spec.SetField(plantimezone.FieldIsDefault, field.TypeBool, value)
+	}
+	if value, ok := ptzu.mutation.UseAlert(); ok {
+		_spec.SetField(plantimezone.FieldUseAlert, field.TypeBool, value)
 	}
 	if value, ok := ptzu.mutation.ScheduledAt(); ok {
 		_spec.SetField(plantimezone.FieldScheduledAt, field.TypeTime, value)
@@ -253,16 +270,30 @@ func (ptzuo *PlanTimeZoneUpdateOne) ClearTimezoneName() *PlanTimeZoneUpdateOne {
 	return ptzuo
 }
 
-// SetUseAlerm sets the "use_alerm" field.
-func (ptzuo *PlanTimeZoneUpdateOne) SetUseAlerm(s string) *PlanTimeZoneUpdateOne {
-	ptzuo.mutation.SetUseAlerm(s)
+// SetIsDefault sets the "is_default" field.
+func (ptzuo *PlanTimeZoneUpdateOne) SetIsDefault(b bool) *PlanTimeZoneUpdateOne {
+	ptzuo.mutation.SetIsDefault(b)
 	return ptzuo
 }
 
-// SetNillableUseAlerm sets the "use_alerm" field if the given value is not nil.
-func (ptzuo *PlanTimeZoneUpdateOne) SetNillableUseAlerm(s *string) *PlanTimeZoneUpdateOne {
-	if s != nil {
-		ptzuo.SetUseAlerm(*s)
+// SetNillableIsDefault sets the "is_default" field if the given value is not nil.
+func (ptzuo *PlanTimeZoneUpdateOne) SetNillableIsDefault(b *bool) *PlanTimeZoneUpdateOne {
+	if b != nil {
+		ptzuo.SetIsDefault(*b)
+	}
+	return ptzuo
+}
+
+// SetUseAlert sets the "use_alert" field.
+func (ptzuo *PlanTimeZoneUpdateOne) SetUseAlert(b bool) *PlanTimeZoneUpdateOne {
+	ptzuo.mutation.SetUseAlert(b)
+	return ptzuo
+}
+
+// SetNillableUseAlert sets the "use_alert" field if the given value is not nil.
+func (ptzuo *PlanTimeZoneUpdateOne) SetNillableUseAlert(b *bool) *PlanTimeZoneUpdateOne {
+	if b != nil {
+		ptzuo.SetUseAlert(*b)
 	}
 	return ptzuo
 }
@@ -401,8 +432,11 @@ func (ptzuo *PlanTimeZoneUpdateOne) sqlSave(ctx context.Context) (_node *PlanTim
 	if ptzuo.mutation.TimezoneNameCleared() {
 		_spec.ClearField(plantimezone.FieldTimezoneName, field.TypeString)
 	}
-	if value, ok := ptzuo.mutation.UseAlerm(); ok {
-		_spec.SetField(plantimezone.FieldUseAlerm, field.TypeString, value)
+	if value, ok := ptzuo.mutation.IsDefault(); ok {
+		_spec.SetField(plantimezone.FieldIsDefault, field.TypeBool, value)
+	}
+	if value, ok := ptzuo.mutation.UseAlert(); ok {
+		_spec.SetField(plantimezone.FieldUseAlert, field.TypeBool, value)
 	}
 	if value, ok := ptzuo.mutation.ScheduledAt(); ok {
 		_spec.SetField(plantimezone.FieldScheduledAt, field.TypeTime, value)

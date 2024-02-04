@@ -33,12 +33,16 @@ func init() {
 	medicine.DefaultID = medicineDescID.Default.(func() uuid.UUID)
 	plantimezoneFields := schema.PlanTimeZone{}.Fields()
 	_ = plantimezoneFields
-	// plantimezoneDescUseAlerm is the schema descriptor for use_alerm field.
-	plantimezoneDescUseAlerm := plantimezoneFields[3].Descriptor()
-	// plantimezone.DefaultUseAlerm holds the default value on creation for the use_alerm field.
-	plantimezone.DefaultUseAlerm = plantimezoneDescUseAlerm.Default.(string)
+	// plantimezoneDescIsDefault is the schema descriptor for is_default field.
+	plantimezoneDescIsDefault := plantimezoneFields[3].Descriptor()
+	// plantimezone.DefaultIsDefault holds the default value on creation for the is_default field.
+	plantimezone.DefaultIsDefault = plantimezoneDescIsDefault.Default.(bool)
+	// plantimezoneDescUseAlert is the schema descriptor for use_alert field.
+	plantimezoneDescUseAlert := plantimezoneFields[4].Descriptor()
+	// plantimezone.DefaultUseAlert holds the default value on creation for the use_alert field.
+	plantimezone.DefaultUseAlert = plantimezoneDescUseAlert.Default.(bool)
 	// plantimezoneDescCreatedAt is the schema descriptor for created_at field.
-	plantimezoneDescCreatedAt := plantimezoneFields[5].Descriptor()
+	plantimezoneDescCreatedAt := plantimezoneFields[6].Descriptor()
 	// plantimezone.DefaultCreatedAt holds the default value on creation for the created_at field.
 	plantimezone.DefaultCreatedAt = plantimezoneDescCreatedAt.Default.(func() time.Time)
 	// plantimezoneDescID is the schema descriptor for id field.

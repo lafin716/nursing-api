@@ -41,16 +41,30 @@ func (ptzc *PlanTimeZoneCreate) SetNillableTimezoneName(s *string) *PlanTimeZone
 	return ptzc
 }
 
-// SetUseAlerm sets the "use_alerm" field.
-func (ptzc *PlanTimeZoneCreate) SetUseAlerm(s string) *PlanTimeZoneCreate {
-	ptzc.mutation.SetUseAlerm(s)
+// SetIsDefault sets the "is_default" field.
+func (ptzc *PlanTimeZoneCreate) SetIsDefault(b bool) *PlanTimeZoneCreate {
+	ptzc.mutation.SetIsDefault(b)
 	return ptzc
 }
 
-// SetNillableUseAlerm sets the "use_alerm" field if the given value is not nil.
-func (ptzc *PlanTimeZoneCreate) SetNillableUseAlerm(s *string) *PlanTimeZoneCreate {
-	if s != nil {
-		ptzc.SetUseAlerm(*s)
+// SetNillableIsDefault sets the "is_default" field if the given value is not nil.
+func (ptzc *PlanTimeZoneCreate) SetNillableIsDefault(b *bool) *PlanTimeZoneCreate {
+	if b != nil {
+		ptzc.SetIsDefault(*b)
+	}
+	return ptzc
+}
+
+// SetUseAlert sets the "use_alert" field.
+func (ptzc *PlanTimeZoneCreate) SetUseAlert(b bool) *PlanTimeZoneCreate {
+	ptzc.mutation.SetUseAlert(b)
+	return ptzc
+}
+
+// SetNillableUseAlert sets the "use_alert" field if the given value is not nil.
+func (ptzc *PlanTimeZoneCreate) SetNillableUseAlert(b *bool) *PlanTimeZoneCreate {
+	if b != nil {
+		ptzc.SetUseAlert(*b)
 	}
 	return ptzc
 }
@@ -146,9 +160,13 @@ func (ptzc *PlanTimeZoneCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ptzc *PlanTimeZoneCreate) defaults() {
-	if _, ok := ptzc.mutation.UseAlerm(); !ok {
-		v := plantimezone.DefaultUseAlerm
-		ptzc.mutation.SetUseAlerm(v)
+	if _, ok := ptzc.mutation.IsDefault(); !ok {
+		v := plantimezone.DefaultIsDefault
+		ptzc.mutation.SetIsDefault(v)
+	}
+	if _, ok := ptzc.mutation.UseAlert(); !ok {
+		v := plantimezone.DefaultUseAlert
+		ptzc.mutation.SetUseAlert(v)
 	}
 	if _, ok := ptzc.mutation.CreatedAt(); !ok {
 		v := plantimezone.DefaultCreatedAt()
@@ -165,8 +183,11 @@ func (ptzc *PlanTimeZoneCreate) check() error {
 	if _, ok := ptzc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "PlanTimeZone.user_id"`)}
 	}
-	if _, ok := ptzc.mutation.UseAlerm(); !ok {
-		return &ValidationError{Name: "use_alerm", err: errors.New(`ent: missing required field "PlanTimeZone.use_alerm"`)}
+	if _, ok := ptzc.mutation.IsDefault(); !ok {
+		return &ValidationError{Name: "is_default", err: errors.New(`ent: missing required field "PlanTimeZone.is_default"`)}
+	}
+	if _, ok := ptzc.mutation.UseAlert(); !ok {
+		return &ValidationError{Name: "use_alert", err: errors.New(`ent: missing required field "PlanTimeZone.use_alert"`)}
 	}
 	if _, ok := ptzc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PlanTimeZone.created_at"`)}
@@ -214,9 +235,13 @@ func (ptzc *PlanTimeZoneCreate) createSpec() (*PlanTimeZone, *sqlgraph.CreateSpe
 		_spec.SetField(plantimezone.FieldTimezoneName, field.TypeString, value)
 		_node.TimezoneName = value
 	}
-	if value, ok := ptzc.mutation.UseAlerm(); ok {
-		_spec.SetField(plantimezone.FieldUseAlerm, field.TypeString, value)
-		_node.UseAlerm = value
+	if value, ok := ptzc.mutation.IsDefault(); ok {
+		_spec.SetField(plantimezone.FieldIsDefault, field.TypeBool, value)
+		_node.IsDefault = value
+	}
+	if value, ok := ptzc.mutation.UseAlert(); ok {
+		_spec.SetField(plantimezone.FieldUseAlert, field.TypeBool, value)
+		_node.UseAlert = value
 	}
 	if value, ok := ptzc.mutation.ScheduledAt(); ok {
 		_spec.SetField(plantimezone.FieldScheduledAt, field.TypeTime, value)

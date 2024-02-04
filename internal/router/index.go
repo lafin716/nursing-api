@@ -27,6 +27,7 @@ type handlers struct {
 	prescription api.PrescriptionApi
 	takehistory  api.TakeHistoryHttpApi
 	plan         api.PlanHttpApi
+	timezone     api.TimeZoneApi
 }
 
 type container struct {
@@ -46,6 +47,7 @@ func (c *container) Init(
 	c.RegisterPrescriptionRoute()
 	c.RegisterTakeHistoryRoute()
 	c.RegisterPlanRoute()
+	c.RegisterTimeZoneRoute()
 }
 
 func NewRouter(
@@ -57,6 +59,7 @@ func NewRouter(
 	prescription api.PrescriptionApi,
 	takehistory api.TakeHistoryHttpApi,
 	plan api.PlanHttpApi,
+	timezone api.TimeZoneApi,
 ) Routable {
 	return &container{
 		middleware: &middlewares{
@@ -70,6 +73,7 @@ func NewRouter(
 			prescription: prescription,
 			takehistory:  takehistory,
 			plan:         plan,
+			timezone:     timezone,
 		},
 	}
 }

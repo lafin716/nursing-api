@@ -25,6 +25,7 @@ var repository = wire.NewSet(
 	medicine.NewAuthRepository,
 	prescription.NewPrescriptionRepository,
 	takehistory.NewTakeHistoryRepository,
+	plan.NewPlanRepository,
 )
 
 var service = wire.NewSet(
@@ -34,6 +35,7 @@ var service = wire.NewSet(
 	prescription.NewPrescriptionService,
 	takehistory.NewTakeHistoryService,
 	plan.NewPlanService,
+	plan.NewTimeZoneService,
 )
 
 var gateway = wire.NewSet(

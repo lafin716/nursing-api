@@ -59,7 +59,10 @@ func New() (*Server, error) {
 	takeHistoryHttpApi := api.NewTakeHistoryHttpApi(takeHistoryUseCase, jwtClient)
 	planUseCase := plan.NewPlanService(prescriptionRepository, takeHistoryRepository)
 	planHttpApi := api.NewPlanHttpApi(planUseCase, jwtClient)
-	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi, takeHistoryHttpApi, planHttpApi)
+	planRepository := plan.NewPlanRepository(databaseClient)
+	timeZoneUseCase := plan.NewTimeZoneService(planRepository)
+	timeZoneApi := api.NewTimeZoneApi(timeZoneUseCase, jwtClient)
+	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi, takeHistoryHttpApi, planHttpApi, timeZoneApi)
 	server := NewServer(fiberConfig, databaseClient, routable)
 	return server, nil
 }

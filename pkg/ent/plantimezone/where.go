@@ -65,9 +65,14 @@ func TimezoneName(v string) predicate.PlanTimeZone {
 	return predicate.PlanTimeZone(sql.FieldEQ(FieldTimezoneName, v))
 }
 
-// UseAlerm applies equality check predicate on the "use_alerm" field. It's identical to UseAlermEQ.
-func UseAlerm(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldEQ(FieldUseAlerm, v))
+// IsDefault applies equality check predicate on the "is_default" field. It's identical to IsDefaultEQ.
+func IsDefault(v bool) predicate.PlanTimeZone {
+	return predicate.PlanTimeZone(sql.FieldEQ(FieldIsDefault, v))
+}
+
+// UseAlert applies equality check predicate on the "use_alert" field. It's identical to UseAlertEQ.
+func UseAlert(v bool) predicate.PlanTimeZone {
+	return predicate.PlanTimeZone(sql.FieldEQ(FieldUseAlert, v))
 }
 
 // ScheduledAt applies equality check predicate on the "scheduled_at" field. It's identical to ScheduledAtEQ.
@@ -200,69 +205,24 @@ func TimezoneNameContainsFold(v string) predicate.PlanTimeZone {
 	return predicate.PlanTimeZone(sql.FieldContainsFold(FieldTimezoneName, v))
 }
 
-// UseAlermEQ applies the EQ predicate on the "use_alerm" field.
-func UseAlermEQ(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldEQ(FieldUseAlerm, v))
+// IsDefaultEQ applies the EQ predicate on the "is_default" field.
+func IsDefaultEQ(v bool) predicate.PlanTimeZone {
+	return predicate.PlanTimeZone(sql.FieldEQ(FieldIsDefault, v))
 }
 
-// UseAlermNEQ applies the NEQ predicate on the "use_alerm" field.
-func UseAlermNEQ(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldNEQ(FieldUseAlerm, v))
+// IsDefaultNEQ applies the NEQ predicate on the "is_default" field.
+func IsDefaultNEQ(v bool) predicate.PlanTimeZone {
+	return predicate.PlanTimeZone(sql.FieldNEQ(FieldIsDefault, v))
 }
 
-// UseAlermIn applies the In predicate on the "use_alerm" field.
-func UseAlermIn(vs ...string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldIn(FieldUseAlerm, vs...))
+// UseAlertEQ applies the EQ predicate on the "use_alert" field.
+func UseAlertEQ(v bool) predicate.PlanTimeZone {
+	return predicate.PlanTimeZone(sql.FieldEQ(FieldUseAlert, v))
 }
 
-// UseAlermNotIn applies the NotIn predicate on the "use_alerm" field.
-func UseAlermNotIn(vs ...string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldNotIn(FieldUseAlerm, vs...))
-}
-
-// UseAlermGT applies the GT predicate on the "use_alerm" field.
-func UseAlermGT(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldGT(FieldUseAlerm, v))
-}
-
-// UseAlermGTE applies the GTE predicate on the "use_alerm" field.
-func UseAlermGTE(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldGTE(FieldUseAlerm, v))
-}
-
-// UseAlermLT applies the LT predicate on the "use_alerm" field.
-func UseAlermLT(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldLT(FieldUseAlerm, v))
-}
-
-// UseAlermLTE applies the LTE predicate on the "use_alerm" field.
-func UseAlermLTE(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldLTE(FieldUseAlerm, v))
-}
-
-// UseAlermContains applies the Contains predicate on the "use_alerm" field.
-func UseAlermContains(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldContains(FieldUseAlerm, v))
-}
-
-// UseAlermHasPrefix applies the HasPrefix predicate on the "use_alerm" field.
-func UseAlermHasPrefix(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldHasPrefix(FieldUseAlerm, v))
-}
-
-// UseAlermHasSuffix applies the HasSuffix predicate on the "use_alerm" field.
-func UseAlermHasSuffix(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldHasSuffix(FieldUseAlerm, v))
-}
-
-// UseAlermEqualFold applies the EqualFold predicate on the "use_alerm" field.
-func UseAlermEqualFold(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldEqualFold(FieldUseAlerm, v))
-}
-
-// UseAlermContainsFold applies the ContainsFold predicate on the "use_alerm" field.
-func UseAlermContainsFold(v string) predicate.PlanTimeZone {
-	return predicate.PlanTimeZone(sql.FieldContainsFold(FieldUseAlerm, v))
+// UseAlertNEQ applies the NEQ predicate on the "use_alert" field.
+func UseAlertNEQ(v bool) predicate.PlanTimeZone {
+	return predicate.PlanTimeZone(sql.FieldNEQ(FieldUseAlert, v))
 }
 
 // ScheduledAtEQ applies the EQ predicate on the "scheduled_at" field.

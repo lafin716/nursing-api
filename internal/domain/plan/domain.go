@@ -2,7 +2,19 @@ package plan
 
 import (
 	"github.com/google/uuid"
+	"time"
 )
+
+type PlanTimeZone struct {
+	ID          uuid.UUID `json:"id"`
+	UserID      uuid.UUID `json:"user_id"`
+	Name        string    `json:"name"`
+	IsDefault   bool      `json:"is_default"`
+	UseAlerm    bool      `json:"use_alerm"`
+	ScheduledAt time.Time `json:"scheduled_at"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
 
 type TakePlan struct {
 	CurrentDate string     `json:"current_date"`
@@ -37,6 +49,24 @@ type PlanSummaryItem struct {
 	IsExists bool   `json:"isExists"`
 }
 
+type PlanRepository interface {
+	// 계획 시간대 템플릿
+	GetTimeZones(userId uuid.UUID) ([]*PlanTimeZone, error)
+	GetTimeZone(id uuid.UUID, userId uuid.UUID) (*PlanTimeZone, error)
+	CreateTimeZone(model *PlanTimeZone) (*PlanTimeZone, error)
+	UpdateTimeZone(model *PlanTimeZone) (bool, error)
+	DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, error)
+}
+
+// 복용계획 시간대 로직
+type TimeZoneUseCase interface {
+	GetList(userId uuid.UUID) ([]*PlanTimeZone, error)
+	Create(req *CreateTimeZoneRequest) *CreateTimeZoneResponse
+	Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneResponse
+	Delete(req *DeleteTimeZoneRequest) *DeleteTimeZoneResponse
+}
+
+// 복용계획 로직
 type PlanUseCase interface {
 	GetByMonth(req *GetByMonthRequest) *GetByMonthResponse
 	GetByDate(req *GetByDateRequest) *GetByDateResponse
