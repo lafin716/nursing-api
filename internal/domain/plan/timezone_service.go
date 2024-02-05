@@ -46,6 +46,7 @@ func (t timeZoneService) Create(req *CreateTimeZoneRequest) *CreateTimeZoneRespo
 	}
 
 	newTimeZone := &PlanTimeZone{
+		UserID:   req.UserId,
 		Name:     req.Name,
 		UseAlert: *req.UseAlert,
 		Meridiem: req.Meridiem,
