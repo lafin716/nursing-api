@@ -68,6 +68,24 @@ func (t timeZoneService) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneRespo
 		return FailUpdateTimeZone("시간대 정보를 찾을 수 없습니다.", err)
 	}
 
+	duplicate, _ := t.repo.GetDuplicate(
+		req.UserId,
+		req.Name,
+		req.Meridiem,
+		req.Hour,
+		req.Minute,
+	)
+
+	if duplicate != nil && timezone.ID != duplicate.ID {
+		duplMsg := "중복되는 시간대가 존재합니다."
+		if duplicate.Name == req.Name {
+			duplMsg = "이미 존재하는 이름입니다."
+		} else if duplicate.Hour == req.Hour && duplicate.Minute == req.Minute {
+			duplMsg = "이미 등록된 시간입니다."
+		}
+		return FailUpdateTimeZone(duplMsg, nil)
+	}
+
 	// 값이 있는 경우에만 도메인 값을 변경한다.
 	if strings.TrimSpace(req.Name) != "" {
 		timezone.Name = req.Name
