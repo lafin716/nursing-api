@@ -5,6 +5,12 @@ import (
 	"nursing_api/internal/common/response"
 )
 
+func Ok(data interface{}, c *fiber.Ctx) error {
+	return response.New(response.CODE_SUCCESS).
+		SetData(data).
+		Ok(c)
+}
+
 func FailParam(err interface{}, c *fiber.Ctx) error {
 	return response.New(response.CODE_INVALID_PARAM).
 		SetErrors(err).
