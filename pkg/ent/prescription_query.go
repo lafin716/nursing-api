@@ -4,12 +4,10 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 	"nursing_api/pkg/ent/predicate"
 	"nursing_api/pkg/ent/prescription"
-	"nursing_api/pkg/ent/prescriptionitem"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -24,7 +22,6 @@ type PrescriptionQuery struct {
 	order      []prescription.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Prescription
-	withItems  *PrescriptionItemQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,28 +56,6 @@ func (pq *PrescriptionQuery) Unique(unique bool) *PrescriptionQuery {
 func (pq *PrescriptionQuery) Order(o ...prescription.OrderOption) *PrescriptionQuery {
 	pq.order = append(pq.order, o...)
 	return pq
-}
-
-// QueryItems chains the current query on the "items" edge.
-func (pq *PrescriptionQuery) QueryItems() *PrescriptionItemQuery {
-	query := (&PrescriptionItemClient{config: pq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := pq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(prescription.Table, prescription.FieldID, selector),
-			sqlgraph.To(prescriptionitem.Table, prescriptionitem.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, prescription.ItemsTable, prescription.ItemsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first Prescription entity from the query.
@@ -275,22 +250,10 @@ func (pq *PrescriptionQuery) Clone() *PrescriptionQuery {
 		order:      append([]prescription.OrderOption{}, pq.order...),
 		inters:     append([]Interceptor{}, pq.inters...),
 		predicates: append([]predicate.Prescription{}, pq.predicates...),
-		withItems:  pq.withItems.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
 	}
-}
-
-// WithItems tells the query-builder to eager-load the nodes that are connected to
-// the "items" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PrescriptionQuery) WithItems(opts ...func(*PrescriptionItemQuery)) *PrescriptionQuery {
-	query := (&PrescriptionItemClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	pq.withItems = query
-	return pq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -369,11 +332,8 @@ func (pq *PrescriptionQuery) prepareQuery(ctx context.Context) error {
 
 func (pq *PrescriptionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Prescription, error) {
 	var (
-		nodes       = []*Prescription{}
-		_spec       = pq.querySpec()
-		loadedTypes = [1]bool{
-			pq.withItems != nil,
-		}
+		nodes = []*Prescription{}
+		_spec = pq.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Prescription).scanValues(nil, columns)
@@ -381,7 +341,6 @@ func (pq *PrescriptionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Prescription{config: pq.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -393,45 +352,7 @@ func (pq *PrescriptionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := pq.withItems; query != nil {
-		if err := pq.loadItems(ctx, query, nodes,
-			func(n *Prescription) { n.Edges.Items = []*PrescriptionItem{} },
-			func(n *Prescription, e *PrescriptionItem) { n.Edges.Items = append(n.Edges.Items, e) }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (pq *PrescriptionQuery) loadItems(ctx context.Context, query *PrescriptionItemQuery, nodes []*Prescription, init func(*Prescription), assign func(*Prescription, *PrescriptionItem)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Prescription)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(prescriptionitem.FieldPrescriptionID)
-	}
-	query.Where(predicate.PrescriptionItem(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(prescription.ItemsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.PrescriptionID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "prescription_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
 }
 
 func (pq *PrescriptionQuery) sqlCount(ctx context.Context) (int, error) {

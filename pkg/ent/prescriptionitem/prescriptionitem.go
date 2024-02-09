@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -15,20 +14,12 @@ const (
 	Label = "prescription_item"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldUserID holds the string denoting the user_id field in the database.
-	FieldUserID = "user_id"
-	// FieldPrescriptionID holds the string denoting the prescription_id field in the database.
-	FieldPrescriptionID = "prescription_id"
+	// FieldTimezoneLinkID holds the string denoting the timezone_link_id field in the database.
+	FieldTimezoneLinkID = "timezone_link_id"
 	// FieldMedicineID holds the string denoting the medicine_id field in the database.
 	FieldMedicineID = "medicine_id"
 	// FieldMedicineName holds the string denoting the medicine_name field in the database.
 	FieldMedicineName = "medicine_name"
-	// FieldTakeTimeZone holds the string denoting the take_time_zone field in the database.
-	FieldTakeTimeZone = "take_time_zone"
-	// FieldTakeMoment holds the string denoting the take_moment field in the database.
-	FieldTakeMoment = "take_moment"
-	// FieldTakeEtc holds the string denoting the take_etc field in the database.
-	FieldTakeEtc = "take_etc"
 	// FieldTakeAmount holds the string denoting the take_amount field in the database.
 	FieldTakeAmount = "take_amount"
 	// FieldMedicineUnit holds the string denoting the medicine_unit field in the database.
@@ -39,29 +30,16 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgePrescription holds the string denoting the prescription edge name in mutations.
-	EdgePrescription = "prescription"
 	// Table holds the table name of the prescriptionitem in the database.
 	Table = "prescription_items"
-	// PrescriptionTable is the table that holds the prescription relation/edge.
-	PrescriptionTable = "prescription_items"
-	// PrescriptionInverseTable is the table name for the Prescription entity.
-	// It exists in this package in order to avoid circular dependency with the "prescription" package.
-	PrescriptionInverseTable = "prescriptions"
-	// PrescriptionColumn is the table column denoting the prescription relation/edge.
-	PrescriptionColumn = "prescription_id"
 )
 
 // Columns holds all SQL columns for prescriptionitem fields.
 var Columns = []string{
 	FieldID,
-	FieldUserID,
-	FieldPrescriptionID,
+	FieldTimezoneLinkID,
 	FieldMedicineID,
 	FieldMedicineName,
-	FieldTakeTimeZone,
-	FieldTakeMoment,
-	FieldTakeEtc,
 	FieldTakeAmount,
 	FieldMedicineUnit,
 	FieldMemo,
@@ -98,14 +76,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByUserID orders the results by the user_id field.
-func ByUserID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUserID, opts...).ToFunc()
-}
-
-// ByPrescriptionID orders the results by the prescription_id field.
-func ByPrescriptionID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPrescriptionID, opts...).ToFunc()
+// ByTimezoneLinkID orders the results by the timezone_link_id field.
+func ByTimezoneLinkID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezoneLinkID, opts...).ToFunc()
 }
 
 // ByMedicineID orders the results by the medicine_id field.
@@ -116,21 +89,6 @@ func ByMedicineID(opts ...sql.OrderTermOption) OrderOption {
 // ByMedicineName orders the results by the medicine_name field.
 func ByMedicineName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMedicineName, opts...).ToFunc()
-}
-
-// ByTakeTimeZone orders the results by the take_time_zone field.
-func ByTakeTimeZone(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTakeTimeZone, opts...).ToFunc()
-}
-
-// ByTakeMoment orders the results by the take_moment field.
-func ByTakeMoment(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTakeMoment, opts...).ToFunc()
-}
-
-// ByTakeEtc orders the results by the take_etc field.
-func ByTakeEtc(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTakeEtc, opts...).ToFunc()
 }
 
 // ByTakeAmount orders the results by the take_amount field.
@@ -156,18 +114,4 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
-// ByPrescriptionField orders the results by prescription field.
-func ByPrescriptionField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPrescriptionStep(), sql.OrderByField(field, opts...))
-	}
-}
-func newPrescriptionStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(PrescriptionInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, PrescriptionTable, PrescriptionColumn),
-	)
 }

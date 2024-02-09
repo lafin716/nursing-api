@@ -13,6 +13,7 @@ import (
 
 	"nursing_api/pkg/ent/medicine"
 	"nursing_api/pkg/ent/plantimezone"
+	"nursing_api/pkg/ent/plantimezonelink"
 	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/takehistory"
@@ -23,7 +24,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -36,6 +36,8 @@ type Client struct {
 	Medicine *MedicineClient
 	// PlanTimeZone is the client for interacting with the PlanTimeZone builders.
 	PlanTimeZone *PlanTimeZoneClient
+	// PlanTimeZoneLink is the client for interacting with the PlanTimeZoneLink builders.
+	PlanTimeZoneLink *PlanTimeZoneLinkClient
 	// Prescription is the client for interacting with the Prescription builders.
 	Prescription *PrescriptionClient
 	// PrescriptionItem is the client for interacting with the PrescriptionItem builders.
@@ -61,6 +63,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Medicine = NewMedicineClient(c.config)
 	c.PlanTimeZone = NewPlanTimeZoneClient(c.config)
+	c.PlanTimeZoneLink = NewPlanTimeZoneLinkClient(c.config)
 	c.Prescription = NewPrescriptionClient(c.config)
 	c.PrescriptionItem = NewPrescriptionItemClient(c.config)
 	c.TakeHistory = NewTakeHistoryClient(c.config)
@@ -161,6 +164,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:           cfg,
 		Medicine:         NewMedicineClient(cfg),
 		PlanTimeZone:     NewPlanTimeZoneClient(cfg),
+		PlanTimeZoneLink: NewPlanTimeZoneLinkClient(cfg),
 		Prescription:     NewPrescriptionClient(cfg),
 		PrescriptionItem: NewPrescriptionItemClient(cfg),
 		TakeHistory:      NewTakeHistoryClient(cfg),
@@ -188,6 +192,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:           cfg,
 		Medicine:         NewMedicineClient(cfg),
 		PlanTimeZone:     NewPlanTimeZoneClient(cfg),
+		PlanTimeZoneLink: NewPlanTimeZoneLinkClient(cfg),
 		Prescription:     NewPrescriptionClient(cfg),
 		PrescriptionItem: NewPrescriptionItemClient(cfg),
 		TakeHistory:      NewTakeHistoryClient(cfg),
@@ -223,8 +228,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Medicine, c.PlanTimeZone, c.Prescription, c.PrescriptionItem, c.TakeHistory,
-		c.TakeHistoryItem, c.Token, c.User,
+		c.Medicine, c.PlanTimeZone, c.PlanTimeZoneLink, c.Prescription,
+		c.PrescriptionItem, c.TakeHistory, c.TakeHistoryItem, c.Token, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -234,8 +239,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Medicine, c.PlanTimeZone, c.Prescription, c.PrescriptionItem, c.TakeHistory,
-		c.TakeHistoryItem, c.Token, c.User,
+		c.Medicine, c.PlanTimeZone, c.PlanTimeZoneLink, c.Prescription,
+		c.PrescriptionItem, c.TakeHistory, c.TakeHistoryItem, c.Token, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -248,6 +253,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Medicine.mutate(ctx, m)
 	case *PlanTimeZoneMutation:
 		return c.PlanTimeZone.mutate(ctx, m)
+	case *PlanTimeZoneLinkMutation:
+		return c.PlanTimeZoneLink.mutate(ctx, m)
 	case *PrescriptionMutation:
 		return c.Prescription.mutate(ctx, m)
 	case *PrescriptionItemMutation:
@@ -531,6 +538,139 @@ func (c *PlanTimeZoneClient) mutate(ctx context.Context, m *PlanTimeZoneMutation
 	}
 }
 
+// PlanTimeZoneLinkClient is a client for the PlanTimeZoneLink schema.
+type PlanTimeZoneLinkClient struct {
+	config
+}
+
+// NewPlanTimeZoneLinkClient returns a client for the PlanTimeZoneLink from the given config.
+func NewPlanTimeZoneLinkClient(c config) *PlanTimeZoneLinkClient {
+	return &PlanTimeZoneLinkClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `plantimezonelink.Hooks(f(g(h())))`.
+func (c *PlanTimeZoneLinkClient) Use(hooks ...Hook) {
+	c.hooks.PlanTimeZoneLink = append(c.hooks.PlanTimeZoneLink, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `plantimezonelink.Intercept(f(g(h())))`.
+func (c *PlanTimeZoneLinkClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PlanTimeZoneLink = append(c.inters.PlanTimeZoneLink, interceptors...)
+}
+
+// Create returns a builder for creating a PlanTimeZoneLink entity.
+func (c *PlanTimeZoneLinkClient) Create() *PlanTimeZoneLinkCreate {
+	mutation := newPlanTimeZoneLinkMutation(c.config, OpCreate)
+	return &PlanTimeZoneLinkCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PlanTimeZoneLink entities.
+func (c *PlanTimeZoneLinkClient) CreateBulk(builders ...*PlanTimeZoneLinkCreate) *PlanTimeZoneLinkCreateBulk {
+	return &PlanTimeZoneLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PlanTimeZoneLinkClient) MapCreateBulk(slice any, setFunc func(*PlanTimeZoneLinkCreate, int)) *PlanTimeZoneLinkCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PlanTimeZoneLinkCreateBulk{err: fmt.Errorf("calling to PlanTimeZoneLinkClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PlanTimeZoneLinkCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PlanTimeZoneLinkCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PlanTimeZoneLink.
+func (c *PlanTimeZoneLinkClient) Update() *PlanTimeZoneLinkUpdate {
+	mutation := newPlanTimeZoneLinkMutation(c.config, OpUpdate)
+	return &PlanTimeZoneLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PlanTimeZoneLinkClient) UpdateOne(ptzl *PlanTimeZoneLink) *PlanTimeZoneLinkUpdateOne {
+	mutation := newPlanTimeZoneLinkMutation(c.config, OpUpdateOne, withPlanTimeZoneLink(ptzl))
+	return &PlanTimeZoneLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PlanTimeZoneLinkClient) UpdateOneID(id uuid.UUID) *PlanTimeZoneLinkUpdateOne {
+	mutation := newPlanTimeZoneLinkMutation(c.config, OpUpdateOne, withPlanTimeZoneLinkID(id))
+	return &PlanTimeZoneLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PlanTimeZoneLink.
+func (c *PlanTimeZoneLinkClient) Delete() *PlanTimeZoneLinkDelete {
+	mutation := newPlanTimeZoneLinkMutation(c.config, OpDelete)
+	return &PlanTimeZoneLinkDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PlanTimeZoneLinkClient) DeleteOne(ptzl *PlanTimeZoneLink) *PlanTimeZoneLinkDeleteOne {
+	return c.DeleteOneID(ptzl.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PlanTimeZoneLinkClient) DeleteOneID(id uuid.UUID) *PlanTimeZoneLinkDeleteOne {
+	builder := c.Delete().Where(plantimezonelink.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PlanTimeZoneLinkDeleteOne{builder}
+}
+
+// Query returns a query builder for PlanTimeZoneLink.
+func (c *PlanTimeZoneLinkClient) Query() *PlanTimeZoneLinkQuery {
+	return &PlanTimeZoneLinkQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePlanTimeZoneLink},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PlanTimeZoneLink entity by its id.
+func (c *PlanTimeZoneLinkClient) Get(ctx context.Context, id uuid.UUID) (*PlanTimeZoneLink, error) {
+	return c.Query().Where(plantimezonelink.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PlanTimeZoneLinkClient) GetX(ctx context.Context, id uuid.UUID) *PlanTimeZoneLink {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PlanTimeZoneLinkClient) Hooks() []Hook {
+	return c.hooks.PlanTimeZoneLink
+}
+
+// Interceptors returns the client interceptors.
+func (c *PlanTimeZoneLinkClient) Interceptors() []Interceptor {
+	return c.inters.PlanTimeZoneLink
+}
+
+func (c *PlanTimeZoneLinkClient) mutate(ctx context.Context, m *PlanTimeZoneLinkMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PlanTimeZoneLinkCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PlanTimeZoneLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PlanTimeZoneLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PlanTimeZoneLinkDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PlanTimeZoneLink mutation op: %q", m.Op())
+	}
+}
+
 // PrescriptionClient is a client for the Prescription schema.
 type PrescriptionClient struct {
 	config
@@ -637,22 +777,6 @@ func (c *PrescriptionClient) GetX(ctx context.Context, id uuid.UUID) *Prescripti
 		panic(err)
 	}
 	return obj
-}
-
-// QueryItems queries the items edge of a Prescription.
-func (c *PrescriptionClient) QueryItems(pr *Prescription) *PrescriptionItemQuery {
-	query := (&PrescriptionItemClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(prescription.Table, prescription.FieldID, id),
-			sqlgraph.To(prescriptionitem.Table, prescriptionitem.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, prescription.ItemsTable, prescription.ItemsColumn),
-		)
-		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // Hooks returns the client hooks.
@@ -786,22 +910,6 @@ func (c *PrescriptionItemClient) GetX(ctx context.Context, id uuid.UUID) *Prescr
 		panic(err)
 	}
 	return obj
-}
-
-// QueryPrescription queries the prescription edge of a PrescriptionItem.
-func (c *PrescriptionItemClient) QueryPrescription(pi *PrescriptionItem) *PrescriptionQuery {
-	query := (&PrescriptionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pi.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(prescriptionitem.Table, prescriptionitem.FieldID, id),
-			sqlgraph.To(prescription.Table, prescription.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, prescriptionitem.PrescriptionTable, prescriptionitem.PrescriptionColumn),
-		)
-		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // Hooks returns the client hooks.
@@ -1364,11 +1472,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Medicine, PlanTimeZone, Prescription, PrescriptionItem, TakeHistory,
-		TakeHistoryItem, Token, User []ent.Hook
+		Medicine, PlanTimeZone, PlanTimeZoneLink, Prescription, PrescriptionItem,
+		TakeHistory, TakeHistoryItem, Token, User []ent.Hook
 	}
 	inters struct {
-		Medicine, PlanTimeZone, Prescription, PrescriptionItem, TakeHistory,
-		TakeHistoryItem, Token, User []ent.Interceptor
+		Medicine, PlanTimeZone, PlanTimeZoneLink, Prescription, PrescriptionItem,
+		TakeHistory, TakeHistoryItem, Token, User []ent.Interceptor
 	}
 )

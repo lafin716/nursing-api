@@ -32,6 +32,18 @@ func (f PlanTimeZoneFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlanTimeZoneMutation", m)
 }
 
+// The PlanTimeZoneLinkFunc type is an adapter to allow the use of ordinary
+// function as PlanTimeZoneLink mutator.
+type PlanTimeZoneLinkFunc func(context.Context, *ent.PlanTimeZoneLinkMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PlanTimeZoneLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PlanTimeZoneLinkMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlanTimeZoneLinkMutation", m)
+}
+
 // The PrescriptionFunc type is an adapter to allow the use of ordinary
 // function as Prescription mutator.
 type PrescriptionFunc func(context.Context, *ent.PrescriptionMutation) (ent.Value, error)

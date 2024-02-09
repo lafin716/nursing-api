@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/predicate"
-	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"time"
 
@@ -30,30 +29,16 @@ func (piu *PrescriptionItemUpdate) Where(ps ...predicate.PrescriptionItem) *Pres
 	return piu
 }
 
-// SetUserID sets the "user_id" field.
-func (piu *PrescriptionItemUpdate) SetUserID(u uuid.UUID) *PrescriptionItemUpdate {
-	piu.mutation.SetUserID(u)
+// SetTimezoneLinkID sets the "timezone_link_id" field.
+func (piu *PrescriptionItemUpdate) SetTimezoneLinkID(u uuid.UUID) *PrescriptionItemUpdate {
+	piu.mutation.SetTimezoneLinkID(u)
 	return piu
 }
 
-// SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (piu *PrescriptionItemUpdate) SetNillableUserID(u *uuid.UUID) *PrescriptionItemUpdate {
+// SetNillableTimezoneLinkID sets the "timezone_link_id" field if the given value is not nil.
+func (piu *PrescriptionItemUpdate) SetNillableTimezoneLinkID(u *uuid.UUID) *PrescriptionItemUpdate {
 	if u != nil {
-		piu.SetUserID(*u)
-	}
-	return piu
-}
-
-// SetPrescriptionID sets the "prescription_id" field.
-func (piu *PrescriptionItemUpdate) SetPrescriptionID(u uuid.UUID) *PrescriptionItemUpdate {
-	piu.mutation.SetPrescriptionID(u)
-	return piu
-}
-
-// SetNillablePrescriptionID sets the "prescription_id" field if the given value is not nil.
-func (piu *PrescriptionItemUpdate) SetNillablePrescriptionID(u *uuid.UUID) *PrescriptionItemUpdate {
-	if u != nil {
-		piu.SetPrescriptionID(*u)
+		piu.SetTimezoneLinkID(*u)
 	}
 	return piu
 }
@@ -83,66 +68,6 @@ func (piu *PrescriptionItemUpdate) SetNillableMedicineName(s *string) *Prescript
 	if s != nil {
 		piu.SetMedicineName(*s)
 	}
-	return piu
-}
-
-// SetTakeTimeZone sets the "take_time_zone" field.
-func (piu *PrescriptionItemUpdate) SetTakeTimeZone(s string) *PrescriptionItemUpdate {
-	piu.mutation.SetTakeTimeZone(s)
-	return piu
-}
-
-// SetNillableTakeTimeZone sets the "take_time_zone" field if the given value is not nil.
-func (piu *PrescriptionItemUpdate) SetNillableTakeTimeZone(s *string) *PrescriptionItemUpdate {
-	if s != nil {
-		piu.SetTakeTimeZone(*s)
-	}
-	return piu
-}
-
-// ClearTakeTimeZone clears the value of the "take_time_zone" field.
-func (piu *PrescriptionItemUpdate) ClearTakeTimeZone() *PrescriptionItemUpdate {
-	piu.mutation.ClearTakeTimeZone()
-	return piu
-}
-
-// SetTakeMoment sets the "take_moment" field.
-func (piu *PrescriptionItemUpdate) SetTakeMoment(s string) *PrescriptionItemUpdate {
-	piu.mutation.SetTakeMoment(s)
-	return piu
-}
-
-// SetNillableTakeMoment sets the "take_moment" field if the given value is not nil.
-func (piu *PrescriptionItemUpdate) SetNillableTakeMoment(s *string) *PrescriptionItemUpdate {
-	if s != nil {
-		piu.SetTakeMoment(*s)
-	}
-	return piu
-}
-
-// ClearTakeMoment clears the value of the "take_moment" field.
-func (piu *PrescriptionItemUpdate) ClearTakeMoment() *PrescriptionItemUpdate {
-	piu.mutation.ClearTakeMoment()
-	return piu
-}
-
-// SetTakeEtc sets the "take_etc" field.
-func (piu *PrescriptionItemUpdate) SetTakeEtc(s string) *PrescriptionItemUpdate {
-	piu.mutation.SetTakeEtc(s)
-	return piu
-}
-
-// SetNillableTakeEtc sets the "take_etc" field if the given value is not nil.
-func (piu *PrescriptionItemUpdate) SetNillableTakeEtc(s *string) *PrescriptionItemUpdate {
-	if s != nil {
-		piu.SetTakeEtc(*s)
-	}
-	return piu
-}
-
-// ClearTakeEtc clears the value of the "take_etc" field.
-func (piu *PrescriptionItemUpdate) ClearTakeEtc() *PrescriptionItemUpdate {
-	piu.mutation.ClearTakeEtc()
 	return piu
 }
 
@@ -241,20 +166,9 @@ func (piu *PrescriptionItemUpdate) ClearUpdatedAt() *PrescriptionItemUpdate {
 	return piu
 }
 
-// SetPrescription sets the "prescription" edge to the Prescription entity.
-func (piu *PrescriptionItemUpdate) SetPrescription(p *Prescription) *PrescriptionItemUpdate {
-	return piu.SetPrescriptionID(p.ID)
-}
-
 // Mutation returns the PrescriptionItemMutation object of the builder.
 func (piu *PrescriptionItemUpdate) Mutation() *PrescriptionItemMutation {
 	return piu.mutation
-}
-
-// ClearPrescription clears the "prescription" edge to the Prescription entity.
-func (piu *PrescriptionItemUpdate) ClearPrescription() *PrescriptionItemUpdate {
-	piu.mutation.ClearPrescription()
-	return piu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -284,18 +198,7 @@ func (piu *PrescriptionItemUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (piu *PrescriptionItemUpdate) check() error {
-	if _, ok := piu.mutation.PrescriptionID(); piu.mutation.PrescriptionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "PrescriptionItem.prescription"`)
-	}
-	return nil
-}
-
 func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := piu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(prescriptionitem.Table, prescriptionitem.Columns, sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID))
 	if ps := piu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -304,32 +207,14 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 			}
 		}
 	}
-	if value, ok := piu.mutation.UserID(); ok {
-		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
+	if value, ok := piu.mutation.TimezoneLinkID(); ok {
+		_spec.SetField(prescriptionitem.FieldTimezoneLinkID, field.TypeUUID, value)
 	}
 	if value, ok := piu.mutation.MedicineID(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineID, field.TypeUUID, value)
 	}
 	if value, ok := piu.mutation.MedicineName(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineName, field.TypeString, value)
-	}
-	if value, ok := piu.mutation.TakeTimeZone(); ok {
-		_spec.SetField(prescriptionitem.FieldTakeTimeZone, field.TypeString, value)
-	}
-	if piu.mutation.TakeTimeZoneCleared() {
-		_spec.ClearField(prescriptionitem.FieldTakeTimeZone, field.TypeString)
-	}
-	if value, ok := piu.mutation.TakeMoment(); ok {
-		_spec.SetField(prescriptionitem.FieldTakeMoment, field.TypeString, value)
-	}
-	if piu.mutation.TakeMomentCleared() {
-		_spec.ClearField(prescriptionitem.FieldTakeMoment, field.TypeString)
-	}
-	if value, ok := piu.mutation.TakeEtc(); ok {
-		_spec.SetField(prescriptionitem.FieldTakeEtc, field.TypeString, value)
-	}
-	if piu.mutation.TakeEtcCleared() {
-		_spec.ClearField(prescriptionitem.FieldTakeEtc, field.TypeString)
 	}
 	if value, ok := piu.mutation.TakeAmount(); ok {
 		_spec.SetField(prescriptionitem.FieldTakeAmount, field.TypeFloat64, value)
@@ -358,35 +243,6 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	if piu.mutation.UpdatedAtCleared() {
 		_spec.ClearField(prescriptionitem.FieldUpdatedAt, field.TypeTime)
 	}
-	if piu.mutation.PrescriptionCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   prescriptionitem.PrescriptionTable,
-			Columns: []string{prescriptionitem.PrescriptionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := piu.mutation.PrescriptionIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   prescriptionitem.PrescriptionTable,
-			Columns: []string{prescriptionitem.PrescriptionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, piu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{prescriptionitem.Label}
@@ -407,30 +263,16 @@ type PrescriptionItemUpdateOne struct {
 	mutation *PrescriptionItemMutation
 }
 
-// SetUserID sets the "user_id" field.
-func (piuo *PrescriptionItemUpdateOne) SetUserID(u uuid.UUID) *PrescriptionItemUpdateOne {
-	piuo.mutation.SetUserID(u)
+// SetTimezoneLinkID sets the "timezone_link_id" field.
+func (piuo *PrescriptionItemUpdateOne) SetTimezoneLinkID(u uuid.UUID) *PrescriptionItemUpdateOne {
+	piuo.mutation.SetTimezoneLinkID(u)
 	return piuo
 }
 
-// SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (piuo *PrescriptionItemUpdateOne) SetNillableUserID(u *uuid.UUID) *PrescriptionItemUpdateOne {
+// SetNillableTimezoneLinkID sets the "timezone_link_id" field if the given value is not nil.
+func (piuo *PrescriptionItemUpdateOne) SetNillableTimezoneLinkID(u *uuid.UUID) *PrescriptionItemUpdateOne {
 	if u != nil {
-		piuo.SetUserID(*u)
-	}
-	return piuo
-}
-
-// SetPrescriptionID sets the "prescription_id" field.
-func (piuo *PrescriptionItemUpdateOne) SetPrescriptionID(u uuid.UUID) *PrescriptionItemUpdateOne {
-	piuo.mutation.SetPrescriptionID(u)
-	return piuo
-}
-
-// SetNillablePrescriptionID sets the "prescription_id" field if the given value is not nil.
-func (piuo *PrescriptionItemUpdateOne) SetNillablePrescriptionID(u *uuid.UUID) *PrescriptionItemUpdateOne {
-	if u != nil {
-		piuo.SetPrescriptionID(*u)
+		piuo.SetTimezoneLinkID(*u)
 	}
 	return piuo
 }
@@ -460,66 +302,6 @@ func (piuo *PrescriptionItemUpdateOne) SetNillableMedicineName(s *string) *Presc
 	if s != nil {
 		piuo.SetMedicineName(*s)
 	}
-	return piuo
-}
-
-// SetTakeTimeZone sets the "take_time_zone" field.
-func (piuo *PrescriptionItemUpdateOne) SetTakeTimeZone(s string) *PrescriptionItemUpdateOne {
-	piuo.mutation.SetTakeTimeZone(s)
-	return piuo
-}
-
-// SetNillableTakeTimeZone sets the "take_time_zone" field if the given value is not nil.
-func (piuo *PrescriptionItemUpdateOne) SetNillableTakeTimeZone(s *string) *PrescriptionItemUpdateOne {
-	if s != nil {
-		piuo.SetTakeTimeZone(*s)
-	}
-	return piuo
-}
-
-// ClearTakeTimeZone clears the value of the "take_time_zone" field.
-func (piuo *PrescriptionItemUpdateOne) ClearTakeTimeZone() *PrescriptionItemUpdateOne {
-	piuo.mutation.ClearTakeTimeZone()
-	return piuo
-}
-
-// SetTakeMoment sets the "take_moment" field.
-func (piuo *PrescriptionItemUpdateOne) SetTakeMoment(s string) *PrescriptionItemUpdateOne {
-	piuo.mutation.SetTakeMoment(s)
-	return piuo
-}
-
-// SetNillableTakeMoment sets the "take_moment" field if the given value is not nil.
-func (piuo *PrescriptionItemUpdateOne) SetNillableTakeMoment(s *string) *PrescriptionItemUpdateOne {
-	if s != nil {
-		piuo.SetTakeMoment(*s)
-	}
-	return piuo
-}
-
-// ClearTakeMoment clears the value of the "take_moment" field.
-func (piuo *PrescriptionItemUpdateOne) ClearTakeMoment() *PrescriptionItemUpdateOne {
-	piuo.mutation.ClearTakeMoment()
-	return piuo
-}
-
-// SetTakeEtc sets the "take_etc" field.
-func (piuo *PrescriptionItemUpdateOne) SetTakeEtc(s string) *PrescriptionItemUpdateOne {
-	piuo.mutation.SetTakeEtc(s)
-	return piuo
-}
-
-// SetNillableTakeEtc sets the "take_etc" field if the given value is not nil.
-func (piuo *PrescriptionItemUpdateOne) SetNillableTakeEtc(s *string) *PrescriptionItemUpdateOne {
-	if s != nil {
-		piuo.SetTakeEtc(*s)
-	}
-	return piuo
-}
-
-// ClearTakeEtc clears the value of the "take_etc" field.
-func (piuo *PrescriptionItemUpdateOne) ClearTakeEtc() *PrescriptionItemUpdateOne {
-	piuo.mutation.ClearTakeEtc()
 	return piuo
 }
 
@@ -618,20 +400,9 @@ func (piuo *PrescriptionItemUpdateOne) ClearUpdatedAt() *PrescriptionItemUpdateO
 	return piuo
 }
 
-// SetPrescription sets the "prescription" edge to the Prescription entity.
-func (piuo *PrescriptionItemUpdateOne) SetPrescription(p *Prescription) *PrescriptionItemUpdateOne {
-	return piuo.SetPrescriptionID(p.ID)
-}
-
 // Mutation returns the PrescriptionItemMutation object of the builder.
 func (piuo *PrescriptionItemUpdateOne) Mutation() *PrescriptionItemMutation {
 	return piuo.mutation
-}
-
-// ClearPrescription clears the "prescription" edge to the Prescription entity.
-func (piuo *PrescriptionItemUpdateOne) ClearPrescription() *PrescriptionItemUpdateOne {
-	piuo.mutation.ClearPrescription()
-	return piuo
 }
 
 // Where appends a list predicates to the PrescriptionItemUpdate builder.
@@ -674,18 +445,7 @@ func (piuo *PrescriptionItemUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (piuo *PrescriptionItemUpdateOne) check() error {
-	if _, ok := piuo.mutation.PrescriptionID(); piuo.mutation.PrescriptionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "PrescriptionItem.prescription"`)
-	}
-	return nil
-}
-
 func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *PrescriptionItem, err error) {
-	if err := piuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(prescriptionitem.Table, prescriptionitem.Columns, sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID))
 	id, ok := piuo.mutation.ID()
 	if !ok {
@@ -711,32 +471,14 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 			}
 		}
 	}
-	if value, ok := piuo.mutation.UserID(); ok {
-		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
+	if value, ok := piuo.mutation.TimezoneLinkID(); ok {
+		_spec.SetField(prescriptionitem.FieldTimezoneLinkID, field.TypeUUID, value)
 	}
 	if value, ok := piuo.mutation.MedicineID(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineID, field.TypeUUID, value)
 	}
 	if value, ok := piuo.mutation.MedicineName(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineName, field.TypeString, value)
-	}
-	if value, ok := piuo.mutation.TakeTimeZone(); ok {
-		_spec.SetField(prescriptionitem.FieldTakeTimeZone, field.TypeString, value)
-	}
-	if piuo.mutation.TakeTimeZoneCleared() {
-		_spec.ClearField(prescriptionitem.FieldTakeTimeZone, field.TypeString)
-	}
-	if value, ok := piuo.mutation.TakeMoment(); ok {
-		_spec.SetField(prescriptionitem.FieldTakeMoment, field.TypeString, value)
-	}
-	if piuo.mutation.TakeMomentCleared() {
-		_spec.ClearField(prescriptionitem.FieldTakeMoment, field.TypeString)
-	}
-	if value, ok := piuo.mutation.TakeEtc(); ok {
-		_spec.SetField(prescriptionitem.FieldTakeEtc, field.TypeString, value)
-	}
-	if piuo.mutation.TakeEtcCleared() {
-		_spec.ClearField(prescriptionitem.FieldTakeEtc, field.TypeString)
 	}
 	if value, ok := piuo.mutation.TakeAmount(); ok {
 		_spec.SetField(prescriptionitem.FieldTakeAmount, field.TypeFloat64, value)
@@ -764,35 +506,6 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 	}
 	if piuo.mutation.UpdatedAtCleared() {
 		_spec.ClearField(prescriptionitem.FieldUpdatedAt, field.TypeTime)
-	}
-	if piuo.mutation.PrescriptionCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   prescriptionitem.PrescriptionTable,
-			Columns: []string{prescriptionitem.PrescriptionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := piuo.mutation.PrescriptionIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   prescriptionitem.PrescriptionTable,
-			Columns: []string{prescriptionitem.PrescriptionColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &PrescriptionItem{config: piuo.config}
 	_spec.Assign = _node.assignValues

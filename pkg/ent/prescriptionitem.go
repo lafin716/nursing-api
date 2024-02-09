@@ -4,7 +4,6 @@ package ent
 
 import (
 	"fmt"
-	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"strings"
 	"time"
@@ -19,20 +18,12 @@ type PrescriptionItem struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// UserID holds the value of the "user_id" field.
-	UserID uuid.UUID `json:"user_id,omitempty"`
-	// PrescriptionID holds the value of the "prescription_id" field.
-	PrescriptionID uuid.UUID `json:"prescription_id,omitempty"`
+	// TimezoneLinkID holds the value of the "timezone_link_id" field.
+	TimezoneLinkID uuid.UUID `json:"timezone_link_id,omitempty"`
 	// MedicineID holds the value of the "medicine_id" field.
 	MedicineID uuid.UUID `json:"medicine_id,omitempty"`
 	// MedicineName holds the value of the "medicine_name" field.
 	MedicineName string `json:"medicine_name,omitempty"`
-	// TakeTimeZone holds the value of the "take_time_zone" field.
-	TakeTimeZone string `json:"take_time_zone,omitempty"`
-	// TakeMoment holds the value of the "take_moment" field.
-	TakeMoment string `json:"take_moment,omitempty"`
-	// TakeEtc holds the value of the "take_etc" field.
-	TakeEtc string `json:"take_etc,omitempty"`
 	// TakeAmount holds the value of the "take_amount" field.
 	TakeAmount float64 `json:"take_amount,omitempty"`
 	// MedicineUnit holds the value of the "medicine_unit" field.
@@ -42,33 +33,8 @@ type PrescriptionItem struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the PrescriptionItemQuery when eager-loading is set.
-	Edges        PrescriptionItemEdges `json:"edges"`
+	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
-}
-
-// PrescriptionItemEdges holds the relations/edges for other nodes in the graph.
-type PrescriptionItemEdges struct {
-	// Prescription holds the value of the prescription edge.
-	Prescription *Prescription `json:"prescription,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
-}
-
-// PrescriptionOrErr returns the Prescription value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e PrescriptionItemEdges) PrescriptionOrErr() (*Prescription, error) {
-	if e.loadedTypes[0] {
-		if e.Prescription == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: prescription.Label}
-		}
-		return e.Prescription, nil
-	}
-	return nil, &NotLoadedError{edge: "prescription"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -78,11 +44,11 @@ func (*PrescriptionItem) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case prescriptionitem.FieldTakeAmount:
 			values[i] = new(sql.NullFloat64)
-		case prescriptionitem.FieldMedicineName, prescriptionitem.FieldTakeTimeZone, prescriptionitem.FieldTakeMoment, prescriptionitem.FieldTakeEtc, prescriptionitem.FieldMedicineUnit, prescriptionitem.FieldMemo:
+		case prescriptionitem.FieldMedicineName, prescriptionitem.FieldMedicineUnit, prescriptionitem.FieldMemo:
 			values[i] = new(sql.NullString)
 		case prescriptionitem.FieldCreatedAt, prescriptionitem.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case prescriptionitem.FieldID, prescriptionitem.FieldUserID, prescriptionitem.FieldPrescriptionID, prescriptionitem.FieldMedicineID:
+		case prescriptionitem.FieldID, prescriptionitem.FieldTimezoneLinkID, prescriptionitem.FieldMedicineID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -105,17 +71,11 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				pi.ID = *value
 			}
-		case prescriptionitem.FieldUserID:
+		case prescriptionitem.FieldTimezoneLinkID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+				return fmt.Errorf("unexpected type %T for field timezone_link_id", values[i])
 			} else if value != nil {
-				pi.UserID = *value
-			}
-		case prescriptionitem.FieldPrescriptionID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field prescription_id", values[i])
-			} else if value != nil {
-				pi.PrescriptionID = *value
+				pi.TimezoneLinkID = *value
 			}
 		case prescriptionitem.FieldMedicineID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -128,24 +88,6 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field medicine_name", values[i])
 			} else if value.Valid {
 				pi.MedicineName = value.String
-			}
-		case prescriptionitem.FieldTakeTimeZone:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field take_time_zone", values[i])
-			} else if value.Valid {
-				pi.TakeTimeZone = value.String
-			}
-		case prescriptionitem.FieldTakeMoment:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field take_moment", values[i])
-			} else if value.Valid {
-				pi.TakeMoment = value.String
-			}
-		case prescriptionitem.FieldTakeEtc:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field take_etc", values[i])
-			} else if value.Valid {
-				pi.TakeEtc = value.String
 			}
 		case prescriptionitem.FieldTakeAmount:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -190,11 +132,6 @@ func (pi *PrescriptionItem) Value(name string) (ent.Value, error) {
 	return pi.selectValues.Get(name)
 }
 
-// QueryPrescription queries the "prescription" edge of the PrescriptionItem entity.
-func (pi *PrescriptionItem) QueryPrescription() *PrescriptionQuery {
-	return NewPrescriptionItemClient(pi.config).QueryPrescription(pi)
-}
-
 // Update returns a builder for updating this PrescriptionItem.
 // Note that you need to call PrescriptionItem.Unwrap() before calling this method if this PrescriptionItem
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -218,26 +155,14 @@ func (pi *PrescriptionItem) String() string {
 	var builder strings.Builder
 	builder.WriteString("PrescriptionItem(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pi.ID))
-	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", pi.UserID))
-	builder.WriteString(", ")
-	builder.WriteString("prescription_id=")
-	builder.WriteString(fmt.Sprintf("%v", pi.PrescriptionID))
+	builder.WriteString("timezone_link_id=")
+	builder.WriteString(fmt.Sprintf("%v", pi.TimezoneLinkID))
 	builder.WriteString(", ")
 	builder.WriteString("medicine_id=")
 	builder.WriteString(fmt.Sprintf("%v", pi.MedicineID))
 	builder.WriteString(", ")
 	builder.WriteString("medicine_name=")
 	builder.WriteString(pi.MedicineName)
-	builder.WriteString(", ")
-	builder.WriteString("take_time_zone=")
-	builder.WriteString(pi.TakeTimeZone)
-	builder.WriteString(", ")
-	builder.WriteString("take_moment=")
-	builder.WriteString(pi.TakeMoment)
-	builder.WriteString(", ")
-	builder.WriteString("take_etc=")
-	builder.WriteString(pi.TakeEtc)
 	builder.WriteString(", ")
 	builder.WriteString("take_amount=")
 	builder.WriteString(fmt.Sprintf("%v", pi.TakeAmount))

@@ -12,6 +12,9 @@ type Medicine func(*sql.Selector)
 // PlanTimeZone is the predicate function for plantimezone builders.
 type PlanTimeZone func(*sql.Selector)
 
+// PlanTimeZoneLink is the predicate function for plantimezonelink builders.
+type PlanTimeZoneLink func(*sql.Selector)
+
 // Prescription is the predicate function for prescription builders.
 type Prescription func(*sql.Selector)
 

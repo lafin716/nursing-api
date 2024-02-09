@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math"
 	"nursing_api/pkg/ent/predicate"
-	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 
 	"entgo.io/ent/dialect/sql"
@@ -19,11 +18,10 @@ import (
 // PrescriptionItemQuery is the builder for querying PrescriptionItem entities.
 type PrescriptionItemQuery struct {
 	config
-	ctx              *QueryContext
-	order            []prescriptionitem.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.PrescriptionItem
-	withPrescription *PrescriptionQuery
+	ctx        *QueryContext
+	order      []prescriptionitem.OrderOption
+	inters     []Interceptor
+	predicates []predicate.PrescriptionItem
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,28 +56,6 @@ func (piq *PrescriptionItemQuery) Unique(unique bool) *PrescriptionItemQuery {
 func (piq *PrescriptionItemQuery) Order(o ...prescriptionitem.OrderOption) *PrescriptionItemQuery {
 	piq.order = append(piq.order, o...)
 	return piq
-}
-
-// QueryPrescription chains the current query on the "prescription" edge.
-func (piq *PrescriptionItemQuery) QueryPrescription() *PrescriptionQuery {
-	query := (&PrescriptionClient{config: piq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := piq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := piq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(prescriptionitem.Table, prescriptionitem.FieldID, selector),
-			sqlgraph.To(prescription.Table, prescription.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, prescriptionitem.PrescriptionTable, prescriptionitem.PrescriptionColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(piq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first PrescriptionItem entity from the query.
@@ -269,27 +245,15 @@ func (piq *PrescriptionItemQuery) Clone() *PrescriptionItemQuery {
 		return nil
 	}
 	return &PrescriptionItemQuery{
-		config:           piq.config,
-		ctx:              piq.ctx.Clone(),
-		order:            append([]prescriptionitem.OrderOption{}, piq.order...),
-		inters:           append([]Interceptor{}, piq.inters...),
-		predicates:       append([]predicate.PrescriptionItem{}, piq.predicates...),
-		withPrescription: piq.withPrescription.Clone(),
+		config:     piq.config,
+		ctx:        piq.ctx.Clone(),
+		order:      append([]prescriptionitem.OrderOption{}, piq.order...),
+		inters:     append([]Interceptor{}, piq.inters...),
+		predicates: append([]predicate.PrescriptionItem{}, piq.predicates...),
 		// clone intermediate query.
 		sql:  piq.sql.Clone(),
 		path: piq.path,
 	}
-}
-
-// WithPrescription tells the query-builder to eager-load the nodes that are connected to
-// the "prescription" edge. The optional arguments are used to configure the query builder of the edge.
-func (piq *PrescriptionItemQuery) WithPrescription(opts ...func(*PrescriptionQuery)) *PrescriptionItemQuery {
-	query := (&PrescriptionClient{config: piq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	piq.withPrescription = query
-	return piq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -298,12 +262,12 @@ func (piq *PrescriptionItemQuery) WithPrescription(opts ...func(*PrescriptionQue
 // Example:
 //
 //	var v []struct {
-//		UserID uuid.UUID `json:"user_id,omitempty"`
+//		TimezoneLinkID uuid.UUID `json:"timezone_link_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.PrescriptionItem.Query().
-//		GroupBy(prescriptionitem.FieldUserID).
+//		GroupBy(prescriptionitem.FieldTimezoneLinkID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (piq *PrescriptionItemQuery) GroupBy(field string, fields ...string) *PrescriptionItemGroupBy {
@@ -321,11 +285,11 @@ func (piq *PrescriptionItemQuery) GroupBy(field string, fields ...string) *Presc
 // Example:
 //
 //	var v []struct {
-//		UserID uuid.UUID `json:"user_id,omitempty"`
+//		TimezoneLinkID uuid.UUID `json:"timezone_link_id,omitempty"`
 //	}
 //
 //	client.PrescriptionItem.Query().
-//		Select(prescriptionitem.FieldUserID).
+//		Select(prescriptionitem.FieldTimezoneLinkID).
 //		Scan(ctx, &v)
 func (piq *PrescriptionItemQuery) Select(fields ...string) *PrescriptionItemSelect {
 	piq.ctx.Fields = append(piq.ctx.Fields, fields...)
@@ -368,11 +332,8 @@ func (piq *PrescriptionItemQuery) prepareQuery(ctx context.Context) error {
 
 func (piq *PrescriptionItemQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*PrescriptionItem, error) {
 	var (
-		nodes       = []*PrescriptionItem{}
-		_spec       = piq.querySpec()
-		loadedTypes = [1]bool{
-			piq.withPrescription != nil,
-		}
+		nodes = []*PrescriptionItem{}
+		_spec = piq.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*PrescriptionItem).scanValues(nil, columns)
@@ -380,7 +341,6 @@ func (piq *PrescriptionItemQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &PrescriptionItem{config: piq.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -392,43 +352,7 @@ func (piq *PrescriptionItemQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := piq.withPrescription; query != nil {
-		if err := piq.loadPrescription(ctx, query, nodes, nil,
-			func(n *PrescriptionItem, e *Prescription) { n.Edges.Prescription = e }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (piq *PrescriptionItemQuery) loadPrescription(ctx context.Context, query *PrescriptionQuery, nodes []*PrescriptionItem, init func(*PrescriptionItem), assign func(*PrescriptionItem, *Prescription)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*PrescriptionItem)
-	for i := range nodes {
-		fk := nodes[i].PrescriptionID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(prescription.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "prescription_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
 }
 
 func (piq *PrescriptionItemQuery) sqlCount(ctx context.Context) (int, error) {
@@ -455,9 +379,6 @@ func (piq *PrescriptionItemQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != prescriptionitem.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if piq.withPrescription != nil {
-			_spec.Node.AddColumnOnce(prescriptionitem.FieldPrescriptionID)
 		}
 	}
 	if ps := piq.predicates; len(ps) > 0 {

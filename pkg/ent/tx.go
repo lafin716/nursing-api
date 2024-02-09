@@ -16,6 +16,8 @@ type Tx struct {
 	Medicine *MedicineClient
 	// PlanTimeZone is the client for interacting with the PlanTimeZone builders.
 	PlanTimeZone *PlanTimeZoneClient
+	// PlanTimeZoneLink is the client for interacting with the PlanTimeZoneLink builders.
+	PlanTimeZoneLink *PlanTimeZoneLinkClient
 	// Prescription is the client for interacting with the Prescription builders.
 	Prescription *PrescriptionClient
 	// PrescriptionItem is the client for interacting with the PrescriptionItem builders.
@@ -161,6 +163,7 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Medicine = NewMedicineClient(tx.config)
 	tx.PlanTimeZone = NewPlanTimeZoneClient(tx.config)
+	tx.PlanTimeZoneLink = NewPlanTimeZoneLinkClient(tx.config)
 	tx.Prescription = NewPrescriptionClient(tx.config)
 	tx.PrescriptionItem = NewPrescriptionItemClient(tx.config)
 	tx.TakeHistory = NewTakeHistoryClient(tx.config)
