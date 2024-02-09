@@ -28,15 +28,14 @@ func toEntityItems(domains []*PrescriptionItem) []*ent.PrescriptionItem {
 
 func toEntityItem(domain *PrescriptionItem) *ent.PrescriptionItem {
 	return &ent.PrescriptionItem{
-		UserID:       domain.UserId,
-		MedicineName: domain.MedicineName,
-		TakeTimeZone: domain.TakeTimeZone,
-		TakeMoment:   domain.TakeMoment,
-		TakeEtc:      domain.TakeEtc,
-		TakeAmount:   float64(domain.TakeAmount),
-		MedicineUnit: domain.MedicineUnit,
-		Memo:         domain.Memo,
-		CreatedAt:    domain.CreatedAt,
+		ID:             domain.ID,
+		TimezoneLinkID: domain.TimeZoneLinkId,
+		MedicineID:     domain.MedicineId,
+		MedicineName:   domain.MedicineName,
+		TakeAmount:     domain.TakeAmount,
+		MedicineUnit:   domain.MedicineUnit,
+		Memo:           domain.Memo,
+		CreatedAt:      domain.CreatedAt,
 	}
 }
 
@@ -51,17 +50,16 @@ func toDomains(entities []*ent.Prescription) []*Prescription {
 
 func toDomain(entity *ent.Prescription) *Prescription {
 	return &Prescription{
-		ID:                entity.ID,
-		UserId:            entity.UserID,
-		PrescriptionName:  entity.PrescriptionName,
-		HospitalName:      entity.HospitalName,
-		TakeDays:          entity.TakeDays,
-		StartedAt:         entity.StartedAt,
-		FinishedAt:        entity.FinishedAt,
-		Memo:              entity.Memo,
-		CreatedAt:         entity.CreatedAt,
-		UpdatedAt:         entity.UpdatedAt,
-		PrescriptionItems: toDomainItems(entity.Edges.Items),
+		ID:               entity.ID,
+		UserId:           entity.UserID,
+		PrescriptionName: entity.PrescriptionName,
+		HospitalName:     entity.HospitalName,
+		TakeDays:         entity.TakeDays,
+		StartedAt:        entity.StartedAt,
+		FinishedAt:       entity.FinishedAt,
+		Memo:             entity.Memo,
+		CreatedAt:        entity.CreatedAt,
+		UpdatedAt:        entity.UpdatedAt,
 	}
 }
 
@@ -77,13 +75,9 @@ func toDomainItems(entities []*ent.PrescriptionItem) []*PrescriptionItem {
 func toDomainItem(entity *ent.PrescriptionItem) *PrescriptionItem {
 	return &PrescriptionItem{
 		ID:             entity.ID,
-		UserId:         entity.UserID,
-		PrescriptionId: entity.PrescriptionID,
+		TimeZoneLinkId: entity.TimezoneLinkID,
 		MedicineId:     entity.MedicineID,
 		MedicineName:   entity.MedicineName,
-		TakeTimeZone:   entity.TakeTimeZone,
-		TakeMoment:     entity.TakeMoment,
-		TakeEtc:        entity.TakeEtc,
 		TakeAmount:     entity.TakeAmount,
 		MedicineUnit:   entity.MedicineUnit,
 		Memo:           entity.Memo,

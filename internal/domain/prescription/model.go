@@ -21,13 +21,9 @@ type Prescription struct {
 
 type PrescriptionItem struct {
 	ID             uuid.UUID `json:"id"`
-	UserId         uuid.UUID `json:"user_id"`
-	PrescriptionId uuid.UUID `json:"prescription_id"`
+	TimeZoneLinkId uuid.UUID `json:"timezone_link_id"`
 	MedicineId     uuid.UUID `json:"medicine_id"`
 	MedicineName   string    `json:"medicine_name"`
-	TakeTimeZone   string    `json:"take_time_zone"`
-	TakeMoment     string    `json:"take_moment"`
-	TakeEtc        string    `json:"take_etc"`
 	TakeAmount     float64   `json:"take_amount"`
 	MedicineUnit   string    `json:"medicine_unit"`
 	Memo           string    `json:"memo"`
@@ -88,15 +84,6 @@ func (p *PrescriptionItem) update(newModel *PrescriptionItem) {
 	}
 	if newModel.MedicineName != "" {
 		p.MedicineName = newModel.MedicineName
-	}
-	if newModel.TakeTimeZone != "" {
-		p.TakeTimeZone = newModel.TakeTimeZone
-	}
-	if newModel.TakeMoment != "" {
-		p.TakeMoment = newModel.TakeMoment
-	}
-	if newModel.TakeEtc != "" {
-		p.TakeEtc = newModel.TakeEtc
 	}
 	if newModel.TakeAmount > 0 {
 		p.TakeAmount = newModel.TakeAmount

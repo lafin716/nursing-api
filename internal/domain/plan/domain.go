@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type PlanTimeZone struct {
+type TimeZone struct {
 	ID        uuid.UUID `json:"id"`
 	UserID    uuid.UUID `json:"user_id"`
 	Name      string    `json:"name"`
@@ -16,6 +16,19 @@ type PlanTimeZone struct {
 	Minute    string    `json:"minute"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type TimeZoneLink struct {
+	ID             uuid.UUID `json:"id"`
+	PrescriptionId uuid.UUID `json:"prescription_id"`
+	TimeZoneId     uuid.UUID `json:"timezone_id"`
+	TimeZoneName   string    `json:"timezone_name"`
+	UseAlert       bool      `json:"use_alert"`
+	Meridiem       string    `json:"meridiem"`
+	Hour           string    `json:"hour"`
+	Minute         string    `json:"minute"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type TakePlan struct {
@@ -53,17 +66,17 @@ type PlanSummaryItem struct {
 
 type PlanRepository interface {
 	// 계획 시간대 템플릿
-	GetTimeZones(userId uuid.UUID) ([]*PlanTimeZone, error)
-	GetTimeZone(id uuid.UUID, userId uuid.UUID) (*PlanTimeZone, error)
-	CreateTimeZone(model *PlanTimeZone) (*PlanTimeZone, error)
-	UpdateTimeZone(model *PlanTimeZone) (bool, error)
+	GetTimeZones(userId uuid.UUID) ([]*TimeZone, error)
+	GetTimeZone(id uuid.UUID, userId uuid.UUID) (*TimeZone, error)
+	CreateTimeZone(model *TimeZone) (*TimeZone, error)
+	UpdateTimeZone(model *TimeZone) (bool, error)
 	DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, error)
-	GetDuplicate(userId uuid.UUID, name string, meridiem string, hour string, minute string) (*PlanTimeZone, error)
+	GetDuplicate(userId uuid.UUID, name string, meridiem string, hour string, minute string) (*TimeZone, error)
 }
 
 // 복용계획 시간대 로직
 type TimeZoneUseCase interface {
-	GetList(userId uuid.UUID) ([]*PlanTimeZone, error)
+	GetList(userId uuid.UUID) ([]*TimeZone, error)
 	Create(req *CreateTimeZoneRequest) *CreateTimeZoneResponse
 	Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneResponse
 	Delete(req *DeleteTimeZoneRequest) *DeleteTimeZoneResponse

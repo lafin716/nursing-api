@@ -17,7 +17,7 @@ func NewTimeZoneService(
 	}
 }
 
-func (t timeZoneService) GetList(userId uuid.UUID) ([]*PlanTimeZone, error) {
+func (t timeZoneService) GetList(userId uuid.UUID) ([]*TimeZone, error) {
 	timezones, err := t.repo.GetTimeZones(userId)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (t timeZoneService) Create(req *CreateTimeZoneRequest) *CreateTimeZoneRespo
 		return FailCreateTimeZone(duplMsg, nil)
 	}
 
-	newTimeZone := &PlanTimeZone{
+	newTimeZone := &TimeZone{
 		UserID:   req.UserId,
 		Name:     req.Name,
 		UseAlert: *req.UseAlert,

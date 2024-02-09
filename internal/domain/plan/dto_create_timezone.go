@@ -16,11 +16,11 @@ type CreateTimeZoneRequest struct {
 type CreateTimeZoneResponse struct {
 	Success bool
 	Message string
-	Data    *PlanTimeZone
+	Data    *TimeZone
 	Error   error
 }
 
-func OkCreateTimeZone(data *PlanTimeZone) *CreateTimeZoneResponse {
+func OkCreateTimeZone(data *TimeZone) *CreateTimeZoneResponse {
 	return &CreateTimeZoneResponse{
 		Success: true,
 		Message: "정상적으로 생성되었습니다",

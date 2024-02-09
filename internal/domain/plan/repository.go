@@ -26,7 +26,7 @@ func NewPlanRepository(
 	}
 }
 
-func (p planRepository) GetTimeZones(userId uuid.UUID) ([]*PlanTimeZone, error) {
+func (p planRepository) GetTimeZones(userId uuid.UUID) ([]*TimeZone, error) {
 	list, err := p.timezone.
 		Query().
 		Where(
@@ -45,7 +45,7 @@ func (p planRepository) GetTimeZones(userId uuid.UUID) ([]*PlanTimeZone, error) 
 	return toTimeZoneDomainList(list), nil
 }
 
-func (p planRepository) GetTimeZone(id uuid.UUID, userId uuid.UUID) (*PlanTimeZone, error) {
+func (p planRepository) GetTimeZone(id uuid.UUID, userId uuid.UUID) (*TimeZone, error) {
 	timezone, err := p.timezone.
 		Query().
 		Where(
@@ -60,7 +60,7 @@ func (p planRepository) GetTimeZone(id uuid.UUID, userId uuid.UUID) (*PlanTimeZo
 	return toTimeZoneDomain(timezone), nil
 }
 
-func (p planRepository) CreateTimeZone(model *PlanTimeZone) (*PlanTimeZone, error) {
+func (p planRepository) CreateTimeZone(model *TimeZone) (*TimeZone, error) {
 	newPlanTimeZone, err := p.timezone.
 		Create().
 		SetUserID(model.UserID).
@@ -79,7 +79,7 @@ func (p planRepository) CreateTimeZone(model *PlanTimeZone) (*PlanTimeZone, erro
 	return toTimeZoneDomain(newPlanTimeZone), nil
 }
 
-func (p planRepository) UpdateTimeZone(model *PlanTimeZone) (bool, error) {
+func (p planRepository) UpdateTimeZone(model *TimeZone) (bool, error) {
 	err := p.timezone.
 		Update().
 		SetTimezoneName(model.Name).
@@ -114,7 +114,7 @@ func (p planRepository) GetDuplicate(
 	meridiem string,
 	hour string,
 	minute string,
-) (*PlanTimeZone, error) {
+) (*TimeZone, error) {
 	found, err := p.root.Debug().PlanTimeZone.
 		Query().
 		Where(

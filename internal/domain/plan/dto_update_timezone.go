@@ -17,11 +17,11 @@ type UpdateTimeZoneRequest struct {
 type UpdateTimeZoneResponse struct {
 	Success bool
 	Message string
-	Data    *PlanTimeZone
+	Data    *TimeZone
 	Error   error
 }
 
-func OkUpdateTimeZone(data *PlanTimeZone) *UpdateTimeZoneResponse {
+func OkUpdateTimeZone(data *TimeZone) *UpdateTimeZoneResponse {
 	return &UpdateTimeZoneResponse{
 		Success: true,
 		Message: "정상적으로 업데이트 되었습니다",
