@@ -32,6 +32,7 @@ func NewPrescriptionApi(
 	}
 }
 
+// 처방전 리스트
 func (a *prescriptionApi) GetList(ctx *fiber.Ctx) error {
 	req := new(prescription.GetListRequest)
 	err := ctx.QueryParser(req)
@@ -202,6 +203,7 @@ func (a *prescriptionApi) UpdateItem(ctx *fiber.Ctx) error {
 		Ok(ctx)
 }
 
+// 처방전 아이템 삭제
 func (a *prescriptionApi) DeleteItem(ctx *fiber.Ctx) error {
 	req := new(prescription.DeleteItemRequest)
 	err := ctx.ParamsParser(req)
