@@ -52,21 +52,25 @@ func (p planHttpApi) Today(ctx *fiber.Ctx) error {
 	return response.New(response.CODE_SUCCESS).SetData(resp.Data).Ok(ctx)
 }
 
+// 복용계획개요
 func (p planHttpApi) Summary(ctx *fiber.Ctx) error {
 	//TODO implement me
 	panic("implement me")
 }
 
+// 복용처리
 func (p planHttpApi) TakePlan(ctx *fiber.Ctx) error {
 	//TODO implement me
 	panic("implement me")
 }
 
+// 의약품 복용처리
 func (p planHttpApi) TakePill(ctx *fiber.Ctx) error {
 	//TODO implement me
 	panic("implement me")
 }
 
+// 메모 업데이트
 func (p planHttpApi) UpdateMemo(ctx *fiber.Ctx) error {
 	//TODO implement me
 	panic("implement me")
