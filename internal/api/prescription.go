@@ -7,6 +7,7 @@ import (
 	"nursing_api/pkg/jwt"
 )
 
+// @Deprecated 복용계획으로 통합될 예정
 type PrescriptionApi interface {
 	Regist(ctx *fiber.Ctx) error
 	GetList(ctx *fiber.Ctx) error
