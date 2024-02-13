@@ -8,6 +8,7 @@ import (
 )
 
 type PlanHttpApi interface {
+  Add(ctx *fiber.Ctx) error
 	Today(ctx *fiber.Ctx) error
 	Summary(ctx *fiber.Ctx) error
 	TakePlan(ctx *fiber.Ctx) error
@@ -18,6 +19,10 @@ type PlanHttpApi interface {
 type planHttpApi struct {
 	service   plan.PlanUseCase
 	jwtClient *jwt.JwtClient
+}
+
+func (p planHttpApi) Add(ctx *fiber.Ctx) error {
+  return nil
 }
 
 // @summary 날짜별 복약 계획
