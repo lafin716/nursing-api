@@ -2,6 +2,7 @@ package prescription
 
 import "nursing_api/pkg/ent"
 
+// 엔티티로 변환
 func toEntity(domain *Prescription) *ent.Prescription {
 	return &ent.Prescription{
 		ID:               domain.ID,
@@ -17,6 +18,7 @@ func toEntity(domain *Prescription) *ent.Prescription {
 	}
 }
 
+// 엔티티 아이템으로 변환
 func toEntityItems(domains []*PrescriptionItem) []*ent.PrescriptionItem {
 	items := []*ent.PrescriptionItem{}
 	for _, domain := range domains {
