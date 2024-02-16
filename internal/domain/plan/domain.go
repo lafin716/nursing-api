@@ -84,6 +84,7 @@ type TimeZoneUseCase interface {
 
 // 복용계획 로직
 type PlanUseCase interface {
+	Add()
 	GetByMonth(req *GetByMonthRequest) *GetByMonthResponse
 	GetByDate(req *GetByDateRequest) *GetByDateResponse
 	TakePlan(req *TakePlanRequest) *TakePlanResponse

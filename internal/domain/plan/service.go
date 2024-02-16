@@ -17,6 +17,16 @@ type planService struct {
 	takeHistoryRepo  takehistory.TakeHistoryRepository
 }
 
+func NewPlanService(
+	prescriptionRepo prescription.PrescriptionRepository,
+	takeHistoryRepo takehistory.TakeHistoryRepository,
+) PlanUseCase {
+	return &planService{
+		prescriptionRepo: prescriptionRepo,
+		takeHistoryRepo:  takeHistoryRepo,
+	}
+}
+
 func (p planService) GetByMonth(req *GetByMonthRequest) *GetByMonthResponse {
 	panic("")
 }
@@ -108,14 +118,4 @@ func (p planService) UnTakePill(req *UnTakePillRequest) *UnTakePillResponse {
 func (p planService) UpdateMemo(req *UpdateMemoRequest) *UpdateMemoResponse {
 	//TODO implement me
 	panic("implement me")
-}
-
-func NewPlanService(
-	prescriptionRepo prescription.PrescriptionRepository,
-	takeHistoryRepo takehistory.TakeHistoryRepository,
-) PlanUseCase {
-	return &planService{
-		prescriptionRepo: prescriptionRepo,
-		takeHistoryRepo:  takeHistoryRepo,
-	}
 }
