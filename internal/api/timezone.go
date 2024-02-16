@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"nursing_api/internal/common/response"
-	"nursing_api/internal/domain/plan"
+	"nursing_api/internal/domain/timezone"
 	"nursing_api/pkg/jwt"
 )
 
@@ -15,12 +15,12 @@ type TimeZoneApi interface {
 }
 
 type timezoneApi struct {
-	service   plan.TimeZoneUseCase
+	service   timezone.UseCase
 	jwtClient *jwt.JwtClient
 }
 
 func NewTimeZoneApi(
-	service plan.TimeZoneUseCase,
+	service timezone.UseCase,
 	jwtClient *jwt.JwtClient,
 ) TimeZoneApi {
 	return &timezoneApi{
@@ -49,7 +49,7 @@ func (t timezoneApi) Create(c *fiber.Ctx) error {
 		return err
 	}
 
-	req := new(plan.CreateTimeZoneRequest)
+	req := new(timezone.CreateTimeZoneRequest)
 	err = c.BodyParser(req)
 	if err != nil {
 		return FailParam(err.Error(), c)
@@ -81,7 +81,7 @@ func (t timezoneApi) Update(c *fiber.Ctx) error {
 		return err
 	}
 
-	req := new(plan.UpdateTimeZoneRequest)
+	req := new(timezone.UpdateTimeZoneRequest)
 	err = c.BodyParser(req)
 	if err != nil {
 		return FailParam(err.Error(), c)
@@ -108,7 +108,7 @@ func (t timezoneApi) Delete(c *fiber.Ctx) error {
 		return err
 	}
 
-	req := new(plan.DeleteTimeZoneRequest)
+	req := new(timezone.DeleteTimeZoneRequest)
 	err = c.ParamsParser(req)
 	if err != nil {
 		return response.New(response.CODE_INVALID_PARAM).

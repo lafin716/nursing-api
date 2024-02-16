@@ -1,4 +1,4 @@
-package plan
+package timezone
 
 import (
 	"github.com/google/uuid"
@@ -9,7 +9,7 @@ type UpdateTimeZoneRequest struct {
 	UserId   uuid.UUID `json:"-"`
 	Name     string    `json:"name"`
 	UseAlert *bool     `json:"use_alert"`
-	Meridiem string    `json:"meridiem"`
+	Midday   string    `json:"midday"`
 	Hour     string    `json:"hour"`
 	Minute   string    `json:"minute"`
 }

@@ -61,9 +61,9 @@ func (ptzlc *PlanTimeZoneLinkCreate) SetNillableUseAlert(b *bool) *PlanTimeZoneL
 	return ptzlc
 }
 
-// SetMeridiem sets the "meridiem" field.
-func (ptzlc *PlanTimeZoneLinkCreate) SetMeridiem(s string) *PlanTimeZoneLinkCreate {
-	ptzlc.mutation.SetMeridiem(s)
+// SetMidday sets the "midday" field.
+func (ptzlc *PlanTimeZoneLinkCreate) SetMidday(s string) *PlanTimeZoneLinkCreate {
+	ptzlc.mutation.SetMidday(s)
 	return ptzlc
 }
 
@@ -181,8 +181,8 @@ func (ptzlc *PlanTimeZoneLinkCreate) check() error {
 	if _, ok := ptzlc.mutation.UseAlert(); !ok {
 		return &ValidationError{Name: "use_alert", err: errors.New(`ent: missing required field "PlanTimeZoneLink.use_alert"`)}
 	}
-	if _, ok := ptzlc.mutation.Meridiem(); !ok {
-		return &ValidationError{Name: "meridiem", err: errors.New(`ent: missing required field "PlanTimeZoneLink.meridiem"`)}
+	if _, ok := ptzlc.mutation.Midday(); !ok {
+		return &ValidationError{Name: "midday", err: errors.New(`ent: missing required field "PlanTimeZoneLink.midday"`)}
 	}
 	if _, ok := ptzlc.mutation.Hour(); !ok {
 		return &ValidationError{Name: "hour", err: errors.New(`ent: missing required field "PlanTimeZoneLink.hour"`)}
@@ -244,9 +244,9 @@ func (ptzlc *PlanTimeZoneLinkCreate) createSpec() (*PlanTimeZoneLink, *sqlgraph.
 		_spec.SetField(plantimezonelink.FieldUseAlert, field.TypeBool, value)
 		_node.UseAlert = value
 	}
-	if value, ok := ptzlc.mutation.Meridiem(); ok {
-		_spec.SetField(plantimezonelink.FieldMeridiem, field.TypeString, value)
-		_node.Meridiem = value
+	if value, ok := ptzlc.mutation.Midday(); ok {
+		_spec.SetField(plantimezonelink.FieldMidday, field.TypeString, value)
+		_node.Midday = value
 	}
 	if value, ok := ptzlc.mutation.Hour(); ok {
 		_spec.SetField(plantimezonelink.FieldHour, field.TypeString, value)

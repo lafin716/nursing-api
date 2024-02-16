@@ -77,30 +77,16 @@ func (ptzu *PlanTimeZoneUpdate) SetNillableIsDefault(b *bool) *PlanTimeZoneUpdat
 	return ptzu
 }
 
-// SetUseAlert sets the "use_alert" field.
-func (ptzu *PlanTimeZoneUpdate) SetUseAlert(b bool) *PlanTimeZoneUpdate {
-	ptzu.mutation.SetUseAlert(b)
+// SetMidday sets the "midday" field.
+func (ptzu *PlanTimeZoneUpdate) SetMidday(s string) *PlanTimeZoneUpdate {
+	ptzu.mutation.SetMidday(s)
 	return ptzu
 }
 
-// SetNillableUseAlert sets the "use_alert" field if the given value is not nil.
-func (ptzu *PlanTimeZoneUpdate) SetNillableUseAlert(b *bool) *PlanTimeZoneUpdate {
-	if b != nil {
-		ptzu.SetUseAlert(*b)
-	}
-	return ptzu
-}
-
-// SetMeridiem sets the "meridiem" field.
-func (ptzu *PlanTimeZoneUpdate) SetMeridiem(s string) *PlanTimeZoneUpdate {
-	ptzu.mutation.SetMeridiem(s)
-	return ptzu
-}
-
-// SetNillableMeridiem sets the "meridiem" field if the given value is not nil.
-func (ptzu *PlanTimeZoneUpdate) SetNillableMeridiem(s *string) *PlanTimeZoneUpdate {
+// SetNillableMidday sets the "midday" field if the given value is not nil.
+func (ptzu *PlanTimeZoneUpdate) SetNillableMidday(s *string) *PlanTimeZoneUpdate {
 	if s != nil {
-		ptzu.SetMeridiem(*s)
+		ptzu.SetMidday(*s)
 	}
 	return ptzu
 }
@@ -220,11 +206,8 @@ func (ptzu *PlanTimeZoneUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := ptzu.mutation.IsDefault(); ok {
 		_spec.SetField(plantimezone.FieldIsDefault, field.TypeBool, value)
 	}
-	if value, ok := ptzu.mutation.UseAlert(); ok {
-		_spec.SetField(plantimezone.FieldUseAlert, field.TypeBool, value)
-	}
-	if value, ok := ptzu.mutation.Meridiem(); ok {
-		_spec.SetField(plantimezone.FieldMeridiem, field.TypeString, value)
+	if value, ok := ptzu.mutation.Midday(); ok {
+		_spec.SetField(plantimezone.FieldMidday, field.TypeString, value)
 	}
 	if value, ok := ptzu.mutation.Hour(); ok {
 		_spec.SetField(plantimezone.FieldHour, field.TypeString, value)
@@ -309,30 +292,16 @@ func (ptzuo *PlanTimeZoneUpdateOne) SetNillableIsDefault(b *bool) *PlanTimeZoneU
 	return ptzuo
 }
 
-// SetUseAlert sets the "use_alert" field.
-func (ptzuo *PlanTimeZoneUpdateOne) SetUseAlert(b bool) *PlanTimeZoneUpdateOne {
-	ptzuo.mutation.SetUseAlert(b)
+// SetMidday sets the "midday" field.
+func (ptzuo *PlanTimeZoneUpdateOne) SetMidday(s string) *PlanTimeZoneUpdateOne {
+	ptzuo.mutation.SetMidday(s)
 	return ptzuo
 }
 
-// SetNillableUseAlert sets the "use_alert" field if the given value is not nil.
-func (ptzuo *PlanTimeZoneUpdateOne) SetNillableUseAlert(b *bool) *PlanTimeZoneUpdateOne {
-	if b != nil {
-		ptzuo.SetUseAlert(*b)
-	}
-	return ptzuo
-}
-
-// SetMeridiem sets the "meridiem" field.
-func (ptzuo *PlanTimeZoneUpdateOne) SetMeridiem(s string) *PlanTimeZoneUpdateOne {
-	ptzuo.mutation.SetMeridiem(s)
-	return ptzuo
-}
-
-// SetNillableMeridiem sets the "meridiem" field if the given value is not nil.
-func (ptzuo *PlanTimeZoneUpdateOne) SetNillableMeridiem(s *string) *PlanTimeZoneUpdateOne {
+// SetNillableMidday sets the "midday" field if the given value is not nil.
+func (ptzuo *PlanTimeZoneUpdateOne) SetNillableMidday(s *string) *PlanTimeZoneUpdateOne {
 	if s != nil {
-		ptzuo.SetMeridiem(*s)
+		ptzuo.SetMidday(*s)
 	}
 	return ptzuo
 }
@@ -482,11 +451,8 @@ func (ptzuo *PlanTimeZoneUpdateOne) sqlSave(ctx context.Context) (_node *PlanTim
 	if value, ok := ptzuo.mutation.IsDefault(); ok {
 		_spec.SetField(plantimezone.FieldIsDefault, field.TypeBool, value)
 	}
-	if value, ok := ptzuo.mutation.UseAlert(); ok {
-		_spec.SetField(plantimezone.FieldUseAlert, field.TypeBool, value)
-	}
-	if value, ok := ptzuo.mutation.Meridiem(); ok {
-		_spec.SetField(plantimezone.FieldMeridiem, field.TypeString, value)
+	if value, ok := ptzuo.mutation.Midday(); ok {
+		_spec.SetField(plantimezone.FieldMidday, field.TypeString, value)
 	}
 	if value, ok := ptzuo.mutation.Hour(); ok {
 		_spec.SetField(plantimezone.FieldHour, field.TypeString, value)

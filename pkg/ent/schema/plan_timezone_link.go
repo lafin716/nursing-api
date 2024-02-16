@@ -18,7 +18,7 @@ func (PlanTimeZoneLink) Fields() []ent.Field {
 		field.UUID("timezone_id", uuid.UUID{}),
 		field.String("timezone_name").Optional().SchemaType(varchar(50)),
 		field.Bool("use_alert").Default(false),
-		field.String("meridiem").SchemaType(varchar(2)),
+		field.String("midday").SchemaType(varchar(2)),
 		field.String("hour").SchemaType(varchar(2)),
 		field.String("minute").SchemaType(varchar(2)),
 		field.Time("created_at").Default(time.Now),

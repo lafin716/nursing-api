@@ -91,16 +91,16 @@ func (ptzlu *PlanTimeZoneLinkUpdate) SetNillableUseAlert(b *bool) *PlanTimeZoneL
 	return ptzlu
 }
 
-// SetMeridiem sets the "meridiem" field.
-func (ptzlu *PlanTimeZoneLinkUpdate) SetMeridiem(s string) *PlanTimeZoneLinkUpdate {
-	ptzlu.mutation.SetMeridiem(s)
+// SetMidday sets the "midday" field.
+func (ptzlu *PlanTimeZoneLinkUpdate) SetMidday(s string) *PlanTimeZoneLinkUpdate {
+	ptzlu.mutation.SetMidday(s)
 	return ptzlu
 }
 
-// SetNillableMeridiem sets the "meridiem" field if the given value is not nil.
-func (ptzlu *PlanTimeZoneLinkUpdate) SetNillableMeridiem(s *string) *PlanTimeZoneLinkUpdate {
+// SetNillableMidday sets the "midday" field if the given value is not nil.
+func (ptzlu *PlanTimeZoneLinkUpdate) SetNillableMidday(s *string) *PlanTimeZoneLinkUpdate {
 	if s != nil {
-		ptzlu.SetMeridiem(*s)
+		ptzlu.SetMidday(*s)
 	}
 	return ptzlu
 }
@@ -223,8 +223,8 @@ func (ptzlu *PlanTimeZoneLinkUpdate) sqlSave(ctx context.Context) (n int, err er
 	if value, ok := ptzlu.mutation.UseAlert(); ok {
 		_spec.SetField(plantimezonelink.FieldUseAlert, field.TypeBool, value)
 	}
-	if value, ok := ptzlu.mutation.Meridiem(); ok {
-		_spec.SetField(plantimezonelink.FieldMeridiem, field.TypeString, value)
+	if value, ok := ptzlu.mutation.Midday(); ok {
+		_spec.SetField(plantimezonelink.FieldMidday, field.TypeString, value)
 	}
 	if value, ok := ptzlu.mutation.Hour(); ok {
 		_spec.SetField(plantimezonelink.FieldHour, field.TypeString, value)
@@ -323,16 +323,16 @@ func (ptzluo *PlanTimeZoneLinkUpdateOne) SetNillableUseAlert(b *bool) *PlanTimeZ
 	return ptzluo
 }
 
-// SetMeridiem sets the "meridiem" field.
-func (ptzluo *PlanTimeZoneLinkUpdateOne) SetMeridiem(s string) *PlanTimeZoneLinkUpdateOne {
-	ptzluo.mutation.SetMeridiem(s)
+// SetMidday sets the "midday" field.
+func (ptzluo *PlanTimeZoneLinkUpdateOne) SetMidday(s string) *PlanTimeZoneLinkUpdateOne {
+	ptzluo.mutation.SetMidday(s)
 	return ptzluo
 }
 
-// SetNillableMeridiem sets the "meridiem" field if the given value is not nil.
-func (ptzluo *PlanTimeZoneLinkUpdateOne) SetNillableMeridiem(s *string) *PlanTimeZoneLinkUpdateOne {
+// SetNillableMidday sets the "midday" field if the given value is not nil.
+func (ptzluo *PlanTimeZoneLinkUpdateOne) SetNillableMidday(s *string) *PlanTimeZoneLinkUpdateOne {
 	if s != nil {
-		ptzluo.SetMeridiem(*s)
+		ptzluo.SetMidday(*s)
 	}
 	return ptzluo
 }
@@ -485,8 +485,8 @@ func (ptzluo *PlanTimeZoneLinkUpdateOne) sqlSave(ctx context.Context) (_node *Pl
 	if value, ok := ptzluo.mutation.UseAlert(); ok {
 		_spec.SetField(plantimezonelink.FieldUseAlert, field.TypeBool, value)
 	}
-	if value, ok := ptzluo.mutation.Meridiem(); ok {
-		_spec.SetField(plantimezonelink.FieldMeridiem, field.TypeString, value)
+	if value, ok := ptzluo.mutation.Midday(); ok {
+		_spec.SetField(plantimezonelink.FieldMidday, field.TypeString, value)
 	}
 	if value, ok := ptzluo.mutation.Hour(); ok {
 		_spec.SetField(plantimezonelink.FieldHour, field.TypeString, value)

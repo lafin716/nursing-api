@@ -14,7 +14,7 @@ type authRepository struct {
 	ctx    context.Context
 }
 
-func NewAuthRepository(dbClient *database.DatabaseClient) AuthRepository {
+func NewRepository(dbClient *database.DatabaseClient) AuthRepository {
 	return &authRepository{
 		client: dbClient.Client.Token,
 		ctx:    dbClient.Ctx,

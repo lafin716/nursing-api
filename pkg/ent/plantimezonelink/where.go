@@ -75,9 +75,9 @@ func UseAlert(v bool) predicate.PlanTimeZoneLink {
 	return predicate.PlanTimeZoneLink(sql.FieldEQ(FieldUseAlert, v))
 }
 
-// Meridiem applies equality check predicate on the "meridiem" field. It's identical to MeridiemEQ.
-func Meridiem(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldEQ(FieldMeridiem, v))
+// Midday applies equality check predicate on the "midday" field. It's identical to MiddayEQ.
+func Midday(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldEQ(FieldMidday, v))
 }
 
 // Hour applies equality check predicate on the "hour" field. It's identical to HourEQ.
@@ -265,69 +265,69 @@ func UseAlertNEQ(v bool) predicate.PlanTimeZoneLink {
 	return predicate.PlanTimeZoneLink(sql.FieldNEQ(FieldUseAlert, v))
 }
 
-// MeridiemEQ applies the EQ predicate on the "meridiem" field.
-func MeridiemEQ(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldEQ(FieldMeridiem, v))
+// MiddayEQ applies the EQ predicate on the "midday" field.
+func MiddayEQ(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldEQ(FieldMidday, v))
 }
 
-// MeridiemNEQ applies the NEQ predicate on the "meridiem" field.
-func MeridiemNEQ(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldNEQ(FieldMeridiem, v))
+// MiddayNEQ applies the NEQ predicate on the "midday" field.
+func MiddayNEQ(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldNEQ(FieldMidday, v))
 }
 
-// MeridiemIn applies the In predicate on the "meridiem" field.
-func MeridiemIn(vs ...string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldIn(FieldMeridiem, vs...))
+// MiddayIn applies the In predicate on the "midday" field.
+func MiddayIn(vs ...string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldIn(FieldMidday, vs...))
 }
 
-// MeridiemNotIn applies the NotIn predicate on the "meridiem" field.
-func MeridiemNotIn(vs ...string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldNotIn(FieldMeridiem, vs...))
+// MiddayNotIn applies the NotIn predicate on the "midday" field.
+func MiddayNotIn(vs ...string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldNotIn(FieldMidday, vs...))
 }
 
-// MeridiemGT applies the GT predicate on the "meridiem" field.
-func MeridiemGT(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldGT(FieldMeridiem, v))
+// MiddayGT applies the GT predicate on the "midday" field.
+func MiddayGT(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldGT(FieldMidday, v))
 }
 
-// MeridiemGTE applies the GTE predicate on the "meridiem" field.
-func MeridiemGTE(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldGTE(FieldMeridiem, v))
+// MiddayGTE applies the GTE predicate on the "midday" field.
+func MiddayGTE(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldGTE(FieldMidday, v))
 }
 
-// MeridiemLT applies the LT predicate on the "meridiem" field.
-func MeridiemLT(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldLT(FieldMeridiem, v))
+// MiddayLT applies the LT predicate on the "midday" field.
+func MiddayLT(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldLT(FieldMidday, v))
 }
 
-// MeridiemLTE applies the LTE predicate on the "meridiem" field.
-func MeridiemLTE(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldLTE(FieldMeridiem, v))
+// MiddayLTE applies the LTE predicate on the "midday" field.
+func MiddayLTE(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldLTE(FieldMidday, v))
 }
 
-// MeridiemContains applies the Contains predicate on the "meridiem" field.
-func MeridiemContains(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldContains(FieldMeridiem, v))
+// MiddayContains applies the Contains predicate on the "midday" field.
+func MiddayContains(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldContains(FieldMidday, v))
 }
 
-// MeridiemHasPrefix applies the HasPrefix predicate on the "meridiem" field.
-func MeridiemHasPrefix(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldHasPrefix(FieldMeridiem, v))
+// MiddayHasPrefix applies the HasPrefix predicate on the "midday" field.
+func MiddayHasPrefix(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldHasPrefix(FieldMidday, v))
 }
 
-// MeridiemHasSuffix applies the HasSuffix predicate on the "meridiem" field.
-func MeridiemHasSuffix(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldHasSuffix(FieldMeridiem, v))
+// MiddayHasSuffix applies the HasSuffix predicate on the "midday" field.
+func MiddayHasSuffix(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldHasSuffix(FieldMidday, v))
 }
 
-// MeridiemEqualFold applies the EqualFold predicate on the "meridiem" field.
-func MeridiemEqualFold(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldEqualFold(FieldMeridiem, v))
+// MiddayEqualFold applies the EqualFold predicate on the "midday" field.
+func MiddayEqualFold(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldEqualFold(FieldMidday, v))
 }
 
-// MeridiemContainsFold applies the ContainsFold predicate on the "meridiem" field.
-func MeridiemContainsFold(v string) predicate.PlanTimeZoneLink {
-	return predicate.PlanTimeZoneLink(sql.FieldContainsFold(FieldMeridiem, v))
+// MiddayContainsFold applies the ContainsFold predicate on the "midday" field.
+func MiddayContainsFold(v string) predicate.PlanTimeZoneLink {
+	return predicate.PlanTimeZoneLink(sql.FieldContainsFold(FieldMidday, v))
 }
 
 // HourEQ applies the EQ predicate on the "hour" field.

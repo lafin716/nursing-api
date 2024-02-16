@@ -26,8 +26,8 @@ type PlanTimeZoneLink struct {
 	TimezoneName string `json:"timezone_name,omitempty"`
 	// UseAlert holds the value of the "use_alert" field.
 	UseAlert bool `json:"use_alert,omitempty"`
-	// Meridiem holds the value of the "meridiem" field.
-	Meridiem string `json:"meridiem,omitempty"`
+	// Midday holds the value of the "midday" field.
+	Midday string `json:"midday,omitempty"`
 	// Hour holds the value of the "hour" field.
 	Hour string `json:"hour,omitempty"`
 	// Minute holds the value of the "minute" field.
@@ -46,7 +46,7 @@ func (*PlanTimeZoneLink) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case plantimezonelink.FieldUseAlert:
 			values[i] = new(sql.NullBool)
-		case plantimezonelink.FieldTimezoneName, plantimezonelink.FieldMeridiem, plantimezonelink.FieldHour, plantimezonelink.FieldMinute:
+		case plantimezonelink.FieldTimezoneName, plantimezonelink.FieldMidday, plantimezonelink.FieldHour, plantimezonelink.FieldMinute:
 			values[i] = new(sql.NullString)
 		case plantimezonelink.FieldCreatedAt, plantimezonelink.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -97,11 +97,11 @@ func (ptzl *PlanTimeZoneLink) assignValues(columns []string, values []any) error
 			} else if value.Valid {
 				ptzl.UseAlert = value.Bool
 			}
-		case plantimezonelink.FieldMeridiem:
+		case plantimezonelink.FieldMidday:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field meridiem", values[i])
+				return fmt.Errorf("unexpected type %T for field midday", values[i])
 			} else if value.Valid {
-				ptzl.Meridiem = value.String
+				ptzl.Midday = value.String
 			}
 		case plantimezonelink.FieldHour:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -175,8 +175,8 @@ func (ptzl *PlanTimeZoneLink) String() string {
 	builder.WriteString("use_alert=")
 	builder.WriteString(fmt.Sprintf("%v", ptzl.UseAlert))
 	builder.WriteString(", ")
-	builder.WriteString("meridiem=")
-	builder.WriteString(ptzl.Meridiem)
+	builder.WriteString("midday=")
+	builder.WriteString(ptzl.Midday)
 	builder.WriteString(", ")
 	builder.WriteString("hour=")
 	builder.WriteString(ptzl.Hour)

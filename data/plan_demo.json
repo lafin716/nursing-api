@@ -4,14 +4,14 @@
   "started_at": "2024-01-01",
   "take_days": 7,
   "memo": "",
-  "items": [
+  "timezones": [
     {
       "timezone_id": "12312313",
       "name": "아침",
-      "meridiem": "AM",
+      "midday": "AM",
       "hour": "09",
       "minute": "30",
-      "items": [
+      "medicines": [
         {
           "medicine_id": "123213123",
           "name": "잘티",

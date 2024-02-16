@@ -1,4 +1,4 @@
-package plan
+package timezone
 
 import (
 	"context"
@@ -10,30 +10,30 @@ import (
 	"time"
 )
 
-type planRepository struct {
+type timezoneRepository struct {
 	root     *ent.Client
 	timezone *ent.PlanTimeZoneClient
 	c        context.Context
 }
 
-func NewPlanRepository(
+func NewTimezoneRepository(
 	dbClient *database.DatabaseClient,
-) PlanRepository {
-	return &planRepository{
+) Repository {
+	return &timezoneRepository{
 		root:     dbClient.Client,
 		timezone: dbClient.Client.PlanTimeZone,
 		c:        dbClient.Ctx,
 	}
 }
 
-func (p planRepository) GetTimeZones(userId uuid.UUID) ([]*TimeZone, error) {
+func (p timezoneRepository) GetTimeZones(userId uuid.UUID) ([]*TimeZone, error) {
 	list, err := p.timezone.
 		Query().
 		Where(
 			schemaTimezone.UserID(userId),
 		).
 		Order(
-			schemaTimezone.ByMeridiem(sql.OrderAsc()),
+			schemaTimezone.ByMidday(sql.OrderAsc()),
 			schemaTimezone.ByHour(sql.OrderAsc()),
 			schemaTimezone.ByMinute(sql.OrderAsc()),
 		).
@@ -45,7 +45,7 @@ func (p planRepository) GetTimeZones(userId uuid.UUID) ([]*TimeZone, error) {
 	return toTimeZoneDomainList(list), nil
 }
 
-func (p planRepository) GetTimeZone(id uuid.UUID, userId uuid.UUID) (*TimeZone, error) {
+func (p timezoneRepository) GetTimeZone(id uuid.UUID, userId uuid.UUID) (*TimeZone, error) {
 	timezone, err := p.timezone.
 		Query().
 		Where(
@@ -60,14 +60,13 @@ func (p planRepository) GetTimeZone(id uuid.UUID, userId uuid.UUID) (*TimeZone, 
 	return toTimeZoneDomain(timezone), nil
 }
 
-func (p planRepository) CreateTimeZone(model *TimeZone) (*TimeZone, error) {
+func (p timezoneRepository) CreateTimeZone(model *TimeZone) (*TimeZone, error) {
 	newPlanTimeZone, err := p.timezone.
 		Create().
 		SetUserID(model.UserID).
 		SetTimezoneName(model.Name).
 		SetIsDefault(model.IsDefault).
-		SetUseAlert(model.UseAlert).
-		SetMeridiem(model.Meridiem).
+		SetMidday(model.Midday).
 		SetHour(model.Hour).
 		SetMinute(model.Minute).
 		SetCreatedAt(time.Now()).
@@ -79,12 +78,11 @@ func (p planRepository) CreateTimeZone(model *TimeZone) (*TimeZone, error) {
 	return toTimeZoneDomain(newPlanTimeZone), nil
 }
 
-func (p planRepository) UpdateTimeZone(model *TimeZone) (bool, error) {
+func (p timezoneRepository) UpdateTimeZone(model *TimeZone) (bool, error) {
 	err := p.timezone.
 		Update().
 		SetTimezoneName(model.Name).
-		SetUseAlert(model.UseAlert).
-		SetMeridiem(model.Meridiem).
+		SetMidday(model.Midday).
 		SetHour(model.Hour).
 		SetMinute(model.Minute).
 		Where(schemaTimezone.ID(model.ID)).
@@ -96,7 +94,7 @@ func (p planRepository) UpdateTimeZone(model *TimeZone) (bool, error) {
 	return true, nil
 }
 
-func (p planRepository) DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, error) {
+func (p timezoneRepository) DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, error) {
 	deleted, err := p.timezone.
 		Delete().
 		Where(schemaTimezone.ID(id), schemaTimezone.UserID(userId)).
@@ -108,10 +106,10 @@ func (p planRepository) DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, er
 	return deleted > 0, nil
 }
 
-func (p planRepository) GetDuplicate(
+func (p timezoneRepository) GetDuplicate(
 	userId uuid.UUID,
 	name string,
-	meridiem string,
+	midday string,
 	hour string,
 	minute string,
 ) (*TimeZone, error) {
@@ -123,7 +121,7 @@ func (p planRepository) GetDuplicate(
 				schemaTimezone.Or(
 					schemaTimezone.TimezoneNameEQ(name),
 					schemaTimezone.And(
-						schemaTimezone.Meridiem(meridiem),
+						schemaTimezone.Midday(midday),
 						schemaTimezone.Hour(hour),
 						schemaTimezone.Minute(minute),
 					),

@@ -11,7 +11,7 @@ type medicineService struct {
 	medicineApi  medicine_api.MedicineApi
 }
 
-func NewMedicineService(medicineRepo MedicineRepository, medicineApi medicine_api.MedicineApi) MedicineUseCase {
+func NewService(medicineRepo MedicineRepository, medicineApi medicine_api.MedicineApi) MedicineUseCase {
 	return &medicineService{
 		medicineRepo: medicineRepo,
 		medicineApi:  medicineApi,

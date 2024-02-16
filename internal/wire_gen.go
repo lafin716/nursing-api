@@ -16,6 +16,7 @@ import (
 	"nursing_api/internal/domain/plan"
 	"nursing_api/internal/domain/prescription"
 	"nursing_api/internal/domain/take_history"
+	"nursing_api/internal/domain/timezone"
 	"nursing_api/internal/domain/user"
 	"nursing_api/internal/middleware"
 	"nursing_api/internal/router"
@@ -60,7 +61,7 @@ func New() (*Server, error) {
 	planUseCase := plan.NewPlanService(prescriptionRepository, takeHistoryRepository)
 	planHttpApi := api.NewPlanHttpApi(planUseCase, jwtClient)
 	planRepository := plan.NewPlanRepository(databaseClient)
-	timeZoneUseCase := plan.NewTimeZoneService(planRepository)
+	timeZoneUseCase := timezone.NewTimeZoneService(planRepository)
 	timeZoneApi := api.NewTimeZoneApi(timeZoneUseCase, jwtClient)
 	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi, takeHistoryHttpApi, planHttpApi, timeZoneApi)
 	server := NewServer(fiberConfig, databaseClient, routable)

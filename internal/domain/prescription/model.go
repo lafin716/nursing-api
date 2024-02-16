@@ -8,8 +8,8 @@ import (
 type Prescription struct {
 	ID                uuid.UUID           `json:"id"`
 	UserId            uuid.UUID           `json:"user_id"`
-	PrescriptionName  string              `json:"prescription_name"`
-	HospitalName      string              `json:"hospital_name"`
+	PrescriptionName  string              `json:"name"`
+	HospitalName      string              `json:"hospital"`
 	TakeDays          int                 `json:"take_days"`
 	StartedAt         time.Time           `json:"started_at"`
 	FinishedAt        time.Time           `json:"finished_at"`
@@ -31,10 +31,10 @@ type PrescriptionItem struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
-type PrescriptionRepository interface {
+type Repository interface {
 	GetById(id uuid.UUID) (*Prescription, error)
 	GetListByUserId(search *PrescriptionSearch) ([]*Prescription, error)
-	GetItemListByPrescriptionId(prescriptionId uuid.UUID) ([]*PrescriptionItem, error)
+	GetItemListByPrescriptionId(timezoneId uuid.UUID) ([]*PrescriptionItem, error)
 	GetItemListBySearch(search *PrescriptionSearch) ([]*PrescriptionItem, error)
 	Add(prescription *Prescription) (*Prescription, error)
 	Update(prescription *Prescription) (int, error)
@@ -45,7 +45,7 @@ type PrescriptionRepository interface {
 	DeleteItem(itemId uuid.UUID) (bool, error)
 }
 
-type PrescriptionUseCase interface {
+type UseCase interface {
 	GetByDate(req *GetByDateRequest) *GetByDateResponse
 	GetList(req *GetListRequest) *GetListResponse
 	Register(req *RegisterRequest) *RegisterResponse

@@ -1,4 +1,4 @@
-package plan
+package timezone
 
 import "github.com/google/uuid"
 

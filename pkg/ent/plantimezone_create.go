@@ -55,23 +55,9 @@ func (ptzc *PlanTimeZoneCreate) SetNillableIsDefault(b *bool) *PlanTimeZoneCreat
 	return ptzc
 }
 
-// SetUseAlert sets the "use_alert" field.
-func (ptzc *PlanTimeZoneCreate) SetUseAlert(b bool) *PlanTimeZoneCreate {
-	ptzc.mutation.SetUseAlert(b)
-	return ptzc
-}
-
-// SetNillableUseAlert sets the "use_alert" field if the given value is not nil.
-func (ptzc *PlanTimeZoneCreate) SetNillableUseAlert(b *bool) *PlanTimeZoneCreate {
-	if b != nil {
-		ptzc.SetUseAlert(*b)
-	}
-	return ptzc
-}
-
-// SetMeridiem sets the "meridiem" field.
-func (ptzc *PlanTimeZoneCreate) SetMeridiem(s string) *PlanTimeZoneCreate {
-	ptzc.mutation.SetMeridiem(s)
+// SetMidday sets the "midday" field.
+func (ptzc *PlanTimeZoneCreate) SetMidday(s string) *PlanTimeZoneCreate {
+	ptzc.mutation.SetMidday(s)
 	return ptzc
 }
 
@@ -168,10 +154,6 @@ func (ptzc *PlanTimeZoneCreate) defaults() {
 		v := plantimezone.DefaultIsDefault
 		ptzc.mutation.SetIsDefault(v)
 	}
-	if _, ok := ptzc.mutation.UseAlert(); !ok {
-		v := plantimezone.DefaultUseAlert
-		ptzc.mutation.SetUseAlert(v)
-	}
 	if _, ok := ptzc.mutation.CreatedAt(); !ok {
 		v := plantimezone.DefaultCreatedAt()
 		ptzc.mutation.SetCreatedAt(v)
@@ -190,11 +172,8 @@ func (ptzc *PlanTimeZoneCreate) check() error {
 	if _, ok := ptzc.mutation.IsDefault(); !ok {
 		return &ValidationError{Name: "is_default", err: errors.New(`ent: missing required field "PlanTimeZone.is_default"`)}
 	}
-	if _, ok := ptzc.mutation.UseAlert(); !ok {
-		return &ValidationError{Name: "use_alert", err: errors.New(`ent: missing required field "PlanTimeZone.use_alert"`)}
-	}
-	if _, ok := ptzc.mutation.Meridiem(); !ok {
-		return &ValidationError{Name: "meridiem", err: errors.New(`ent: missing required field "PlanTimeZone.meridiem"`)}
+	if _, ok := ptzc.mutation.Midday(); !ok {
+		return &ValidationError{Name: "midday", err: errors.New(`ent: missing required field "PlanTimeZone.midday"`)}
 	}
 	if _, ok := ptzc.mutation.Hour(); !ok {
 		return &ValidationError{Name: "hour", err: errors.New(`ent: missing required field "PlanTimeZone.hour"`)}
@@ -252,13 +231,9 @@ func (ptzc *PlanTimeZoneCreate) createSpec() (*PlanTimeZone, *sqlgraph.CreateSpe
 		_spec.SetField(plantimezone.FieldIsDefault, field.TypeBool, value)
 		_node.IsDefault = value
 	}
-	if value, ok := ptzc.mutation.UseAlert(); ok {
-		_spec.SetField(plantimezone.FieldUseAlert, field.TypeBool, value)
-		_node.UseAlert = value
-	}
-	if value, ok := ptzc.mutation.Meridiem(); ok {
-		_spec.SetField(plantimezone.FieldMeridiem, field.TypeString, value)
-		_node.Meridiem = value
+	if value, ok := ptzc.mutation.Midday(); ok {
+		_spec.SetField(plantimezone.FieldMidday, field.TypeString, value)
+		_node.Midday = value
 	}
 	if value, ok := ptzc.mutation.Hour(); ok {
 		_spec.SetField(plantimezone.FieldHour, field.TypeString, value)

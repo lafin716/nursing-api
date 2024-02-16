@@ -27,7 +27,7 @@ type PrescriptionSearch struct {
 
 func NewPrescriptionRepository(
 	dbClient *database.DatabaseClient,
-) PrescriptionRepository {
+) Repository {
 	return &prescriptionRepository{
 		root:       dbClient.Client,
 		client:     dbClient.Client.Prescription,
@@ -69,13 +69,13 @@ func (p prescriptionRepository) GetListByUserId(search *PrescriptionSearch) ([]*
 	return toDomains(foundList), nil
 }
 
-func (p prescriptionRepository) GetItemListByPrescriptionId(prescriptionId uuid.UUID) ([]*PrescriptionItem, error) {
+func (p prescriptionRepository) GetItemListByPrescriptionId(timezoneId uuid.UUID) ([]*PrescriptionItem, error) {
 	foundItemList, err := p.root.Debug().
 		PrescriptionItem.
 		Query().
 		Where(
 			prescriptionitem.And(
-				prescriptionitem.PrescriptionID(prescriptionId),
+				prescriptionitem.TimezoneLinkID(timezoneId),
 			),
 		).
 		All(p.ctx)

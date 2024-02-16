@@ -19,12 +19,12 @@ type PrescriptionApi interface {
 }
 
 type prescriptionApi struct {
-	service   prescription.PrescriptionUseCase
+	service   prescription.UseCase
 	jwtClient *jwt.JwtClient
 }
 
 func NewPrescriptionApi(
-	service prescription.PrescriptionUseCase,
+	service prescription.UseCase,
 	jwtClient *jwt.JwtClient,
 ) PrescriptionApi {
 	return &prescriptionApi{

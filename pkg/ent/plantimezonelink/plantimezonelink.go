@@ -22,8 +22,8 @@ const (
 	FieldTimezoneName = "timezone_name"
 	// FieldUseAlert holds the string denoting the use_alert field in the database.
 	FieldUseAlert = "use_alert"
-	// FieldMeridiem holds the string denoting the meridiem field in the database.
-	FieldMeridiem = "meridiem"
+	// FieldMidday holds the string denoting the midday field in the database.
+	FieldMidday = "midday"
 	// FieldHour holds the string denoting the hour field in the database.
 	FieldHour = "hour"
 	// FieldMinute holds the string denoting the minute field in the database.
@@ -43,7 +43,7 @@ var Columns = []string{
 	FieldTimezoneID,
 	FieldTimezoneName,
 	FieldUseAlert,
-	FieldMeridiem,
+	FieldMidday,
 	FieldHour,
 	FieldMinute,
 	FieldCreatedAt,
@@ -97,9 +97,9 @@ func ByUseAlert(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUseAlert, opts...).ToFunc()
 }
 
-// ByMeridiem orders the results by the meridiem field.
-func ByMeridiem(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldMeridiem, opts...).ToFunc()
+// ByMidday orders the results by the midday field.
+func ByMidday(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMidday, opts...).ToFunc()
 }
 
 // ByHour orders the results by the hour field.

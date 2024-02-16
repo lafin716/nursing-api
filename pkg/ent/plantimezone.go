@@ -24,10 +24,8 @@ type PlanTimeZone struct {
 	TimezoneName string `json:"timezone_name,omitempty"`
 	// IsDefault holds the value of the "is_default" field.
 	IsDefault bool `json:"is_default,omitempty"`
-	// UseAlert holds the value of the "use_alert" field.
-	UseAlert bool `json:"use_alert,omitempty"`
-	// Meridiem holds the value of the "meridiem" field.
-	Meridiem string `json:"meridiem,omitempty"`
+	// Midday holds the value of the "midday" field.
+	Midday string `json:"midday,omitempty"`
 	// Hour holds the value of the "hour" field.
 	Hour string `json:"hour,omitempty"`
 	// Minute holds the value of the "minute" field.
@@ -44,9 +42,9 @@ func (*PlanTimeZone) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case plantimezone.FieldIsDefault, plantimezone.FieldUseAlert:
+		case plantimezone.FieldIsDefault:
 			values[i] = new(sql.NullBool)
-		case plantimezone.FieldTimezoneName, plantimezone.FieldMeridiem, plantimezone.FieldHour, plantimezone.FieldMinute:
+		case plantimezone.FieldTimezoneName, plantimezone.FieldMidday, plantimezone.FieldHour, plantimezone.FieldMinute:
 			values[i] = new(sql.NullString)
 		case plantimezone.FieldCreatedAt, plantimezone.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -91,17 +89,11 @@ func (ptz *PlanTimeZone) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				ptz.IsDefault = value.Bool
 			}
-		case plantimezone.FieldUseAlert:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field use_alert", values[i])
-			} else if value.Valid {
-				ptz.UseAlert = value.Bool
-			}
-		case plantimezone.FieldMeridiem:
+		case plantimezone.FieldMidday:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field meridiem", values[i])
+				return fmt.Errorf("unexpected type %T for field midday", values[i])
 			} else if value.Valid {
-				ptz.Meridiem = value.String
+				ptz.Midday = value.String
 			}
 		case plantimezone.FieldHour:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -172,11 +164,8 @@ func (ptz *PlanTimeZone) String() string {
 	builder.WriteString("is_default=")
 	builder.WriteString(fmt.Sprintf("%v", ptz.IsDefault))
 	builder.WriteString(", ")
-	builder.WriteString("use_alert=")
-	builder.WriteString(fmt.Sprintf("%v", ptz.UseAlert))
-	builder.WriteString(", ")
-	builder.WriteString("meridiem=")
-	builder.WriteString(ptz.Meridiem)
+	builder.WriteString("midday=")
+	builder.WriteString(ptz.Midday)
 	builder.WriteString(", ")
 	builder.WriteString("hour=")
 	builder.WriteString(ptz.Hour)

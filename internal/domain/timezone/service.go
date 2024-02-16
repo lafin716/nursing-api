@@ -1,4 +1,4 @@
-package plan
+package timezone
 
 import (
 	"github.com/google/uuid"
@@ -6,12 +6,12 @@ import (
 )
 
 type timeZoneService struct {
-	repo PlanRepository
+	repo Repository
 }
 
 func NewTimeZoneService(
-	repo PlanRepository,
-) TimeZoneUseCase {
+	repo Repository,
+) UseCase {
 	return &timeZoneService{
 		repo: repo,
 	}
@@ -30,7 +30,7 @@ func (t timeZoneService) Create(req *CreateTimeZoneRequest) *CreateTimeZoneRespo
 	duplicate, _ := t.repo.GetDuplicate(
 		req.UserId,
 		req.Name,
-		req.Meridiem,
+		req.Midday,
 		req.Hour,
 		req.Minute,
 	)
@@ -46,12 +46,11 @@ func (t timeZoneService) Create(req *CreateTimeZoneRequest) *CreateTimeZoneRespo
 	}
 
 	newTimeZone := &TimeZone{
-		UserID:   req.UserId,
-		Name:     req.Name,
-		UseAlert: *req.UseAlert,
-		Meridiem: req.Meridiem,
-		Hour:     req.Hour,
-		Minute:   req.Minute,
+		UserID: req.UserId,
+		Name:   req.Name,
+		Midday: req.Midday,
+		Hour:   req.Hour,
+		Minute: req.Minute,
 	}
 
 	timezone, err := t.repo.CreateTimeZone(newTimeZone)
@@ -71,7 +70,7 @@ func (t timeZoneService) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneRespo
 	duplicate, _ := t.repo.GetDuplicate(
 		req.UserId,
 		req.Name,
-		req.Meridiem,
+		req.Midday,
 		req.Hour,
 		req.Minute,
 	)
@@ -90,11 +89,8 @@ func (t timeZoneService) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneRespo
 	if strings.TrimSpace(req.Name) != "" {
 		timezone.Name = req.Name
 	}
-	if req.UseAlert != nil {
-		timezone.UseAlert = *req.UseAlert
-	}
-	if timezone.Meridiem != req.Meridiem {
-		timezone.Meridiem = req.Meridiem
+	if timezone.Midday != req.Midday {
+		timezone.Midday = req.Midday
 	}
 	if timezone.Hour != req.Hour {
 		timezone.Hour = req.Hour

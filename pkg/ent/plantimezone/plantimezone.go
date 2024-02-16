@@ -20,10 +20,8 @@ const (
 	FieldTimezoneName = "timezone_name"
 	// FieldIsDefault holds the string denoting the is_default field in the database.
 	FieldIsDefault = "is_default"
-	// FieldUseAlert holds the string denoting the use_alert field in the database.
-	FieldUseAlert = "use_alert"
-	// FieldMeridiem holds the string denoting the meridiem field in the database.
-	FieldMeridiem = "meridiem"
+	// FieldMidday holds the string denoting the midday field in the database.
+	FieldMidday = "midday"
 	// FieldHour holds the string denoting the hour field in the database.
 	FieldHour = "hour"
 	// FieldMinute holds the string denoting the minute field in the database.
@@ -42,8 +40,7 @@ var Columns = []string{
 	FieldUserID,
 	FieldTimezoneName,
 	FieldIsDefault,
-	FieldUseAlert,
-	FieldMeridiem,
+	FieldMidday,
 	FieldHour,
 	FieldMinute,
 	FieldCreatedAt,
@@ -63,8 +60,6 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultIsDefault holds the default value on creation for the "is_default" field.
 	DefaultIsDefault bool
-	// DefaultUseAlert holds the default value on creation for the "use_alert" field.
-	DefaultUseAlert bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -94,14 +89,9 @@ func ByIsDefault(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsDefault, opts...).ToFunc()
 }
 
-// ByUseAlert orders the results by the use_alert field.
-func ByUseAlert(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUseAlert, opts...).ToFunc()
-}
-
-// ByMeridiem orders the results by the meridiem field.
-func ByMeridiem(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldMeridiem, opts...).ToFunc()
+// ByMidday orders the results by the midday field.
+func ByMidday(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMidday, opts...).ToFunc()
 }
 
 // ByHour orders the results by the hour field.

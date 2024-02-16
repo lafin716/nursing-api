@@ -13,7 +13,7 @@ type authService struct {
 	jwtClient      *jwt.JwtClient
 }
 
-func NewAuthService(
+func NewService(
 	userUseCase user.UserUseCase,
 	authRepository AuthRepository,
 	jwtClient *jwt.JwtClient,

@@ -13,7 +13,7 @@ type medicineRepository struct {
 	ctx    context.Context
 }
 
-func NewAuthRepository(dbClient *database.DatabaseClient) MedicineRepository {
+func NewRepository(dbClient *database.DatabaseClient) MedicineRepository {
 	return &medicineRepository{
 		client: dbClient.Client.Medicine,
 		ctx:    dbClient.Ctx,

@@ -17,8 +17,18 @@ type PlanHttpApi interface {
 }
 
 type planHttpApi struct {
-	service   plan.PlanUseCase
+	service   plan.UseCase
 	jwtClient *jwt.JwtClient
+}
+
+func NewPlanHttpApi(
+	service plan.UseCase,
+	jwtClient *jwt.JwtClient,
+) PlanHttpApi {
+	return &planHttpApi{
+		service:   service,
+		jwtClient: jwtClient,
+	}
 }
 
 func (p planHttpApi) Add(ctx *fiber.Ctx) error {
@@ -79,14 +89,4 @@ func (p planHttpApi) PillToggle(ctx *fiber.Ctx) error {
 func (p planHttpApi) UpdateMemo(ctx *fiber.Ctx) error {
 	//TODO implement me
 	panic("implement me")
-}
-
-func NewPlanHttpApi(
-	service plan.PlanUseCase,
-	jwtClient *jwt.JwtClient,
-) PlanHttpApi {
-	return &planHttpApi{
-		service:   service,
-		jwtClient: jwtClient,
-	}
 }
