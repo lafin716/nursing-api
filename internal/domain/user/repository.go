@@ -15,7 +15,15 @@ type userRepository struct {
 	ctx    context.Context
 }
 
-func NewUserRepository(dbClient *database.DatabaseClient) UserRepository {
+type Repository interface {
+	CreateUser(user *User) (*User, error)
+	GetUserByEmail(email string) (*User, error)
+	GetUserById(userId uuid.UUID) (*User, error)
+	CountUserByEmail(email string) (int, error)
+	Delete(userId uuid.UUID) (bool, error)
+}
+
+func NewRepository(dbClient *database.DatabaseClient) Repository {
 	return &userRepository{
 		root:   dbClient.Client,
 		client: dbClient.Client.User,

@@ -12,11 +12,11 @@ type MedicineHttpApi interface {
 }
 
 type medicineHttpApi struct {
-	usecase medicine.MedicineUseCase
+	usecase medicine.UseCase
 }
 
 func NewMedicineHttpApi(
-	usecase medicine.MedicineUseCase,
+	usecase medicine.UseCase,
 ) MedicineHttpApi {
 	return &medicineHttpApi{
 		usecase: usecase,
@@ -42,7 +42,7 @@ func (u *medicineHttpApi) Search(ctx *fiber.Ctx) error {
 			BadRequest(ctx)
 	}
 
-	result := u.usecase.SearchMedicine(pillName)
+	result := u.usecase.Search(pillName)
 	if !result.Success {
 		return response.New(response.CODE_ERROR).
 			SetMessage(result.Message).

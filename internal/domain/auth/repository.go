@@ -14,7 +14,13 @@ type authRepository struct {
 	ctx    context.Context
 }
 
-func NewRepository(dbClient *database.DatabaseClient) AuthRepository {
+type Repository interface {
+	SaveToken(userId uuid.UUID, token *Token) (*Token, error)
+	GetToken(userId uuid.UUID) (*Token, error)
+	DeleteToken(userId uuid.UUID) (bool, error)
+}
+
+func NewRepository(dbClient *database.DatabaseClient) Repository {
 	return &authRepository{
 		client: dbClient.Client.Token,
 		ctx:    dbClient.Ctx,

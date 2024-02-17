@@ -7,18 +7,27 @@ import (
 	"time"
 )
 
+type UseCase interface {
+	Add(req *AddPlanRequest) *AddPlanResponse
+	GetByMonth(req *GetByMonthRequest) *GetByMonthResponse
+	GetByDate(req *GetByDateRequest) *GetByDateResponse
+	Take(req *TakeToggleRequest) *TakeToggleResponse
+	PillToggle(req *PillToggleRequest) *PillToggleResponse
+	UpdateMemo(req *UpdateMemoRequest) *UpdateMemoResponse
+}
+
 const (
 	DATE_LAYOUT = "2006-01-02"
 )
 
 type planService struct {
 	prescriptionRepo prescription.Repository
-	takeHistoryRepo  takehistory.TakeHistoryRepository
+	takeHistoryRepo  takehistory.Repository
 }
 
-func NewPlanService(
+func NewService(
 	prescriptionRepo prescription.Repository,
-	takeHistoryRepo takehistory.TakeHistoryRepository,
+	takeHistoryRepo takehistory.Repository,
 ) UseCase {
 	return &planService{
 		prescriptionRepo: prescriptionRepo,
@@ -53,7 +62,7 @@ func (p planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
 	}
 
 	// 당일 처방전 조회
-	search := &prescription.PrescriptionSearch{
+	search := &prescription.SearchCondition{
 		UserId:     req.UserId,
 		TargetDate: currentDate,
 		Limit:      10,

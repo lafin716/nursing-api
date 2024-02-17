@@ -6,19 +6,26 @@ import (
 	"strings"
 )
 
+type UseCase interface {
+	Search(pillName string) *SearchPillResponse
+}
+
 type medicineService struct {
-	medicineRepo MedicineRepository
+	medicineRepo Repository
 	medicineApi  medicine_api.MedicineApi
 }
 
-func NewService(medicineRepo MedicineRepository, medicineApi medicine_api.MedicineApi) MedicineUseCase {
+func NewService(
+	medicineRepo Repository,
+	medicineApi medicine_api.MedicineApi,
+) UseCase {
 	return &medicineService{
 		medicineRepo: medicineRepo,
 		medicineApi:  medicineApi,
 	}
 }
 
-func (m medicineService) SearchMedicine(pillName string) *SearchPillResponse {
+func (m medicineService) Search(pillName string) *SearchPillResponse {
 	// DB에 이미 존재하는 경우 API 통신하지않고 바로 반환
 	decoded, err := url.QueryUnescape(pillName)
 	decoded = strings.ReplaceAll(decoded, "\b", "")

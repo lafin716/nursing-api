@@ -28,13 +28,3 @@ type Medicine struct {
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
-
-type MedicineRepository interface {
-	SavePills(medicine []*Medicine) (int, error)
-	SavePill(medicine *Medicine) (bool, error)
-	GetPillsByNames(pillName string) ([]*Medicine, error)
-}
-
-type MedicineUseCase interface {
-	SearchMedicine(pillName string) *SearchPillResponse
-}

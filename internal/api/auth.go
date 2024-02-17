@@ -14,12 +14,12 @@ type AuthHttpApi interface {
 }
 
 type authHttpApi struct {
-	authUseCase auth.AuthUseCase
+	authUseCase auth.UseCase
 	jwtClient   *jwt.JwtClient
 }
 
 func NewAuthHttpApi(
-	authUseCase auth.AuthUseCase,
+	authUseCase auth.UseCase,
 	jwtClient *jwt.JwtClient,
 ) AuthHttpApi {
 	return &authHttpApi{

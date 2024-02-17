@@ -9,12 +9,12 @@ import (
 )
 
 type TokenVerifyMiddleware struct {
-	tokenRepo auth.AuthRepository
+	tokenRepo auth.Repository
 	jwtClient *jwt.JwtClient
 }
 
 func NewJwtMiddleware(
-	tokenRepo auth.AuthRepository,
+	tokenRepo auth.Repository,
 	jwtClient *jwt.JwtClient,
 ) *TokenVerifyMiddleware {
 	return &TokenVerifyMiddleware{

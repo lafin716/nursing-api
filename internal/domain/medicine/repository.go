@@ -8,12 +8,18 @@ import (
 	"time"
 )
 
+type Repository interface {
+	SavePills(medicine []*Medicine) (int, error)
+	SavePill(medicine *Medicine) (bool, error)
+	GetPillsByNames(pillName string) ([]*Medicine, error)
+}
+
 type medicineRepository struct {
 	client *ent.MedicineClient
 	ctx    context.Context
 }
 
-func NewRepository(dbClient *database.DatabaseClient) MedicineRepository {
+func NewRepository(dbClient *database.DatabaseClient) Repository {
 	return &medicineRepository{
 		client: dbClient.Client.Medicine,
 		ctx:    dbClient.Ctx,

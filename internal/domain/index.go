@@ -21,22 +21,22 @@ var Set = wire.NewSet(
 )
 
 var repository = wire.NewSet(
-	auth.NewAuthRepository,
-	user.NewUserRepository,
-	medicine.NewAuthRepository,
-	prescription.NewPrescriptionRepository,
-	takehistory.NewTakeHistoryRepository,
-	plan.NewPlanRepository,
+	auth.NewRepository,
+	user.NewRepository,
+	medicine.NewRepository,
+	prescription.NewRepository,
+	takehistory.NewRepository,
+	timezone.NewRepository,
 )
 
 var service = wire.NewSet(
-	auth.NewAuthService,
-	user.NewUserService,
-	medicine.NewMedicineService,
-	prescription.NewPrescriptionService,
-	takehistory.NewTakeHistoryService,
-	plan.NewPlanService,
-	timezone.NewTimeZoneService,
+	auth.NewService,
+	user.NewService,
+	medicine.NewService,
+	prescription.NewService,
+	takehistory.NewService,
+	plan.NewService,
+	timezone.NewService,
 )
 
 var gateway = wire.NewSet(

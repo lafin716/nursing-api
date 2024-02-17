@@ -6,19 +6,30 @@ import (
 	"time"
 )
 
+type UseCase interface {
+	GetByDate(req *GetByDateRequest) *GetByDateResponse
+	GetList(req *GetListRequest) *GetListResponse
+	Register(req *RegisterRequest) *RegisterResponse
+	Update(req *UpdateRequest) *UpdateResponse
+	Delete(req *DeleteRequest) *DeleteResponse
+	AddItem(req *AddItemRequest) *AddItemResponse
+	UpdateItem(req *UpdateItemRequest) *UpdateItemResponse
+	DeleteItem(req *DeleteItemRequest) *DeleteItemResponse
+}
+
 const (
 	DATE_LAYOUT = "2006-01-02"
 )
 
 type prescriptionService struct {
-	repo      PrescriptionRepository
+	repo      Repository
 	jwtClient *jwt.JwtClient
 }
 
-func NewPrescriptionService(
-	repo PrescriptionRepository,
+func NewService(
+	repo Repository,
 	jwtClient *jwt.JwtClient,
-) PrescriptionUseCase {
+) UseCase {
 	return &prescriptionService{
 		repo:      repo,
 		jwtClient: jwtClient,
@@ -33,7 +44,7 @@ func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
 	if req.Limit == 0 {
 		req.Limit = 10
 	}
-	search := &PrescriptionSearch{
+	search := &SearchCondition{
 		UserId:     req.UserId,
 		TargetDate: targetDate,
 		Limit:      req.Limit,
@@ -79,12 +90,8 @@ func (p prescriptionService) Register(req *RegisterRequest) *RegisterResponse {
 	items := []*PrescriptionItem{}
 	for _, item := range req.Items {
 		items = append(items, &PrescriptionItem{
-			UserId:       req.UserId,
 			MedicineId:   item.MedicineId,
 			MedicineName: item.MedicineName,
-			TakeTimeZone: item.TakeTimeZone,
-			TakeMoment:   item.TakeMoment,
-			TakeEtc:      item.TakeEtc,
 			TakeAmount:   item.TakeAmount,
 			MedicineUnit: item.MedicineUnit,
 			CreatedAt:    time.Now(),
@@ -179,17 +186,12 @@ func (p prescriptionService) AddItem(req *AddItemRequest) *AddItemResponse {
 	}
 
 	newItem := &PrescriptionItem{
-		UserId:         found.UserId,
-		PrescriptionId: found.ID,
-		MedicineId:     req.MedicineId,
-		MedicineName:   req.MedicineName,
-		TakeTimeZone:   req.TakeTimeZone,
-		TakeMoment:     req.TakeMoment,
-		TakeEtc:        req.TakeEtc,
-		TakeAmount:     req.TakeAmount,
-		MedicineUnit:   req.MedicineUnit,
-		Memo:           req.Memo,
-		CreatedAt:      time.Now(),
+		MedicineId:   req.MedicineId,
+		MedicineName: req.MedicineName,
+		TakeAmount:   req.TakeAmount,
+		MedicineUnit: req.MedicineUnit,
+		Memo:         req.Memo,
+		CreatedAt:    time.Now(),
 	}
 
 	_, err = p.repo.AddItem(found.ID, newItem)
@@ -210,9 +212,6 @@ func (p prescriptionService) UpdateItem(req *UpdateItemRequest) *UpdateItemRespo
 		ID:           req.ID,
 		MedicineId:   req.MedicineId,
 		MedicineName: req.MedicineName,
-		TakeTimeZone: req.TakeTimeZone,
-		TakeMoment:   req.TakeMoment,
-		TakeEtc:      req.TakeEtc,
 		TakeAmount:   req.TakeAmount,
 		MedicineUnit: req.MedicineUnit,
 		Memo:         req.Memo,

@@ -13,12 +13,12 @@ type UserHttpApi interface {
 }
 
 type userHttpApi struct {
-	userUseCase user.UserUseCase
+	userUseCase user.UseCase
 	jwtClient   *jwt.JwtClient
 }
 
 func NewUserHttpApi(
-	userUseCase user.UserUseCase,
+	userUseCase user.UseCase,
 	jwtClient *jwt.JwtClient,
 ) UserHttpApi {
 	return &userHttpApi{

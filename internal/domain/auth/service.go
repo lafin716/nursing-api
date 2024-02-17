@@ -8,16 +8,22 @@ import (
 )
 
 type authService struct {
-	userUseCase    user.UserUseCase
-	authRepository AuthRepository
+	userUseCase    user.UseCase
+	authRepository Repository
 	jwtClient      *jwt.JwtClient
 }
 
+type UseCase interface {
+	SignIn(req *SignInRequest) *SignInResponse
+	SignUp(req *SignUpRequest) *SignUpResponse
+	SignOut(userId uuid.UUID) error
+}
+
 func NewService(
-	userUseCase user.UserUseCase,
-	authRepository AuthRepository,
+	userUseCase user.UseCase,
+	authRepository Repository,
 	jwtClient *jwt.JwtClient,
-) AuthUseCase {
+) UseCase {
 	return &authService{
 		userUseCase:    userUseCase,
 		authRepository: authRepository,

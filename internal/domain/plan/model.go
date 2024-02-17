@@ -36,12 +36,3 @@ type SummaryItem struct {
 	Date     string `json:"date"`
 	IsExists bool   `json:"isExists"`
 }
-
-type UseCase interface {
-	Add(req *AddPlanRequest) *AddPlanResponse
-	GetByMonth(req *GetByMonthRequest) *GetByMonthResponse
-	GetByDate(req *GetByDateRequest) *GetByDateResponse
-	Take(req *TakeToggleRequest) *TakeToggleResponse
-	PillToggle(req *PillToggleRequest) *PillToggleResponse
-	UpdateMemo(req *UpdateMemoRequest) *UpdateMemoResponse
-}

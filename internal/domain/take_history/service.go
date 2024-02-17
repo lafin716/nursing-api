@@ -5,15 +5,22 @@ import (
 	"time"
 )
 
-type takeHistoryService struct {
-	repo             TakeHistoryRepository
-	prescriptionRepo prescription.PrescriptionRepository
+type UseCase interface {
+	GetList(req *GetListRequest) *GetListResponse
+	GetDetail(req *GetDetailRequest) *GetDetailResponse
+	TakePlanToggle(req *TakePlanRequest) *TakePlanResponse
+	TakePillToggle(req *TakePillRequest) *TakePillResponse
 }
 
-func NewTakeHistoryService(
-	repo TakeHistoryRepository,
-	prescriptionRepo prescription.PrescriptionRepository,
-) TakeHistoryUseCase {
+type takeHistoryService struct {
+	repo             Repository
+	prescriptionRepo prescription.Repository
+}
+
+func NewService(
+	repo Repository,
+	prescriptionRepo prescription.Repository,
+) UseCase {
 	return &takeHistoryService{
 		repo:             repo,
 		prescriptionRepo: prescriptionRepo,

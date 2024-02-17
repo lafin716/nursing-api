@@ -9,7 +9,7 @@ import (
 
 // @Deprecated 복용계획으로 통합될 예정
 type PrescriptionApi interface {
-	Regist(ctx *fiber.Ctx) error
+	Register(ctx *fiber.Ctx) error
 	GetList(ctx *fiber.Ctx) error
 	Update(ctx *fiber.Ctx) error
 	Delete(ctx *fiber.Ctx) error
@@ -59,7 +59,7 @@ func (a *prescriptionApi) GetList(ctx *fiber.Ctx) error {
 }
 
 // 처방전 등록
-func (a *prescriptionApi) Regist(ctx *fiber.Ctx) error {
+func (a *prescriptionApi) Register(ctx *fiber.Ctx) error {
 	userId, err := getUserId(a.jwtClient, ctx)
 	if err != nil {
 		return err

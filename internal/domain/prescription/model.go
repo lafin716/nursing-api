@@ -31,31 +31,6 @@ type PrescriptionItem struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
-type Repository interface {
-	GetById(id uuid.UUID) (*Prescription, error)
-	GetListByUserId(search *PrescriptionSearch) ([]*Prescription, error)
-	GetItemListByPrescriptionId(timezoneId uuid.UUID) ([]*PrescriptionItem, error)
-	GetItemListBySearch(search *PrescriptionSearch) ([]*PrescriptionItem, error)
-	Add(prescription *Prescription) (*Prescription, error)
-	Update(prescription *Prescription) (int, error)
-	Delete(id uuid.UUID) (bool, error)
-	GetItemById(itemId uuid.UUID) (*PrescriptionItem, error)
-	AddItem(prescriptionId uuid.UUID, item *PrescriptionItem) (*PrescriptionItem, error)
-	UpdateItem(prescriptionItem *PrescriptionItem) (int, error)
-	DeleteItem(itemId uuid.UUID) (bool, error)
-}
-
-type UseCase interface {
-	GetByDate(req *GetByDateRequest) *GetByDateResponse
-	GetList(req *GetListRequest) *GetListResponse
-	Register(req *RegisterRequest) *RegisterResponse
-	Update(req *UpdateRequest) *UpdateResponse
-	Delete(req *DeleteRequest) *DeleteResponse
-	AddItem(req *AddItemRequest) *AddItemResponse
-	UpdateItem(req *UpdateItemRequest) *UpdateItemResponse
-	DeleteItem(req *DeleteItemRequest) *DeleteItemResponse
-}
-
 func (p *Prescription) update(newModel *Prescription) {
 	if newModel.HospitalName != "" {
 		p.HospitalName = newModel.HospitalName

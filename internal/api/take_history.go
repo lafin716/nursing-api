@@ -15,12 +15,12 @@ type TakeHistoryHttpApi interface {
 }
 
 type takeHistoryHttpApi struct {
-	service   takehistory.TakeHistoryUseCase
+	service   takehistory.UseCase
 	jwtClient *jwt.JwtClient
 }
 
 func NewTakeHistoryHttpApi(
-	service takehistory.TakeHistoryUseCase,
+	service takehistory.UseCase,
 	jwtClient *jwt.JwtClient,
 ) TakeHistoryHttpApi {
 	return &takeHistoryHttpApi{

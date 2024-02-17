@@ -30,22 +30,3 @@ type TakeHistoryItem struct {
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
 }
-
-type TakeHistoryRepository interface {
-	GetList(userId uuid.UUID) ([]*TakeHistory, error)
-	GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory, error)
-	GetById(id uuid.UUID) (*TakeHistory, error)
-	Add(newData *TakeHistory) (bool, error)
-	Update(newData *TakeHistory) (bool, error)
-	Delete(takeHistoryId uuid.UUID) (bool, error)
-	AddItem(item *TakeHistoryItem) (bool, error)
-	UpdateItem(item *TakeHistoryItem) (bool, error)
-	DeleteItem(takeHistoryItemId uuid.UUID) (bool, error)
-}
-
-type TakeHistoryUseCase interface {
-	GetList(req *GetListRequest) *GetListResponse
-	GetDetail(req *GetDetailRequest) *GetDetailResponse
-	TakePlanToggle(req *TakePlanRequest) *TakePlanResponse
-	TakePillToggle(req *TakePillRequest) *TakePillResponse
-}

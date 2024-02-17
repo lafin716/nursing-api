@@ -5,19 +5,26 @@ import (
 	"strings"
 )
 
-type timeZoneService struct {
+type UseCase interface {
+	GetList(userId uuid.UUID) ([]*TimeZone, error)
+	Create(req *CreateTimeZoneRequest) *CreateTimeZoneResponse
+	Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneResponse
+	Delete(req *DeleteTimeZoneRequest) *DeleteTimeZoneResponse
+}
+
+type service struct {
 	repo Repository
 }
 
-func NewTimeZoneService(
+func NewService(
 	repo Repository,
 ) UseCase {
-	return &timeZoneService{
+	return &service{
 		repo: repo,
 	}
 }
 
-func (t timeZoneService) GetList(userId uuid.UUID) ([]*TimeZone, error) {
+func (t service) GetList(userId uuid.UUID) ([]*TimeZone, error) {
 	timezones, err := t.repo.GetTimeZones(userId)
 	if err != nil {
 		return nil, err
@@ -26,7 +33,7 @@ func (t timeZoneService) GetList(userId uuid.UUID) ([]*TimeZone, error) {
 	return timezones, nil
 }
 
-func (t timeZoneService) Create(req *CreateTimeZoneRequest) *CreateTimeZoneResponse {
+func (t service) Create(req *CreateTimeZoneRequest) *CreateTimeZoneResponse {
 	duplicate, _ := t.repo.GetDuplicate(
 		req.UserId,
 		req.Name,
@@ -61,7 +68,7 @@ func (t timeZoneService) Create(req *CreateTimeZoneRequest) *CreateTimeZoneRespo
 	return OkCreateTimeZone(timezone)
 }
 
-func (t timeZoneService) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneResponse {
+func (t service) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneResponse {
 	timezone, err := t.repo.GetTimeZone(req.ID, req.UserId)
 	if err != nil {
 		return FailUpdateTimeZone("시간대 정보를 찾을 수 없습니다.", err)
@@ -76,13 +83,13 @@ func (t timeZoneService) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneRespo
 	)
 
 	if duplicate != nil && timezone.ID != duplicate.ID {
-		duplMsg := "중복되는 시간대가 존재합니다."
+		msg := "중복되는 시간대가 존재합니다."
 		if duplicate.Name == req.Name {
-			duplMsg = "이미 존재하는 이름입니다."
+			msg = "이미 존재하는 이름입니다."
 		} else if duplicate.Hour == req.Hour && duplicate.Minute == req.Minute {
-			duplMsg = "이미 등록된 시간입니다."
+			msg = "이미 등록된 시간입니다."
 		}
-		return FailUpdateTimeZone(duplMsg, nil)
+		return FailUpdateTimeZone(msg, nil)
 	}
 
 	// 값이 있는 경우에만 도메인 값을 변경한다.
@@ -108,7 +115,7 @@ func (t timeZoneService) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneRespo
 	return OkUpdateTimeZone(timezone)
 }
 
-func (t timeZoneService) Delete(req *DeleteTimeZoneRequest) *DeleteTimeZoneResponse {
+func (t service) Delete(req *DeleteTimeZoneRequest) *DeleteTimeZoneResponse {
 	_, err := t.repo.GetTimeZone(req.ID, req.UserId)
 	if err != nil {
 		return FailDeleteTimeZone("시간대 정보를 찾을 수 없습니다.", err)

@@ -2,25 +2,26 @@ package timezone
 
 import "nursing_api/pkg/ent"
 
-func toTimeZoneDomainList(entities []*ent.PlanTimeZone) []*TimeZone {
-	domains := []*TimeZone{}
+func toDomainList(entities []*ent.PlanTimeZoneLink) []*TimeZoneLink {
+	domains := []*TimeZoneLink{}
 	for _, entity := range entities {
-		domains = append(domains, toTimeZoneDomain(entity))
+		domains = append(domains, toDomain(entity))
 	}
 
 	return domains
 }
 
-func toTimeZoneDomain(entity *ent.PlanTimeZone) *TimeZone {
-	return &TimeZone{
-		ID:        entity.ID,
-		UserID:    entity.UserID,
-		Name:      entity.TimezoneName,
-		IsDefault: entity.IsDefault,
-		Midday:    entity.Midday,
-		Hour:      entity.Hour,
-		Minute:    entity.Minute,
-		CreatedAt: entity.CreatedAt,
-		UpdatedAt: entity.UpdatedAt,
+func toDomain(entity *ent.PlanTimeZoneLink) *TimeZoneLink {
+	return &TimeZoneLink{
+		ID:             entity.ID,
+		PrescriptionId: entity.PrescriptionID,
+		TimeZoneId:     entity.TimezoneID,
+		TimeZoneName:   entity.TimezoneName,
+		UseAlert:       entity.UseAlert,
+		Midday:         entity.Midday,
+		Hour:           entity.Hour,
+		Minute:         entity.Minute,
+		CreatedAt:      entity.CreatedAt,
+		UpdatedAt:      entity.UpdatedAt,
 	}
 }

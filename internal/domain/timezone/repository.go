@@ -10,13 +10,22 @@ import (
 	"time"
 )
 
+type Repository interface {
+	GetTimeZones(userId uuid.UUID) ([]*TimeZone, error)
+	GetTimeZone(id uuid.UUID, userId uuid.UUID) (*TimeZone, error)
+	CreateTimeZone(model *TimeZone) (*TimeZone, error)
+	UpdateTimeZone(model *TimeZone) (bool, error)
+	DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, error)
+	GetDuplicate(userId uuid.UUID, name string, midday string, hour string, minute string) (*TimeZone, error)
+}
+
 type timezoneRepository struct {
 	root     *ent.Client
 	timezone *ent.PlanTimeZoneClient
 	c        context.Context
 }
 
-func NewTimezoneRepository(
+func NewRepository(
 	dbClient *database.DatabaseClient,
 ) Repository {
 	return &timezoneRepository{

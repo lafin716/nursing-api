@@ -5,17 +5,24 @@ import (
 	"nursing_api/internal/common/utils"
 )
 
-type userService struct {
-	userRepo UserRepository
+type UseCase interface {
+	RegisterUser(req *RegisterRequest) *RegisterResponse
+	VerifyUser(req *LoginRequest) *LoginResponse
+	GetUser(userId uuid.UUID) *GetUserResponse
+	Leave(userId uuid.UUID) (bool, error)
 }
 
-func NewUserService(userRepo UserRepository) UserUseCase {
-	return &userService{
+type service struct {
+	userRepo Repository
+}
+
+func NewService(userRepo Repository) UseCase {
+	return &service{
 		userRepo: userRepo,
 	}
 }
 
-func (u userService) GetUser(userId uuid.UUID) *GetUserResponse {
+func (u service) GetUser(userId uuid.UUID) *GetUserResponse {
 	foundUser, err := u.userRepo.GetUserById(userId)
 	if err != nil {
 		return FailGetUserResponse("유저정보를 찾을 수 없습니다.", err)
@@ -24,7 +31,7 @@ func (u userService) GetUser(userId uuid.UUID) *GetUserResponse {
 	return OkGetUserResponse(foundUser)
 }
 
-func (u userService) RegisterUser(req *RegisterRequest) *RegisterResponse {
+func (u service) RegisterUser(req *RegisterRequest) *RegisterResponse {
 	count, err := u.userRepo.CountUserByEmail(req.Email)
 	if err != nil {
 		return FailRegisterUser("회원 정보 조회 중 오류가 발생하였습니다", err)
@@ -46,7 +53,7 @@ func (u userService) RegisterUser(req *RegisterRequest) *RegisterResponse {
 	return OkRegisterUser(savedUser)
 }
 
-func (u userService) VerifyUser(req *LoginRequest) *LoginResponse {
+func (u service) VerifyUser(req *LoginRequest) *LoginResponse {
 	foundUser, err := u.userRepo.GetUserByEmail(req.Email)
 	if err != nil {
 		return FailLoginUser("일치하는 정보를 찾을 수 없습니다.", err)
@@ -60,6 +67,6 @@ func (u userService) VerifyUser(req *LoginRequest) *LoginResponse {
 	return OkLoginUser(foundUser)
 }
 
-func (u userService) Leave(userId uuid.UUID) (bool, error) {
+func (u service) Leave(userId uuid.UUID) (bool, error) {
 	return u.userRepo.Delete(userId)
 }
