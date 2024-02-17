@@ -2,6 +2,7 @@ package prescription
 
 import (
 	"nursing_api/pkg/jwt"
+	"nursing_api/pkg/mono"
 	"strings"
 	"time"
 )
@@ -17,12 +18,9 @@ type UseCase interface {
 	DeleteItem(req *DeleteItemRequest) *DeleteItemResponse
 }
 
-const (
-	DATE_LAYOUT = "2006-01-02"
-)
-
 type prescriptionService struct {
 	repo      Repository
+	mono      *mono.Client
 	jwtClient *jwt.JwtClient
 }
 
@@ -37,9 +35,9 @@ func NewService(
 }
 
 func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
-	targetDate, err := time.Parse(DATE_LAYOUT, req.Date)
+	targetDate, err := p.mono.Date.Parse("Y-m-d", req.Date)
 	if err != nil {
-		targetDate, _ = time.Parse(DATE_LAYOUT, time.Now().Format(DATE_LAYOUT))
+		targetDate = time.Now()
 	}
 	if req.Limit == 0 {
 		req.Limit = 10
@@ -69,7 +67,7 @@ func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
 }
 
 func (p prescriptionService) Register(req *RegisterRequest) *RegisterResponse {
-	started, err := time.Parse(DATE_LAYOUT, req.StartedAt)
+	started, err := p.mono.Date.Parse("Y-m-d", req.StartedAt)
 	if err != nil {
 		return FailRegister("복용시작 날짜형식이 맞지않습니다.", err)
 	}
@@ -78,7 +76,7 @@ func (p prescriptionService) Register(req *RegisterRequest) *RegisterResponse {
 	var finished time.Time
 	if strings.TrimSpace(req.FinishedAt) != "" {
 		// 복용 종료일이 파라미터에 있는 경우 그대로 사용
-		finished, err = time.Parse(DATE_LAYOUT, req.FinishedAt)
+		finished, err = p.mono.Date.Parse("Y-m-d", req.FinishedAt)
 		if err != nil {
 			return FailRegister("복용종료 날짜형식이 맞지않습니다.", err)
 		}
@@ -125,7 +123,7 @@ func (p prescriptionService) Update(req *UpdateRequest) *UpdateResponse {
 
 	started := found.StartedAt
 	if req.StartedAt != "" {
-		started, err = time.Parse(DATE_LAYOUT, req.StartedAt)
+		started, err = p.mono.Date.Parse("Y-m-d", req.StartedAt)
 		if err != nil {
 			return FailUpdate("복용시작 날짜형식이 맞지않습니다.", err)
 		}
@@ -133,7 +131,7 @@ func (p prescriptionService) Update(req *UpdateRequest) *UpdateResponse {
 
 	finished := found.FinishedAt
 	if req.FinishedAt != "" {
-		finished, err = time.Parse(DATE_LAYOUT, req.FinishedAt)
+		finished, err = p.mono.Date.Parse("Y-m-d", req.FinishedAt)
 		if err != nil {
 			return FailUpdate("복용종료 날짜형식이 맞지않습니다.", err)
 		}
@@ -180,25 +178,6 @@ func (p prescriptionService) Delete(req *DeleteRequest) *DeleteResponse {
 }
 
 func (p prescriptionService) AddItem(req *AddItemRequest) *AddItemResponse {
-	found, err := p.repo.GetById(req.PrescriptionId)
-	if err != nil {
-		return FailAddItem("데이터를 찾을 수 없습니다.", err)
-	}
-
-	newItem := &PrescriptionItem{
-		MedicineId:   req.MedicineId,
-		MedicineName: req.MedicineName,
-		TakeAmount:   req.TakeAmount,
-		MedicineUnit: req.MedicineUnit,
-		Memo:         req.Memo,
-		CreatedAt:    time.Now(),
-	}
-
-	_, err = p.repo.AddItem(found.ID, newItem)
-	if err != nil {
-		return FailAddItem("처방전 의약품 추가 중 오류가 발생하였습니다.", err)
-	}
-
 	return OkAddItem()
 }
 

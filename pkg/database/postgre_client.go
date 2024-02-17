@@ -56,6 +56,7 @@ func NewPostgresClient(config *Config) *DatabaseClient {
 	return &DatabaseClient{
 		Client: client,
 		Ctx:    ctx,
+		Tx:     nil,
 	}
 }
 

@@ -2,7 +2,7 @@ package timezone
 
 import "nursing_api/pkg/ent"
 
-func toTimeZoneDomainList(entities []*ent.PlanTimeZone) []*TimeZone {
+func toTimeZoneDomainList(entities []*ent.TimeZone) []*TimeZone {
 	domains := []*TimeZone{}
 	for _, entity := range entities {
 		domains = append(domains, toTimeZoneDomain(entity))
@@ -11,7 +11,7 @@ func toTimeZoneDomainList(entities []*ent.PlanTimeZone) []*TimeZone {
 	return domains
 }
 
-func toTimeZoneDomain(entity *ent.PlanTimeZone) *TimeZone {
+func toTimeZoneDomain(entity *ent.TimeZone) *TimeZone {
 	return &TimeZone{
 		ID:        entity.ID,
 		UserID:    entity.UserID,
