@@ -10,6 +10,7 @@ import (
 	_ "nursing_api/docs"
 	"nursing_api/internal/api"
 	"nursing_api/internal/config"
+	"nursing_api/internal/core"
 	"nursing_api/internal/domain"
 	"nursing_api/internal/middleware"
 	"nursing_api/internal/router"
@@ -26,6 +27,7 @@ func New() (*Server, error) {
 		middleware.Set,
 		api.Set,
 		domain.Set,
+		core.Set,
 	)))
 }
 

@@ -16,7 +16,9 @@ type Repository interface {
 	ConnectPrescription(link *TimeZoneLink) (*TimeZoneLink, error)
 }
 
-func NewRepository(db database.DatabaseClient) Repository {
+func NewRepository(
+	db *database.DatabaseClient,
+) Repository {
 	return &repository{
 		root:         db.Client,
 		timezoneLink: db.Client.TimeZoneLink,

@@ -17,6 +17,7 @@ import (
 	"nursing_api/internal/domain/prescription"
 	"nursing_api/internal/domain/take_history"
 	"nursing_api/internal/domain/timezone"
+	"nursing_api/internal/domain/timezone_link"
 	"nursing_api/internal/domain/user"
 	"nursing_api/internal/middleware"
 	"nursing_api/internal/router"
@@ -24,6 +25,7 @@ import (
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
 	"nursing_api/pkg/jwt"
+	"nursing_api/pkg/mono"
 	"nursing_api/pkg/web"
 )
 
@@ -58,9 +60,11 @@ func New() (*Server, error) {
 	takehistoryRepository := takehistory.NewRepository(databaseClient)
 	takehistoryUseCase := takehistory.NewService(takehistoryRepository, prescriptionRepository)
 	takeHistoryHttpApi := api.NewTakeHistoryHttpApi(takehistoryUseCase, jwtClient)
-	planUseCase := plan.NewService(prescriptionRepository, takehistoryRepository)
-	planHttpApi := api.NewPlanHttpApi(planUseCase, jwtClient)
+	client := mono.NewMono()
 	timezoneRepository := timezone.NewRepository(databaseClient)
+	timezonelinkRepository := timezonelink.NewRepository(databaseClient)
+	planUseCase := plan.NewService(databaseClient, client, prescriptionRepository, timezoneRepository, timezonelinkRepository, takehistoryRepository, medicineRepository)
+	planHttpApi := api.NewPlanHttpApi(planUseCase, jwtClient)
 	timezoneUseCase := timezone.NewService(timezoneRepository)
 	timeZoneApi := api.NewTimeZoneApi(timezoneUseCase, jwtClient)
 	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi, takeHistoryHttpApi, planHttpApi, timeZoneApi)

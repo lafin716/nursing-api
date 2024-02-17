@@ -22,7 +22,7 @@ type UseCase interface {
 }
 
 type planService struct {
-	db               database.DatabaseClient
+	db               *database.DatabaseClient
 	mono             *mono.Client
 	prescriptionRepo prescription.Repository
 	timezoneRepo     timezone.Repository
@@ -32,7 +32,8 @@ type planService struct {
 }
 
 func NewService(
-	db database.DatabaseClient,
+	db *database.DatabaseClient,
+	mono *mono.Client,
 	prescriptionRepo prescription.Repository,
 	timezoneRepo timezone.Repository,
 	timezoneLinkRepo timezonelink.Repository,
@@ -41,7 +42,7 @@ func NewService(
 ) UseCase {
 	return &planService{
 		db:               db,
-		mono:             mono.NewMono(),
+		mono:             mono,
 		prescriptionRepo: prescriptionRepo,
 		timezoneRepo:     timezoneRepo,
 		timezoneLinkRepo: timezoneLinkRepo,
