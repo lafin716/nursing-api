@@ -7,14 +7,9 @@
   "timezones": [
     {
       "timezone_id": "12312313",
-      "name": "아침",
-      "midday": "AM",
-      "hour": "09",
-      "minute": "30",
       "medicines": [
         {
           "medicine_id": "123213123",
-          "name": "잘티",
           "take_amount": 1.5,
           "take_unit": "정",
           "memo": ""

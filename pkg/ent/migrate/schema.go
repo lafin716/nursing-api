@@ -38,43 +38,6 @@ var (
 		Columns:    MedicinesColumns,
 		PrimaryKey: []*schema.Column{MedicinesColumns[0]},
 	}
-	// PlanTimeZonesColumns holds the columns for the "plan_time_zones" table.
-	PlanTimeZonesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "timezone_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
-		{Name: "is_default", Type: field.TypeBool, Default: false},
-		{Name: "midday", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
-		{Name: "hour", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
-		{Name: "minute", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
-	}
-	// PlanTimeZonesTable holds the schema information for the "plan_time_zones" table.
-	PlanTimeZonesTable = &schema.Table{
-		Name:       "plan_time_zones",
-		Columns:    PlanTimeZonesColumns,
-		PrimaryKey: []*schema.Column{PlanTimeZonesColumns[0]},
-	}
-	// PlanTimeZoneLinksColumns holds the columns for the "plan_time_zone_links" table.
-	PlanTimeZoneLinksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "prescription_id", Type: field.TypeUUID},
-		{Name: "timezone_id", Type: field.TypeUUID},
-		{Name: "timezone_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
-		{Name: "use_alert", Type: field.TypeBool, Default: false},
-		{Name: "midday", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
-		{Name: "hour", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
-		{Name: "minute", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
-	}
-	// PlanTimeZoneLinksTable holds the schema information for the "plan_time_zone_links" table.
-	PlanTimeZoneLinksTable = &schema.Table{
-		Name:       "plan_time_zone_links",
-		Columns:    PlanTimeZoneLinksColumns,
-		PrimaryKey: []*schema.Column{PlanTimeZoneLinksColumns[0]},
-	}
 	// PrescriptionsColumns holds the columns for the "prescriptions" table.
 	PrescriptionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -149,6 +112,43 @@ var (
 		Columns:    TakeHistoryItemsColumns,
 		PrimaryKey: []*schema.Column{TakeHistoryItemsColumns[0]},
 	}
+	// TimeZonesColumns holds the columns for the "time_zones" table.
+	TimeZonesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "timezone_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
+		{Name: "is_default", Type: field.TypeBool, Default: false},
+		{Name: "midday", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
+		{Name: "hour", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
+		{Name: "minute", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+	}
+	// TimeZonesTable holds the schema information for the "time_zones" table.
+	TimeZonesTable = &schema.Table{
+		Name:       "time_zones",
+		Columns:    TimeZonesColumns,
+		PrimaryKey: []*schema.Column{TimeZonesColumns[0]},
+	}
+	// TimeZoneLinksColumns holds the columns for the "time_zone_links" table.
+	TimeZoneLinksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "prescription_id", Type: field.TypeUUID},
+		{Name: "timezone_id", Type: field.TypeUUID},
+		{Name: "timezone_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
+		{Name: "use_alert", Type: field.TypeBool, Default: false},
+		{Name: "midday", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
+		{Name: "hour", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
+		{Name: "minute", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
+	}
+	// TimeZoneLinksTable holds the schema information for the "time_zone_links" table.
+	TimeZoneLinksTable = &schema.Table{
+		Name:       "time_zone_links",
+		Columns:    TimeZoneLinksColumns,
+		PrimaryKey: []*schema.Column{TimeZoneLinksColumns[0]},
+	}
 	// TokensColumns holds the columns for the "tokens" table.
 	TokensColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -189,12 +189,12 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		MedicinesTable,
-		PlanTimeZonesTable,
-		PlanTimeZoneLinksTable,
 		PrescriptionsTable,
 		PrescriptionItemsTable,
 		TakeHistoriesTable,
 		TakeHistoryItemsTable,
+		TimeZonesTable,
+		TimeZoneLinksTable,
 		TokensTable,
 		UsersTable,
 	}

@@ -1,4 +1,4 @@
-package timezone
+package timezonelink
 
 import (
 	"github.com/google/uuid"
@@ -16,10 +16,4 @@ type TimeZoneLink struct {
 	Minute         string    `json:"minute"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
-}
-
-type Repository interface {
-}
-
-type UseCase interface {
 }

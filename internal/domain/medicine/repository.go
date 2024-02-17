@@ -2,6 +2,7 @@ package medicine
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
 	medicineSchema "nursing_api/pkg/ent/medicine"
@@ -9,6 +10,7 @@ import (
 )
 
 type Repository interface {
+	GetById(id uuid.UUID) (*Medicine, error)
 	SavePills(medicine []*Medicine) (int, error)
 	SavePill(medicine *Medicine) (bool, error)
 	GetPillsByNames(pillName string) ([]*Medicine, error)
@@ -24,6 +26,20 @@ func NewRepository(dbClient *database.DatabaseClient) Repository {
 		client: dbClient.Client.Medicine,
 		ctx:    dbClient.Ctx,
 	}
+}
+
+func (m medicineRepository) GetById(id uuid.UUID) (*Medicine, error) {
+	found, err := m.client.
+		Query().
+		Where(
+			medicineSchema.ID(id),
+		).
+		Only(m.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomain(found), nil
 }
 
 func (m medicineRepository) SavePills(medicines []*Medicine) (int, error) {

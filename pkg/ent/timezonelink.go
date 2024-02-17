@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"nursing_api/pkg/ent/plantimezonelink"
+	"nursing_api/pkg/ent/timezonelink"
 	"strings"
 	"time"
 
@@ -13,8 +13,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// PlanTimeZoneLink is the model entity for the PlanTimeZoneLink schema.
-type PlanTimeZoneLink struct {
+// TimeZoneLink is the model entity for the TimeZoneLink schema.
+type TimeZoneLink struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -40,17 +40,17 @@ type PlanTimeZoneLink struct {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*PlanTimeZoneLink) scanValues(columns []string) ([]any, error) {
+func (*TimeZoneLink) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case plantimezonelink.FieldUseAlert:
+		case timezonelink.FieldUseAlert:
 			values[i] = new(sql.NullBool)
-		case plantimezonelink.FieldTimezoneName, plantimezonelink.FieldMidday, plantimezonelink.FieldHour, plantimezonelink.FieldMinute:
+		case timezonelink.FieldTimezoneName, timezonelink.FieldMidday, timezonelink.FieldHour, timezonelink.FieldMinute:
 			values[i] = new(sql.NullString)
-		case plantimezonelink.FieldCreatedAt, plantimezonelink.FieldUpdatedAt:
+		case timezonelink.FieldCreatedAt, timezonelink.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case plantimezonelink.FieldID, plantimezonelink.FieldPrescriptionID, plantimezonelink.FieldTimezoneID:
+		case timezonelink.FieldID, timezonelink.FieldPrescriptionID, timezonelink.FieldTimezoneID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -60,138 +60,138 @@ func (*PlanTimeZoneLink) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the PlanTimeZoneLink fields.
-func (ptzl *PlanTimeZoneLink) assignValues(columns []string, values []any) error {
+// to the TimeZoneLink fields.
+func (tzl *TimeZoneLink) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case plantimezonelink.FieldID:
+		case timezonelink.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ptzl.ID = *value
+				tzl.ID = *value
 			}
-		case plantimezonelink.FieldPrescriptionID:
+		case timezonelink.FieldPrescriptionID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field prescription_id", values[i])
 			} else if value != nil {
-				ptzl.PrescriptionID = *value
+				tzl.PrescriptionID = *value
 			}
-		case plantimezonelink.FieldTimezoneID:
+		case timezonelink.FieldTimezoneID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field timezone_id", values[i])
 			} else if value != nil {
-				ptzl.TimezoneID = *value
+				tzl.TimezoneID = *value
 			}
-		case plantimezonelink.FieldTimezoneName:
+		case timezonelink.FieldTimezoneName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field timezone_name", values[i])
 			} else if value.Valid {
-				ptzl.TimezoneName = value.String
+				tzl.TimezoneName = value.String
 			}
-		case plantimezonelink.FieldUseAlert:
+		case timezonelink.FieldUseAlert:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field use_alert", values[i])
 			} else if value.Valid {
-				ptzl.UseAlert = value.Bool
+				tzl.UseAlert = value.Bool
 			}
-		case plantimezonelink.FieldMidday:
+		case timezonelink.FieldMidday:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field midday", values[i])
 			} else if value.Valid {
-				ptzl.Midday = value.String
+				tzl.Midday = value.String
 			}
-		case plantimezonelink.FieldHour:
+		case timezonelink.FieldHour:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hour", values[i])
 			} else if value.Valid {
-				ptzl.Hour = value.String
+				tzl.Hour = value.String
 			}
-		case plantimezonelink.FieldMinute:
+		case timezonelink.FieldMinute:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field minute", values[i])
 			} else if value.Valid {
-				ptzl.Minute = value.String
+				tzl.Minute = value.String
 			}
-		case plantimezonelink.FieldCreatedAt:
+		case timezonelink.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				ptzl.CreatedAt = value.Time
+				tzl.CreatedAt = value.Time
 			}
-		case plantimezonelink.FieldUpdatedAt:
+		case timezonelink.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				ptzl.UpdatedAt = value.Time
+				tzl.UpdatedAt = value.Time
 			}
 		default:
-			ptzl.selectValues.Set(columns[i], values[i])
+			tzl.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the PlanTimeZoneLink.
+// Value returns the ent.Value that was dynamically selected and assigned to the TimeZoneLink.
 // This includes values selected through modifiers, order, etc.
-func (ptzl *PlanTimeZoneLink) Value(name string) (ent.Value, error) {
-	return ptzl.selectValues.Get(name)
+func (tzl *TimeZoneLink) Value(name string) (ent.Value, error) {
+	return tzl.selectValues.Get(name)
 }
 
-// Update returns a builder for updating this PlanTimeZoneLink.
-// Note that you need to call PlanTimeZoneLink.Unwrap() before calling this method if this PlanTimeZoneLink
+// Update returns a builder for updating this TimeZoneLink.
+// Note that you need to call TimeZoneLink.Unwrap() before calling this method if this TimeZoneLink
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ptzl *PlanTimeZoneLink) Update() *PlanTimeZoneLinkUpdateOne {
-	return NewPlanTimeZoneLinkClient(ptzl.config).UpdateOne(ptzl)
+func (tzl *TimeZoneLink) Update() *TimeZoneLinkUpdateOne {
+	return NewTimeZoneLinkClient(tzl.config).UpdateOne(tzl)
 }
 
-// Unwrap unwraps the PlanTimeZoneLink entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the TimeZoneLink entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ptzl *PlanTimeZoneLink) Unwrap() *PlanTimeZoneLink {
-	_tx, ok := ptzl.config.driver.(*txDriver)
+func (tzl *TimeZoneLink) Unwrap() *TimeZoneLink {
+	_tx, ok := tzl.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: PlanTimeZoneLink is not a transactional entity")
+		panic("ent: TimeZoneLink is not a transactional entity")
 	}
-	ptzl.config.driver = _tx.drv
-	return ptzl
+	tzl.config.driver = _tx.drv
+	return tzl
 }
 
 // String implements the fmt.Stringer.
-func (ptzl *PlanTimeZoneLink) String() string {
+func (tzl *TimeZoneLink) String() string {
 	var builder strings.Builder
-	builder.WriteString("PlanTimeZoneLink(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ptzl.ID))
+	builder.WriteString("TimeZoneLink(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", tzl.ID))
 	builder.WriteString("prescription_id=")
-	builder.WriteString(fmt.Sprintf("%v", ptzl.PrescriptionID))
+	builder.WriteString(fmt.Sprintf("%v", tzl.PrescriptionID))
 	builder.WriteString(", ")
 	builder.WriteString("timezone_id=")
-	builder.WriteString(fmt.Sprintf("%v", ptzl.TimezoneID))
+	builder.WriteString(fmt.Sprintf("%v", tzl.TimezoneID))
 	builder.WriteString(", ")
 	builder.WriteString("timezone_name=")
-	builder.WriteString(ptzl.TimezoneName)
+	builder.WriteString(tzl.TimezoneName)
 	builder.WriteString(", ")
 	builder.WriteString("use_alert=")
-	builder.WriteString(fmt.Sprintf("%v", ptzl.UseAlert))
+	builder.WriteString(fmt.Sprintf("%v", tzl.UseAlert))
 	builder.WriteString(", ")
 	builder.WriteString("midday=")
-	builder.WriteString(ptzl.Midday)
+	builder.WriteString(tzl.Midday)
 	builder.WriteString(", ")
 	builder.WriteString("hour=")
-	builder.WriteString(ptzl.Hour)
+	builder.WriteString(tzl.Hour)
 	builder.WriteString(", ")
 	builder.WriteString("minute=")
-	builder.WriteString(ptzl.Minute)
+	builder.WriteString(tzl.Minute)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(ptzl.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(tzl.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(ptzl.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(tzl.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// PlanTimeZoneLinks is a parsable slice of PlanTimeZoneLink.
-type PlanTimeZoneLinks []*PlanTimeZoneLink
+// TimeZoneLinks is a parsable slice of TimeZoneLink.
+type TimeZoneLinks []*TimeZoneLink

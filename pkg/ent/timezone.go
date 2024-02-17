@@ -4,7 +4,7 @@ package ent
 
 import (
 	"fmt"
-	"nursing_api/pkg/ent/plantimezone"
+	"nursing_api/pkg/ent/timezone"
 	"strings"
 	"time"
 
@@ -13,8 +13,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// PlanTimeZone is the model entity for the PlanTimeZone schema.
-type PlanTimeZone struct {
+// TimeZone is the model entity for the TimeZone schema.
+type TimeZone struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -38,17 +38,17 @@ type PlanTimeZone struct {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*PlanTimeZone) scanValues(columns []string) ([]any, error) {
+func (*TimeZone) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case plantimezone.FieldIsDefault:
+		case timezone.FieldIsDefault:
 			values[i] = new(sql.NullBool)
-		case plantimezone.FieldTimezoneName, plantimezone.FieldMidday, plantimezone.FieldHour, plantimezone.FieldMinute:
+		case timezone.FieldTimezoneName, timezone.FieldMidday, timezone.FieldHour, timezone.FieldMinute:
 			values[i] = new(sql.NullString)
-		case plantimezone.FieldCreatedAt, plantimezone.FieldUpdatedAt:
+		case timezone.FieldCreatedAt, timezone.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case plantimezone.FieldID, plantimezone.FieldUserID:
+		case timezone.FieldID, timezone.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -58,129 +58,129 @@ func (*PlanTimeZone) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the PlanTimeZone fields.
-func (ptz *PlanTimeZone) assignValues(columns []string, values []any) error {
+// to the TimeZone fields.
+func (tz *TimeZone) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case plantimezone.FieldID:
+		case timezone.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ptz.ID = *value
+				tz.ID = *value
 			}
-		case plantimezone.FieldUserID:
+		case timezone.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				ptz.UserID = *value
+				tz.UserID = *value
 			}
-		case plantimezone.FieldTimezoneName:
+		case timezone.FieldTimezoneName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field timezone_name", values[i])
 			} else if value.Valid {
-				ptz.TimezoneName = value.String
+				tz.TimezoneName = value.String
 			}
-		case plantimezone.FieldIsDefault:
+		case timezone.FieldIsDefault:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_default", values[i])
 			} else if value.Valid {
-				ptz.IsDefault = value.Bool
+				tz.IsDefault = value.Bool
 			}
-		case plantimezone.FieldMidday:
+		case timezone.FieldMidday:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field midday", values[i])
 			} else if value.Valid {
-				ptz.Midday = value.String
+				tz.Midday = value.String
 			}
-		case plantimezone.FieldHour:
+		case timezone.FieldHour:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field hour", values[i])
 			} else if value.Valid {
-				ptz.Hour = value.String
+				tz.Hour = value.String
 			}
-		case plantimezone.FieldMinute:
+		case timezone.FieldMinute:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field minute", values[i])
 			} else if value.Valid {
-				ptz.Minute = value.String
+				tz.Minute = value.String
 			}
-		case plantimezone.FieldCreatedAt:
+		case timezone.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				ptz.CreatedAt = value.Time
+				tz.CreatedAt = value.Time
 			}
-		case plantimezone.FieldUpdatedAt:
+		case timezone.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				ptz.UpdatedAt = value.Time
+				tz.UpdatedAt = value.Time
 			}
 		default:
-			ptz.selectValues.Set(columns[i], values[i])
+			tz.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the PlanTimeZone.
+// Value returns the ent.Value that was dynamically selected and assigned to the TimeZone.
 // This includes values selected through modifiers, order, etc.
-func (ptz *PlanTimeZone) Value(name string) (ent.Value, error) {
-	return ptz.selectValues.Get(name)
+func (tz *TimeZone) Value(name string) (ent.Value, error) {
+	return tz.selectValues.Get(name)
 }
 
-// Update returns a builder for updating this PlanTimeZone.
-// Note that you need to call PlanTimeZone.Unwrap() before calling this method if this PlanTimeZone
+// Update returns a builder for updating this TimeZone.
+// Note that you need to call TimeZone.Unwrap() before calling this method if this TimeZone
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ptz *PlanTimeZone) Update() *PlanTimeZoneUpdateOne {
-	return NewPlanTimeZoneClient(ptz.config).UpdateOne(ptz)
+func (tz *TimeZone) Update() *TimeZoneUpdateOne {
+	return NewTimeZoneClient(tz.config).UpdateOne(tz)
 }
 
-// Unwrap unwraps the PlanTimeZone entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the TimeZone entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ptz *PlanTimeZone) Unwrap() *PlanTimeZone {
-	_tx, ok := ptz.config.driver.(*txDriver)
+func (tz *TimeZone) Unwrap() *TimeZone {
+	_tx, ok := tz.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: PlanTimeZone is not a transactional entity")
+		panic("ent: TimeZone is not a transactional entity")
 	}
-	ptz.config.driver = _tx.drv
-	return ptz
+	tz.config.driver = _tx.drv
+	return tz
 }
 
 // String implements the fmt.Stringer.
-func (ptz *PlanTimeZone) String() string {
+func (tz *TimeZone) String() string {
 	var builder strings.Builder
-	builder.WriteString("PlanTimeZone(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ptz.ID))
+	builder.WriteString("TimeZone(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", tz.ID))
 	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", ptz.UserID))
+	builder.WriteString(fmt.Sprintf("%v", tz.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("timezone_name=")
-	builder.WriteString(ptz.TimezoneName)
+	builder.WriteString(tz.TimezoneName)
 	builder.WriteString(", ")
 	builder.WriteString("is_default=")
-	builder.WriteString(fmt.Sprintf("%v", ptz.IsDefault))
+	builder.WriteString(fmt.Sprintf("%v", tz.IsDefault))
 	builder.WriteString(", ")
 	builder.WriteString("midday=")
-	builder.WriteString(ptz.Midday)
+	builder.WriteString(tz.Midday)
 	builder.WriteString(", ")
 	builder.WriteString("hour=")
-	builder.WriteString(ptz.Hour)
+	builder.WriteString(tz.Hour)
 	builder.WriteString(", ")
 	builder.WriteString("minute=")
-	builder.WriteString(ptz.Minute)
+	builder.WriteString(tz.Minute)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(ptz.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(tz.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(ptz.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(tz.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// PlanTimeZones is a parsable slice of PlanTimeZone.
-type PlanTimeZones []*PlanTimeZone
+// TimeZones is a parsable slice of TimeZone.
+type TimeZones []*TimeZone

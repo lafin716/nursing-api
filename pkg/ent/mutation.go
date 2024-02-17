@@ -7,13 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/medicine"
-	"nursing_api/pkg/ent/plantimezone"
-	"nursing_api/pkg/ent/plantimezonelink"
 	"nursing_api/pkg/ent/predicate"
 	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/takehistory"
 	"nursing_api/pkg/ent/takehistoryitem"
+	"nursing_api/pkg/ent/timezone"
+	"nursing_api/pkg/ent/timezonelink"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
 	"sync"
@@ -34,12 +34,12 @@ const (
 
 	// Node types.
 	TypeMedicine         = "Medicine"
-	TypePlanTimeZone     = "PlanTimeZone"
-	TypePlanTimeZoneLink = "PlanTimeZoneLink"
 	TypePrescription     = "Prescription"
 	TypePrescriptionItem = "PrescriptionItem"
 	TypeTakeHistory      = "TakeHistory"
 	TypeTakeHistoryItem  = "TakeHistoryItem"
+	TypeTimeZone         = "TimeZone"
+	TypeTimeZoneLink     = "TimeZoneLink"
 	TypeToken            = "Token"
 	TypeUser             = "User"
 )
@@ -1726,1562 +1726,6 @@ func (m *MedicineMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *MedicineMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Medicine edge %s", name)
-}
-
-// PlanTimeZoneMutation represents an operation that mutates the PlanTimeZone nodes in the graph.
-type PlanTimeZoneMutation struct {
-	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	user_id       *uuid.UUID
-	timezone_name *string
-	is_default    *bool
-	midday        *string
-	hour          *string
-	minute        *string
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*PlanTimeZone, error)
-	predicates    []predicate.PlanTimeZone
-}
-
-var _ ent.Mutation = (*PlanTimeZoneMutation)(nil)
-
-// plantimezoneOption allows management of the mutation configuration using functional options.
-type plantimezoneOption func(*PlanTimeZoneMutation)
-
-// newPlanTimeZoneMutation creates new mutation for the PlanTimeZone entity.
-func newPlanTimeZoneMutation(c config, op Op, opts ...plantimezoneOption) *PlanTimeZoneMutation {
-	m := &PlanTimeZoneMutation{
-		config:        c,
-		op:            op,
-		typ:           TypePlanTimeZone,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withPlanTimeZoneID sets the ID field of the mutation.
-func withPlanTimeZoneID(id uuid.UUID) plantimezoneOption {
-	return func(m *PlanTimeZoneMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *PlanTimeZone
-		)
-		m.oldValue = func(ctx context.Context) (*PlanTimeZone, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().PlanTimeZone.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withPlanTimeZone sets the old PlanTimeZone of the mutation.
-func withPlanTimeZone(node *PlanTimeZone) plantimezoneOption {
-	return func(m *PlanTimeZoneMutation) {
-		m.oldValue = func(context.Context) (*PlanTimeZone, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m PlanTimeZoneMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m PlanTimeZoneMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of PlanTimeZone entities.
-func (m *PlanTimeZoneMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *PlanTimeZoneMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *PlanTimeZoneMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().PlanTimeZone.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetUserID sets the "user_id" field.
-func (m *PlanTimeZoneMutation) SetUserID(u uuid.UUID) {
-	m.user_id = &u
-}
-
-// UserID returns the value of the "user_id" field in the mutation.
-func (m *PlanTimeZoneMutation) UserID() (r uuid.UUID, exists bool) {
-	v := m.user_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUserID returns the old "user_id" field's value of the PlanTimeZone entity.
-// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
-	}
-	return oldValue.UserID, nil
-}
-
-// ResetUserID resets all changes to the "user_id" field.
-func (m *PlanTimeZoneMutation) ResetUserID() {
-	m.user_id = nil
-}
-
-// SetTimezoneName sets the "timezone_name" field.
-func (m *PlanTimeZoneMutation) SetTimezoneName(s string) {
-	m.timezone_name = &s
-}
-
-// TimezoneName returns the value of the "timezone_name" field in the mutation.
-func (m *PlanTimeZoneMutation) TimezoneName() (r string, exists bool) {
-	v := m.timezone_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTimezoneName returns the old "timezone_name" field's value of the PlanTimeZone entity.
-// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldTimezoneName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTimezoneName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTimezoneName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTimezoneName: %w", err)
-	}
-	return oldValue.TimezoneName, nil
-}
-
-// ClearTimezoneName clears the value of the "timezone_name" field.
-func (m *PlanTimeZoneMutation) ClearTimezoneName() {
-	m.timezone_name = nil
-	m.clearedFields[plantimezone.FieldTimezoneName] = struct{}{}
-}
-
-// TimezoneNameCleared returns if the "timezone_name" field was cleared in this mutation.
-func (m *PlanTimeZoneMutation) TimezoneNameCleared() bool {
-	_, ok := m.clearedFields[plantimezone.FieldTimezoneName]
-	return ok
-}
-
-// ResetTimezoneName resets all changes to the "timezone_name" field.
-func (m *PlanTimeZoneMutation) ResetTimezoneName() {
-	m.timezone_name = nil
-	delete(m.clearedFields, plantimezone.FieldTimezoneName)
-}
-
-// SetIsDefault sets the "is_default" field.
-func (m *PlanTimeZoneMutation) SetIsDefault(b bool) {
-	m.is_default = &b
-}
-
-// IsDefault returns the value of the "is_default" field in the mutation.
-func (m *PlanTimeZoneMutation) IsDefault() (r bool, exists bool) {
-	v := m.is_default
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsDefault returns the old "is_default" field's value of the PlanTimeZone entity.
-// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldIsDefault(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsDefault is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsDefault requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsDefault: %w", err)
-	}
-	return oldValue.IsDefault, nil
-}
-
-// ResetIsDefault resets all changes to the "is_default" field.
-func (m *PlanTimeZoneMutation) ResetIsDefault() {
-	m.is_default = nil
-}
-
-// SetMidday sets the "midday" field.
-func (m *PlanTimeZoneMutation) SetMidday(s string) {
-	m.midday = &s
-}
-
-// Midday returns the value of the "midday" field in the mutation.
-func (m *PlanTimeZoneMutation) Midday() (r string, exists bool) {
-	v := m.midday
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMidday returns the old "midday" field's value of the PlanTimeZone entity.
-// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldMidday(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMidday is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMidday requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMidday: %w", err)
-	}
-	return oldValue.Midday, nil
-}
-
-// ResetMidday resets all changes to the "midday" field.
-func (m *PlanTimeZoneMutation) ResetMidday() {
-	m.midday = nil
-}
-
-// SetHour sets the "hour" field.
-func (m *PlanTimeZoneMutation) SetHour(s string) {
-	m.hour = &s
-}
-
-// Hour returns the value of the "hour" field in the mutation.
-func (m *PlanTimeZoneMutation) Hour() (r string, exists bool) {
-	v := m.hour
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldHour returns the old "hour" field's value of the PlanTimeZone entity.
-// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldHour(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldHour is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldHour requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldHour: %w", err)
-	}
-	return oldValue.Hour, nil
-}
-
-// ResetHour resets all changes to the "hour" field.
-func (m *PlanTimeZoneMutation) ResetHour() {
-	m.hour = nil
-}
-
-// SetMinute sets the "minute" field.
-func (m *PlanTimeZoneMutation) SetMinute(s string) {
-	m.minute = &s
-}
-
-// Minute returns the value of the "minute" field in the mutation.
-func (m *PlanTimeZoneMutation) Minute() (r string, exists bool) {
-	v := m.minute
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMinute returns the old "minute" field's value of the PlanTimeZone entity.
-// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldMinute(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMinute is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMinute requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMinute: %w", err)
-	}
-	return oldValue.Minute, nil
-}
-
-// ResetMinute resets all changes to the "minute" field.
-func (m *PlanTimeZoneMutation) ResetMinute() {
-	m.minute = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *PlanTimeZoneMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *PlanTimeZoneMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the PlanTimeZone entity.
-// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *PlanTimeZoneMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *PlanTimeZoneMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *PlanTimeZoneMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the PlanTimeZone entity.
-// If the PlanTimeZone object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ClearUpdatedAt clears the value of the "updated_at" field.
-func (m *PlanTimeZoneMutation) ClearUpdatedAt() {
-	m.updated_at = nil
-	m.clearedFields[plantimezone.FieldUpdatedAt] = struct{}{}
-}
-
-// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
-func (m *PlanTimeZoneMutation) UpdatedAtCleared() bool {
-	_, ok := m.clearedFields[plantimezone.FieldUpdatedAt]
-	return ok
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *PlanTimeZoneMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-	delete(m.clearedFields, plantimezone.FieldUpdatedAt)
-}
-
-// Where appends a list predicates to the PlanTimeZoneMutation builder.
-func (m *PlanTimeZoneMutation) Where(ps ...predicate.PlanTimeZone) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the PlanTimeZoneMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *PlanTimeZoneMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.PlanTimeZone, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *PlanTimeZoneMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *PlanTimeZoneMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (PlanTimeZone).
-func (m *PlanTimeZoneMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *PlanTimeZoneMutation) Fields() []string {
-	fields := make([]string, 0, 8)
-	if m.user_id != nil {
-		fields = append(fields, plantimezone.FieldUserID)
-	}
-	if m.timezone_name != nil {
-		fields = append(fields, plantimezone.FieldTimezoneName)
-	}
-	if m.is_default != nil {
-		fields = append(fields, plantimezone.FieldIsDefault)
-	}
-	if m.midday != nil {
-		fields = append(fields, plantimezone.FieldMidday)
-	}
-	if m.hour != nil {
-		fields = append(fields, plantimezone.FieldHour)
-	}
-	if m.minute != nil {
-		fields = append(fields, plantimezone.FieldMinute)
-	}
-	if m.created_at != nil {
-		fields = append(fields, plantimezone.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, plantimezone.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *PlanTimeZoneMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case plantimezone.FieldUserID:
-		return m.UserID()
-	case plantimezone.FieldTimezoneName:
-		return m.TimezoneName()
-	case plantimezone.FieldIsDefault:
-		return m.IsDefault()
-	case plantimezone.FieldMidday:
-		return m.Midday()
-	case plantimezone.FieldHour:
-		return m.Hour()
-	case plantimezone.FieldMinute:
-		return m.Minute()
-	case plantimezone.FieldCreatedAt:
-		return m.CreatedAt()
-	case plantimezone.FieldUpdatedAt:
-		return m.UpdatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *PlanTimeZoneMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case plantimezone.FieldUserID:
-		return m.OldUserID(ctx)
-	case plantimezone.FieldTimezoneName:
-		return m.OldTimezoneName(ctx)
-	case plantimezone.FieldIsDefault:
-		return m.OldIsDefault(ctx)
-	case plantimezone.FieldMidday:
-		return m.OldMidday(ctx)
-	case plantimezone.FieldHour:
-		return m.OldHour(ctx)
-	case plantimezone.FieldMinute:
-		return m.OldMinute(ctx)
-	case plantimezone.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case plantimezone.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown PlanTimeZone field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *PlanTimeZoneMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case plantimezone.FieldUserID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUserID(v)
-		return nil
-	case plantimezone.FieldTimezoneName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTimezoneName(v)
-		return nil
-	case plantimezone.FieldIsDefault:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsDefault(v)
-		return nil
-	case plantimezone.FieldMidday:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMidday(v)
-		return nil
-	case plantimezone.FieldHour:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetHour(v)
-		return nil
-	case plantimezone.FieldMinute:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMinute(v)
-		return nil
-	case plantimezone.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case plantimezone.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown PlanTimeZone field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *PlanTimeZoneMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *PlanTimeZoneMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *PlanTimeZoneMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown PlanTimeZone numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *PlanTimeZoneMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(plantimezone.FieldTimezoneName) {
-		fields = append(fields, plantimezone.FieldTimezoneName)
-	}
-	if m.FieldCleared(plantimezone.FieldUpdatedAt) {
-		fields = append(fields, plantimezone.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *PlanTimeZoneMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *PlanTimeZoneMutation) ClearField(name string) error {
-	switch name {
-	case plantimezone.FieldTimezoneName:
-		m.ClearTimezoneName()
-		return nil
-	case plantimezone.FieldUpdatedAt:
-		m.ClearUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown PlanTimeZone nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *PlanTimeZoneMutation) ResetField(name string) error {
-	switch name {
-	case plantimezone.FieldUserID:
-		m.ResetUserID()
-		return nil
-	case plantimezone.FieldTimezoneName:
-		m.ResetTimezoneName()
-		return nil
-	case plantimezone.FieldIsDefault:
-		m.ResetIsDefault()
-		return nil
-	case plantimezone.FieldMidday:
-		m.ResetMidday()
-		return nil
-	case plantimezone.FieldHour:
-		m.ResetHour()
-		return nil
-	case plantimezone.FieldMinute:
-		m.ResetMinute()
-		return nil
-	case plantimezone.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case plantimezone.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown PlanTimeZone field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *PlanTimeZoneMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *PlanTimeZoneMutation) AddedIDs(name string) []ent.Value {
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *PlanTimeZoneMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *PlanTimeZoneMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *PlanTimeZoneMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *PlanTimeZoneMutation) EdgeCleared(name string) bool {
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *PlanTimeZoneMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown PlanTimeZone unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *PlanTimeZoneMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown PlanTimeZone edge %s", name)
-}
-
-// PlanTimeZoneLinkMutation represents an operation that mutates the PlanTimeZoneLink nodes in the graph.
-type PlanTimeZoneLinkMutation struct {
-	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	prescription_id *uuid.UUID
-	timezone_id     *uuid.UUID
-	timezone_name   *string
-	use_alert       *bool
-	midday          *string
-	hour            *string
-	minute          *string
-	created_at      *time.Time
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*PlanTimeZoneLink, error)
-	predicates      []predicate.PlanTimeZoneLink
-}
-
-var _ ent.Mutation = (*PlanTimeZoneLinkMutation)(nil)
-
-// plantimezonelinkOption allows management of the mutation configuration using functional options.
-type plantimezonelinkOption func(*PlanTimeZoneLinkMutation)
-
-// newPlanTimeZoneLinkMutation creates new mutation for the PlanTimeZoneLink entity.
-func newPlanTimeZoneLinkMutation(c config, op Op, opts ...plantimezonelinkOption) *PlanTimeZoneLinkMutation {
-	m := &PlanTimeZoneLinkMutation{
-		config:        c,
-		op:            op,
-		typ:           TypePlanTimeZoneLink,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withPlanTimeZoneLinkID sets the ID field of the mutation.
-func withPlanTimeZoneLinkID(id uuid.UUID) plantimezonelinkOption {
-	return func(m *PlanTimeZoneLinkMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *PlanTimeZoneLink
-		)
-		m.oldValue = func(ctx context.Context) (*PlanTimeZoneLink, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().PlanTimeZoneLink.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withPlanTimeZoneLink sets the old PlanTimeZoneLink of the mutation.
-func withPlanTimeZoneLink(node *PlanTimeZoneLink) plantimezonelinkOption {
-	return func(m *PlanTimeZoneLinkMutation) {
-		m.oldValue = func(context.Context) (*PlanTimeZoneLink, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m PlanTimeZoneLinkMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m PlanTimeZoneLinkMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of PlanTimeZoneLink entities.
-func (m *PlanTimeZoneLinkMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *PlanTimeZoneLinkMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *PlanTimeZoneLinkMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().PlanTimeZoneLink.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetPrescriptionID sets the "prescription_id" field.
-func (m *PlanTimeZoneLinkMutation) SetPrescriptionID(u uuid.UUID) {
-	m.prescription_id = &u
-}
-
-// PrescriptionID returns the value of the "prescription_id" field in the mutation.
-func (m *PlanTimeZoneLinkMutation) PrescriptionID() (r uuid.UUID, exists bool) {
-	v := m.prescription_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPrescriptionID returns the old "prescription_id" field's value of the PlanTimeZoneLink entity.
-// If the PlanTimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneLinkMutation) OldPrescriptionID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPrescriptionID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPrescriptionID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPrescriptionID: %w", err)
-	}
-	return oldValue.PrescriptionID, nil
-}
-
-// ResetPrescriptionID resets all changes to the "prescription_id" field.
-func (m *PlanTimeZoneLinkMutation) ResetPrescriptionID() {
-	m.prescription_id = nil
-}
-
-// SetTimezoneID sets the "timezone_id" field.
-func (m *PlanTimeZoneLinkMutation) SetTimezoneID(u uuid.UUID) {
-	m.timezone_id = &u
-}
-
-// TimezoneID returns the value of the "timezone_id" field in the mutation.
-func (m *PlanTimeZoneLinkMutation) TimezoneID() (r uuid.UUID, exists bool) {
-	v := m.timezone_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTimezoneID returns the old "timezone_id" field's value of the PlanTimeZoneLink entity.
-// If the PlanTimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneLinkMutation) OldTimezoneID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTimezoneID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTimezoneID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTimezoneID: %w", err)
-	}
-	return oldValue.TimezoneID, nil
-}
-
-// ResetTimezoneID resets all changes to the "timezone_id" field.
-func (m *PlanTimeZoneLinkMutation) ResetTimezoneID() {
-	m.timezone_id = nil
-}
-
-// SetTimezoneName sets the "timezone_name" field.
-func (m *PlanTimeZoneLinkMutation) SetTimezoneName(s string) {
-	m.timezone_name = &s
-}
-
-// TimezoneName returns the value of the "timezone_name" field in the mutation.
-func (m *PlanTimeZoneLinkMutation) TimezoneName() (r string, exists bool) {
-	v := m.timezone_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTimezoneName returns the old "timezone_name" field's value of the PlanTimeZoneLink entity.
-// If the PlanTimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneLinkMutation) OldTimezoneName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTimezoneName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTimezoneName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTimezoneName: %w", err)
-	}
-	return oldValue.TimezoneName, nil
-}
-
-// ClearTimezoneName clears the value of the "timezone_name" field.
-func (m *PlanTimeZoneLinkMutation) ClearTimezoneName() {
-	m.timezone_name = nil
-	m.clearedFields[plantimezonelink.FieldTimezoneName] = struct{}{}
-}
-
-// TimezoneNameCleared returns if the "timezone_name" field was cleared in this mutation.
-func (m *PlanTimeZoneLinkMutation) TimezoneNameCleared() bool {
-	_, ok := m.clearedFields[plantimezonelink.FieldTimezoneName]
-	return ok
-}
-
-// ResetTimezoneName resets all changes to the "timezone_name" field.
-func (m *PlanTimeZoneLinkMutation) ResetTimezoneName() {
-	m.timezone_name = nil
-	delete(m.clearedFields, plantimezonelink.FieldTimezoneName)
-}
-
-// SetUseAlert sets the "use_alert" field.
-func (m *PlanTimeZoneLinkMutation) SetUseAlert(b bool) {
-	m.use_alert = &b
-}
-
-// UseAlert returns the value of the "use_alert" field in the mutation.
-func (m *PlanTimeZoneLinkMutation) UseAlert() (r bool, exists bool) {
-	v := m.use_alert
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUseAlert returns the old "use_alert" field's value of the PlanTimeZoneLink entity.
-// If the PlanTimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneLinkMutation) OldUseAlert(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUseAlert is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUseAlert requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUseAlert: %w", err)
-	}
-	return oldValue.UseAlert, nil
-}
-
-// ResetUseAlert resets all changes to the "use_alert" field.
-func (m *PlanTimeZoneLinkMutation) ResetUseAlert() {
-	m.use_alert = nil
-}
-
-// SetMidday sets the "midday" field.
-func (m *PlanTimeZoneLinkMutation) SetMidday(s string) {
-	m.midday = &s
-}
-
-// Midday returns the value of the "midday" field in the mutation.
-func (m *PlanTimeZoneLinkMutation) Midday() (r string, exists bool) {
-	v := m.midday
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMidday returns the old "midday" field's value of the PlanTimeZoneLink entity.
-// If the PlanTimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneLinkMutation) OldMidday(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMidday is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMidday requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMidday: %w", err)
-	}
-	return oldValue.Midday, nil
-}
-
-// ResetMidday resets all changes to the "midday" field.
-func (m *PlanTimeZoneLinkMutation) ResetMidday() {
-	m.midday = nil
-}
-
-// SetHour sets the "hour" field.
-func (m *PlanTimeZoneLinkMutation) SetHour(s string) {
-	m.hour = &s
-}
-
-// Hour returns the value of the "hour" field in the mutation.
-func (m *PlanTimeZoneLinkMutation) Hour() (r string, exists bool) {
-	v := m.hour
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldHour returns the old "hour" field's value of the PlanTimeZoneLink entity.
-// If the PlanTimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneLinkMutation) OldHour(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldHour is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldHour requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldHour: %w", err)
-	}
-	return oldValue.Hour, nil
-}
-
-// ResetHour resets all changes to the "hour" field.
-func (m *PlanTimeZoneLinkMutation) ResetHour() {
-	m.hour = nil
-}
-
-// SetMinute sets the "minute" field.
-func (m *PlanTimeZoneLinkMutation) SetMinute(s string) {
-	m.minute = &s
-}
-
-// Minute returns the value of the "minute" field in the mutation.
-func (m *PlanTimeZoneLinkMutation) Minute() (r string, exists bool) {
-	v := m.minute
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMinute returns the old "minute" field's value of the PlanTimeZoneLink entity.
-// If the PlanTimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneLinkMutation) OldMinute(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMinute is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMinute requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMinute: %w", err)
-	}
-	return oldValue.Minute, nil
-}
-
-// ResetMinute resets all changes to the "minute" field.
-func (m *PlanTimeZoneLinkMutation) ResetMinute() {
-	m.minute = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *PlanTimeZoneLinkMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *PlanTimeZoneLinkMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the PlanTimeZoneLink entity.
-// If the PlanTimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneLinkMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *PlanTimeZoneLinkMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *PlanTimeZoneLinkMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *PlanTimeZoneLinkMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the PlanTimeZoneLink entity.
-// If the PlanTimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlanTimeZoneLinkMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ClearUpdatedAt clears the value of the "updated_at" field.
-func (m *PlanTimeZoneLinkMutation) ClearUpdatedAt() {
-	m.updated_at = nil
-	m.clearedFields[plantimezonelink.FieldUpdatedAt] = struct{}{}
-}
-
-// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
-func (m *PlanTimeZoneLinkMutation) UpdatedAtCleared() bool {
-	_, ok := m.clearedFields[plantimezonelink.FieldUpdatedAt]
-	return ok
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *PlanTimeZoneLinkMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-	delete(m.clearedFields, plantimezonelink.FieldUpdatedAt)
-}
-
-// Where appends a list predicates to the PlanTimeZoneLinkMutation builder.
-func (m *PlanTimeZoneLinkMutation) Where(ps ...predicate.PlanTimeZoneLink) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the PlanTimeZoneLinkMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *PlanTimeZoneLinkMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.PlanTimeZoneLink, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *PlanTimeZoneLinkMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *PlanTimeZoneLinkMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (PlanTimeZoneLink).
-func (m *PlanTimeZoneLinkMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *PlanTimeZoneLinkMutation) Fields() []string {
-	fields := make([]string, 0, 9)
-	if m.prescription_id != nil {
-		fields = append(fields, plantimezonelink.FieldPrescriptionID)
-	}
-	if m.timezone_id != nil {
-		fields = append(fields, plantimezonelink.FieldTimezoneID)
-	}
-	if m.timezone_name != nil {
-		fields = append(fields, plantimezonelink.FieldTimezoneName)
-	}
-	if m.use_alert != nil {
-		fields = append(fields, plantimezonelink.FieldUseAlert)
-	}
-	if m.midday != nil {
-		fields = append(fields, plantimezonelink.FieldMidday)
-	}
-	if m.hour != nil {
-		fields = append(fields, plantimezonelink.FieldHour)
-	}
-	if m.minute != nil {
-		fields = append(fields, plantimezonelink.FieldMinute)
-	}
-	if m.created_at != nil {
-		fields = append(fields, plantimezonelink.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, plantimezonelink.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *PlanTimeZoneLinkMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case plantimezonelink.FieldPrescriptionID:
-		return m.PrescriptionID()
-	case plantimezonelink.FieldTimezoneID:
-		return m.TimezoneID()
-	case plantimezonelink.FieldTimezoneName:
-		return m.TimezoneName()
-	case plantimezonelink.FieldUseAlert:
-		return m.UseAlert()
-	case plantimezonelink.FieldMidday:
-		return m.Midday()
-	case plantimezonelink.FieldHour:
-		return m.Hour()
-	case plantimezonelink.FieldMinute:
-		return m.Minute()
-	case plantimezonelink.FieldCreatedAt:
-		return m.CreatedAt()
-	case plantimezonelink.FieldUpdatedAt:
-		return m.UpdatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *PlanTimeZoneLinkMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case plantimezonelink.FieldPrescriptionID:
-		return m.OldPrescriptionID(ctx)
-	case plantimezonelink.FieldTimezoneID:
-		return m.OldTimezoneID(ctx)
-	case plantimezonelink.FieldTimezoneName:
-		return m.OldTimezoneName(ctx)
-	case plantimezonelink.FieldUseAlert:
-		return m.OldUseAlert(ctx)
-	case plantimezonelink.FieldMidday:
-		return m.OldMidday(ctx)
-	case plantimezonelink.FieldHour:
-		return m.OldHour(ctx)
-	case plantimezonelink.FieldMinute:
-		return m.OldMinute(ctx)
-	case plantimezonelink.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case plantimezonelink.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown PlanTimeZoneLink field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *PlanTimeZoneLinkMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case plantimezonelink.FieldPrescriptionID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPrescriptionID(v)
-		return nil
-	case plantimezonelink.FieldTimezoneID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTimezoneID(v)
-		return nil
-	case plantimezonelink.FieldTimezoneName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTimezoneName(v)
-		return nil
-	case plantimezonelink.FieldUseAlert:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUseAlert(v)
-		return nil
-	case plantimezonelink.FieldMidday:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMidday(v)
-		return nil
-	case plantimezonelink.FieldHour:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetHour(v)
-		return nil
-	case plantimezonelink.FieldMinute:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMinute(v)
-		return nil
-	case plantimezonelink.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case plantimezonelink.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown PlanTimeZoneLink field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *PlanTimeZoneLinkMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *PlanTimeZoneLinkMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *PlanTimeZoneLinkMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown PlanTimeZoneLink numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *PlanTimeZoneLinkMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(plantimezonelink.FieldTimezoneName) {
-		fields = append(fields, plantimezonelink.FieldTimezoneName)
-	}
-	if m.FieldCleared(plantimezonelink.FieldUpdatedAt) {
-		fields = append(fields, plantimezonelink.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *PlanTimeZoneLinkMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *PlanTimeZoneLinkMutation) ClearField(name string) error {
-	switch name {
-	case plantimezonelink.FieldTimezoneName:
-		m.ClearTimezoneName()
-		return nil
-	case plantimezonelink.FieldUpdatedAt:
-		m.ClearUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown PlanTimeZoneLink nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *PlanTimeZoneLinkMutation) ResetField(name string) error {
-	switch name {
-	case plantimezonelink.FieldPrescriptionID:
-		m.ResetPrescriptionID()
-		return nil
-	case plantimezonelink.FieldTimezoneID:
-		m.ResetTimezoneID()
-		return nil
-	case plantimezonelink.FieldTimezoneName:
-		m.ResetTimezoneName()
-		return nil
-	case plantimezonelink.FieldUseAlert:
-		m.ResetUseAlert()
-		return nil
-	case plantimezonelink.FieldMidday:
-		m.ResetMidday()
-		return nil
-	case plantimezonelink.FieldHour:
-		m.ResetHour()
-		return nil
-	case plantimezonelink.FieldMinute:
-		m.ResetMinute()
-		return nil
-	case plantimezonelink.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case plantimezonelink.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown PlanTimeZoneLink field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *PlanTimeZoneLinkMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *PlanTimeZoneLinkMutation) AddedIDs(name string) []ent.Value {
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *PlanTimeZoneLinkMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *PlanTimeZoneLinkMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *PlanTimeZoneLinkMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *PlanTimeZoneLinkMutation) EdgeCleared(name string) bool {
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *PlanTimeZoneLinkMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown PlanTimeZoneLink unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *PlanTimeZoneLinkMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown PlanTimeZoneLink edge %s", name)
 }
 
 // PrescriptionMutation represents an operation that mutates the Prescription nodes in the graph.
@@ -6673,6 +5117,1562 @@ func (m *TakeHistoryItemMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *TakeHistoryItemMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown TakeHistoryItem edge %s", name)
+}
+
+// TimeZoneMutation represents an operation that mutates the TimeZone nodes in the graph.
+type TimeZoneMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	user_id       *uuid.UUID
+	timezone_name *string
+	is_default    *bool
+	midday        *string
+	hour          *string
+	minute        *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*TimeZone, error)
+	predicates    []predicate.TimeZone
+}
+
+var _ ent.Mutation = (*TimeZoneMutation)(nil)
+
+// timezoneOption allows management of the mutation configuration using functional options.
+type timezoneOption func(*TimeZoneMutation)
+
+// newTimeZoneMutation creates new mutation for the TimeZone entity.
+func newTimeZoneMutation(c config, op Op, opts ...timezoneOption) *TimeZoneMutation {
+	m := &TimeZoneMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTimeZone,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTimeZoneID sets the ID field of the mutation.
+func withTimeZoneID(id uuid.UUID) timezoneOption {
+	return func(m *TimeZoneMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TimeZone
+		)
+		m.oldValue = func(ctx context.Context) (*TimeZone, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TimeZone.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTimeZone sets the old TimeZone of the mutation.
+func withTimeZone(node *TimeZone) timezoneOption {
+	return func(m *TimeZoneMutation) {
+		m.oldValue = func(context.Context) (*TimeZone, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TimeZoneMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TimeZoneMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TimeZone entities.
+func (m *TimeZoneMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TimeZoneMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TimeZoneMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TimeZone.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *TimeZoneMutation) SetUserID(u uuid.UUID) {
+	m.user_id = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *TimeZoneMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the TimeZone entity.
+// If the TimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *TimeZoneMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetTimezoneName sets the "timezone_name" field.
+func (m *TimeZoneMutation) SetTimezoneName(s string) {
+	m.timezone_name = &s
+}
+
+// TimezoneName returns the value of the "timezone_name" field in the mutation.
+func (m *TimeZoneMutation) TimezoneName() (r string, exists bool) {
+	v := m.timezone_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezoneName returns the old "timezone_name" field's value of the TimeZone entity.
+// If the TimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneMutation) OldTimezoneName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezoneName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezoneName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezoneName: %w", err)
+	}
+	return oldValue.TimezoneName, nil
+}
+
+// ClearTimezoneName clears the value of the "timezone_name" field.
+func (m *TimeZoneMutation) ClearTimezoneName() {
+	m.timezone_name = nil
+	m.clearedFields[timezone.FieldTimezoneName] = struct{}{}
+}
+
+// TimezoneNameCleared returns if the "timezone_name" field was cleared in this mutation.
+func (m *TimeZoneMutation) TimezoneNameCleared() bool {
+	_, ok := m.clearedFields[timezone.FieldTimezoneName]
+	return ok
+}
+
+// ResetTimezoneName resets all changes to the "timezone_name" field.
+func (m *TimeZoneMutation) ResetTimezoneName() {
+	m.timezone_name = nil
+	delete(m.clearedFields, timezone.FieldTimezoneName)
+}
+
+// SetIsDefault sets the "is_default" field.
+func (m *TimeZoneMutation) SetIsDefault(b bool) {
+	m.is_default = &b
+}
+
+// IsDefault returns the value of the "is_default" field in the mutation.
+func (m *TimeZoneMutation) IsDefault() (r bool, exists bool) {
+	v := m.is_default
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsDefault returns the old "is_default" field's value of the TimeZone entity.
+// If the TimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneMutation) OldIsDefault(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsDefault is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsDefault requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsDefault: %w", err)
+	}
+	return oldValue.IsDefault, nil
+}
+
+// ResetIsDefault resets all changes to the "is_default" field.
+func (m *TimeZoneMutation) ResetIsDefault() {
+	m.is_default = nil
+}
+
+// SetMidday sets the "midday" field.
+func (m *TimeZoneMutation) SetMidday(s string) {
+	m.midday = &s
+}
+
+// Midday returns the value of the "midday" field in the mutation.
+func (m *TimeZoneMutation) Midday() (r string, exists bool) {
+	v := m.midday
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMidday returns the old "midday" field's value of the TimeZone entity.
+// If the TimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneMutation) OldMidday(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMidday is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMidday requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMidday: %w", err)
+	}
+	return oldValue.Midday, nil
+}
+
+// ResetMidday resets all changes to the "midday" field.
+func (m *TimeZoneMutation) ResetMidday() {
+	m.midday = nil
+}
+
+// SetHour sets the "hour" field.
+func (m *TimeZoneMutation) SetHour(s string) {
+	m.hour = &s
+}
+
+// Hour returns the value of the "hour" field in the mutation.
+func (m *TimeZoneMutation) Hour() (r string, exists bool) {
+	v := m.hour
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHour returns the old "hour" field's value of the TimeZone entity.
+// If the TimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneMutation) OldHour(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHour is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHour requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHour: %w", err)
+	}
+	return oldValue.Hour, nil
+}
+
+// ResetHour resets all changes to the "hour" field.
+func (m *TimeZoneMutation) ResetHour() {
+	m.hour = nil
+}
+
+// SetMinute sets the "minute" field.
+func (m *TimeZoneMutation) SetMinute(s string) {
+	m.minute = &s
+}
+
+// Minute returns the value of the "minute" field in the mutation.
+func (m *TimeZoneMutation) Minute() (r string, exists bool) {
+	v := m.minute
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMinute returns the old "minute" field's value of the TimeZone entity.
+// If the TimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneMutation) OldMinute(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMinute is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMinute requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMinute: %w", err)
+	}
+	return oldValue.Minute, nil
+}
+
+// ResetMinute resets all changes to the "minute" field.
+func (m *TimeZoneMutation) ResetMinute() {
+	m.minute = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TimeZoneMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TimeZoneMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TimeZone entity.
+// If the TimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TimeZoneMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *TimeZoneMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *TimeZoneMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the TimeZone entity.
+// If the TimeZone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *TimeZoneMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[timezone.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *TimeZoneMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[timezone.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *TimeZoneMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, timezone.FieldUpdatedAt)
+}
+
+// Where appends a list predicates to the TimeZoneMutation builder.
+func (m *TimeZoneMutation) Where(ps ...predicate.TimeZone) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TimeZoneMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TimeZoneMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TimeZone, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TimeZoneMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TimeZoneMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TimeZone).
+func (m *TimeZoneMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TimeZoneMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.user_id != nil {
+		fields = append(fields, timezone.FieldUserID)
+	}
+	if m.timezone_name != nil {
+		fields = append(fields, timezone.FieldTimezoneName)
+	}
+	if m.is_default != nil {
+		fields = append(fields, timezone.FieldIsDefault)
+	}
+	if m.midday != nil {
+		fields = append(fields, timezone.FieldMidday)
+	}
+	if m.hour != nil {
+		fields = append(fields, timezone.FieldHour)
+	}
+	if m.minute != nil {
+		fields = append(fields, timezone.FieldMinute)
+	}
+	if m.created_at != nil {
+		fields = append(fields, timezone.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, timezone.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TimeZoneMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case timezone.FieldUserID:
+		return m.UserID()
+	case timezone.FieldTimezoneName:
+		return m.TimezoneName()
+	case timezone.FieldIsDefault:
+		return m.IsDefault()
+	case timezone.FieldMidday:
+		return m.Midday()
+	case timezone.FieldHour:
+		return m.Hour()
+	case timezone.FieldMinute:
+		return m.Minute()
+	case timezone.FieldCreatedAt:
+		return m.CreatedAt()
+	case timezone.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TimeZoneMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case timezone.FieldUserID:
+		return m.OldUserID(ctx)
+	case timezone.FieldTimezoneName:
+		return m.OldTimezoneName(ctx)
+	case timezone.FieldIsDefault:
+		return m.OldIsDefault(ctx)
+	case timezone.FieldMidday:
+		return m.OldMidday(ctx)
+	case timezone.FieldHour:
+		return m.OldHour(ctx)
+	case timezone.FieldMinute:
+		return m.OldMinute(ctx)
+	case timezone.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case timezone.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown TimeZone field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TimeZoneMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case timezone.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case timezone.FieldTimezoneName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneName(v)
+		return nil
+	case timezone.FieldIsDefault:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsDefault(v)
+		return nil
+	case timezone.FieldMidday:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMidday(v)
+		return nil
+	case timezone.FieldHour:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHour(v)
+		return nil
+	case timezone.FieldMinute:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMinute(v)
+		return nil
+	case timezone.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case timezone.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TimeZone field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TimeZoneMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TimeZoneMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TimeZoneMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TimeZone numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TimeZoneMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(timezone.FieldTimezoneName) {
+		fields = append(fields, timezone.FieldTimezoneName)
+	}
+	if m.FieldCleared(timezone.FieldUpdatedAt) {
+		fields = append(fields, timezone.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TimeZoneMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TimeZoneMutation) ClearField(name string) error {
+	switch name {
+	case timezone.FieldTimezoneName:
+		m.ClearTimezoneName()
+		return nil
+	case timezone.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TimeZone nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TimeZoneMutation) ResetField(name string) error {
+	switch name {
+	case timezone.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case timezone.FieldTimezoneName:
+		m.ResetTimezoneName()
+		return nil
+	case timezone.FieldIsDefault:
+		m.ResetIsDefault()
+		return nil
+	case timezone.FieldMidday:
+		m.ResetMidday()
+		return nil
+	case timezone.FieldHour:
+		m.ResetHour()
+		return nil
+	case timezone.FieldMinute:
+		m.ResetMinute()
+		return nil
+	case timezone.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case timezone.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TimeZone field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TimeZoneMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TimeZoneMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TimeZoneMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TimeZoneMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TimeZoneMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TimeZoneMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TimeZoneMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown TimeZone unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TimeZoneMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown TimeZone edge %s", name)
+}
+
+// TimeZoneLinkMutation represents an operation that mutates the TimeZoneLink nodes in the graph.
+type TimeZoneLinkMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	prescription_id *uuid.UUID
+	timezone_id     *uuid.UUID
+	timezone_name   *string
+	use_alert       *bool
+	midday          *string
+	hour            *string
+	minute          *string
+	created_at      *time.Time
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*TimeZoneLink, error)
+	predicates      []predicate.TimeZoneLink
+}
+
+var _ ent.Mutation = (*TimeZoneLinkMutation)(nil)
+
+// timezonelinkOption allows management of the mutation configuration using functional options.
+type timezonelinkOption func(*TimeZoneLinkMutation)
+
+// newTimeZoneLinkMutation creates new mutation for the TimeZoneLink entity.
+func newTimeZoneLinkMutation(c config, op Op, opts ...timezonelinkOption) *TimeZoneLinkMutation {
+	m := &TimeZoneLinkMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTimeZoneLink,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTimeZoneLinkID sets the ID field of the mutation.
+func withTimeZoneLinkID(id uuid.UUID) timezonelinkOption {
+	return func(m *TimeZoneLinkMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TimeZoneLink
+		)
+		m.oldValue = func(ctx context.Context) (*TimeZoneLink, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TimeZoneLink.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTimeZoneLink sets the old TimeZoneLink of the mutation.
+func withTimeZoneLink(node *TimeZoneLink) timezonelinkOption {
+	return func(m *TimeZoneLinkMutation) {
+		m.oldValue = func(context.Context) (*TimeZoneLink, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TimeZoneLinkMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TimeZoneLinkMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TimeZoneLink entities.
+func (m *TimeZoneLinkMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TimeZoneLinkMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TimeZoneLinkMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TimeZoneLink.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetPrescriptionID sets the "prescription_id" field.
+func (m *TimeZoneLinkMutation) SetPrescriptionID(u uuid.UUID) {
+	m.prescription_id = &u
+}
+
+// PrescriptionID returns the value of the "prescription_id" field in the mutation.
+func (m *TimeZoneLinkMutation) PrescriptionID() (r uuid.UUID, exists bool) {
+	v := m.prescription_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrescriptionID returns the old "prescription_id" field's value of the TimeZoneLink entity.
+// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneLinkMutation) OldPrescriptionID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrescriptionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrescriptionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrescriptionID: %w", err)
+	}
+	return oldValue.PrescriptionID, nil
+}
+
+// ResetPrescriptionID resets all changes to the "prescription_id" field.
+func (m *TimeZoneLinkMutation) ResetPrescriptionID() {
+	m.prescription_id = nil
+}
+
+// SetTimezoneID sets the "timezone_id" field.
+func (m *TimeZoneLinkMutation) SetTimezoneID(u uuid.UUID) {
+	m.timezone_id = &u
+}
+
+// TimezoneID returns the value of the "timezone_id" field in the mutation.
+func (m *TimeZoneLinkMutation) TimezoneID() (r uuid.UUID, exists bool) {
+	v := m.timezone_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezoneID returns the old "timezone_id" field's value of the TimeZoneLink entity.
+// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneLinkMutation) OldTimezoneID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezoneID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezoneID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezoneID: %w", err)
+	}
+	return oldValue.TimezoneID, nil
+}
+
+// ResetTimezoneID resets all changes to the "timezone_id" field.
+func (m *TimeZoneLinkMutation) ResetTimezoneID() {
+	m.timezone_id = nil
+}
+
+// SetTimezoneName sets the "timezone_name" field.
+func (m *TimeZoneLinkMutation) SetTimezoneName(s string) {
+	m.timezone_name = &s
+}
+
+// TimezoneName returns the value of the "timezone_name" field in the mutation.
+func (m *TimeZoneLinkMutation) TimezoneName() (r string, exists bool) {
+	v := m.timezone_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezoneName returns the old "timezone_name" field's value of the TimeZoneLink entity.
+// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneLinkMutation) OldTimezoneName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezoneName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezoneName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezoneName: %w", err)
+	}
+	return oldValue.TimezoneName, nil
+}
+
+// ClearTimezoneName clears the value of the "timezone_name" field.
+func (m *TimeZoneLinkMutation) ClearTimezoneName() {
+	m.timezone_name = nil
+	m.clearedFields[timezonelink.FieldTimezoneName] = struct{}{}
+}
+
+// TimezoneNameCleared returns if the "timezone_name" field was cleared in this mutation.
+func (m *TimeZoneLinkMutation) TimezoneNameCleared() bool {
+	_, ok := m.clearedFields[timezonelink.FieldTimezoneName]
+	return ok
+}
+
+// ResetTimezoneName resets all changes to the "timezone_name" field.
+func (m *TimeZoneLinkMutation) ResetTimezoneName() {
+	m.timezone_name = nil
+	delete(m.clearedFields, timezonelink.FieldTimezoneName)
+}
+
+// SetUseAlert sets the "use_alert" field.
+func (m *TimeZoneLinkMutation) SetUseAlert(b bool) {
+	m.use_alert = &b
+}
+
+// UseAlert returns the value of the "use_alert" field in the mutation.
+func (m *TimeZoneLinkMutation) UseAlert() (r bool, exists bool) {
+	v := m.use_alert
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUseAlert returns the old "use_alert" field's value of the TimeZoneLink entity.
+// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneLinkMutation) OldUseAlert(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUseAlert is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUseAlert requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUseAlert: %w", err)
+	}
+	return oldValue.UseAlert, nil
+}
+
+// ResetUseAlert resets all changes to the "use_alert" field.
+func (m *TimeZoneLinkMutation) ResetUseAlert() {
+	m.use_alert = nil
+}
+
+// SetMidday sets the "midday" field.
+func (m *TimeZoneLinkMutation) SetMidday(s string) {
+	m.midday = &s
+}
+
+// Midday returns the value of the "midday" field in the mutation.
+func (m *TimeZoneLinkMutation) Midday() (r string, exists bool) {
+	v := m.midday
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMidday returns the old "midday" field's value of the TimeZoneLink entity.
+// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneLinkMutation) OldMidday(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMidday is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMidday requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMidday: %w", err)
+	}
+	return oldValue.Midday, nil
+}
+
+// ResetMidday resets all changes to the "midday" field.
+func (m *TimeZoneLinkMutation) ResetMidday() {
+	m.midday = nil
+}
+
+// SetHour sets the "hour" field.
+func (m *TimeZoneLinkMutation) SetHour(s string) {
+	m.hour = &s
+}
+
+// Hour returns the value of the "hour" field in the mutation.
+func (m *TimeZoneLinkMutation) Hour() (r string, exists bool) {
+	v := m.hour
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHour returns the old "hour" field's value of the TimeZoneLink entity.
+// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneLinkMutation) OldHour(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHour is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHour requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHour: %w", err)
+	}
+	return oldValue.Hour, nil
+}
+
+// ResetHour resets all changes to the "hour" field.
+func (m *TimeZoneLinkMutation) ResetHour() {
+	m.hour = nil
+}
+
+// SetMinute sets the "minute" field.
+func (m *TimeZoneLinkMutation) SetMinute(s string) {
+	m.minute = &s
+}
+
+// Minute returns the value of the "minute" field in the mutation.
+func (m *TimeZoneLinkMutation) Minute() (r string, exists bool) {
+	v := m.minute
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMinute returns the old "minute" field's value of the TimeZoneLink entity.
+// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneLinkMutation) OldMinute(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMinute is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMinute requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMinute: %w", err)
+	}
+	return oldValue.Minute, nil
+}
+
+// ResetMinute resets all changes to the "minute" field.
+func (m *TimeZoneLinkMutation) ResetMinute() {
+	m.minute = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TimeZoneLinkMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TimeZoneLinkMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TimeZoneLink entity.
+// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneLinkMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TimeZoneLinkMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *TimeZoneLinkMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *TimeZoneLinkMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the TimeZoneLink entity.
+// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimeZoneLinkMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *TimeZoneLinkMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[timezonelink.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *TimeZoneLinkMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[timezonelink.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *TimeZoneLinkMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, timezonelink.FieldUpdatedAt)
+}
+
+// Where appends a list predicates to the TimeZoneLinkMutation builder.
+func (m *TimeZoneLinkMutation) Where(ps ...predicate.TimeZoneLink) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TimeZoneLinkMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TimeZoneLinkMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TimeZoneLink, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TimeZoneLinkMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TimeZoneLinkMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TimeZoneLink).
+func (m *TimeZoneLinkMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TimeZoneLinkMutation) Fields() []string {
+	fields := make([]string, 0, 9)
+	if m.prescription_id != nil {
+		fields = append(fields, timezonelink.FieldPrescriptionID)
+	}
+	if m.timezone_id != nil {
+		fields = append(fields, timezonelink.FieldTimezoneID)
+	}
+	if m.timezone_name != nil {
+		fields = append(fields, timezonelink.FieldTimezoneName)
+	}
+	if m.use_alert != nil {
+		fields = append(fields, timezonelink.FieldUseAlert)
+	}
+	if m.midday != nil {
+		fields = append(fields, timezonelink.FieldMidday)
+	}
+	if m.hour != nil {
+		fields = append(fields, timezonelink.FieldHour)
+	}
+	if m.minute != nil {
+		fields = append(fields, timezonelink.FieldMinute)
+	}
+	if m.created_at != nil {
+		fields = append(fields, timezonelink.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, timezonelink.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TimeZoneLinkMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case timezonelink.FieldPrescriptionID:
+		return m.PrescriptionID()
+	case timezonelink.FieldTimezoneID:
+		return m.TimezoneID()
+	case timezonelink.FieldTimezoneName:
+		return m.TimezoneName()
+	case timezonelink.FieldUseAlert:
+		return m.UseAlert()
+	case timezonelink.FieldMidday:
+		return m.Midday()
+	case timezonelink.FieldHour:
+		return m.Hour()
+	case timezonelink.FieldMinute:
+		return m.Minute()
+	case timezonelink.FieldCreatedAt:
+		return m.CreatedAt()
+	case timezonelink.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TimeZoneLinkMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case timezonelink.FieldPrescriptionID:
+		return m.OldPrescriptionID(ctx)
+	case timezonelink.FieldTimezoneID:
+		return m.OldTimezoneID(ctx)
+	case timezonelink.FieldTimezoneName:
+		return m.OldTimezoneName(ctx)
+	case timezonelink.FieldUseAlert:
+		return m.OldUseAlert(ctx)
+	case timezonelink.FieldMidday:
+		return m.OldMidday(ctx)
+	case timezonelink.FieldHour:
+		return m.OldHour(ctx)
+	case timezonelink.FieldMinute:
+		return m.OldMinute(ctx)
+	case timezonelink.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case timezonelink.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown TimeZoneLink field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TimeZoneLinkMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case timezonelink.FieldPrescriptionID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrescriptionID(v)
+		return nil
+	case timezonelink.FieldTimezoneID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneID(v)
+		return nil
+	case timezonelink.FieldTimezoneName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneName(v)
+		return nil
+	case timezonelink.FieldUseAlert:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUseAlert(v)
+		return nil
+	case timezonelink.FieldMidday:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMidday(v)
+		return nil
+	case timezonelink.FieldHour:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHour(v)
+		return nil
+	case timezonelink.FieldMinute:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMinute(v)
+		return nil
+	case timezonelink.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case timezonelink.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TimeZoneLink field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TimeZoneLinkMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TimeZoneLinkMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TimeZoneLinkMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TimeZoneLink numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TimeZoneLinkMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(timezonelink.FieldTimezoneName) {
+		fields = append(fields, timezonelink.FieldTimezoneName)
+	}
+	if m.FieldCleared(timezonelink.FieldUpdatedAt) {
+		fields = append(fields, timezonelink.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TimeZoneLinkMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TimeZoneLinkMutation) ClearField(name string) error {
+	switch name {
+	case timezonelink.FieldTimezoneName:
+		m.ClearTimezoneName()
+		return nil
+	case timezonelink.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TimeZoneLink nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TimeZoneLinkMutation) ResetField(name string) error {
+	switch name {
+	case timezonelink.FieldPrescriptionID:
+		m.ResetPrescriptionID()
+		return nil
+	case timezonelink.FieldTimezoneID:
+		m.ResetTimezoneID()
+		return nil
+	case timezonelink.FieldTimezoneName:
+		m.ResetTimezoneName()
+		return nil
+	case timezonelink.FieldUseAlert:
+		m.ResetUseAlert()
+		return nil
+	case timezonelink.FieldMidday:
+		m.ResetMidday()
+		return nil
+	case timezonelink.FieldHour:
+		m.ResetHour()
+		return nil
+	case timezonelink.FieldMinute:
+		m.ResetMinute()
+		return nil
+	case timezonelink.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case timezonelink.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TimeZoneLink field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TimeZoneLinkMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TimeZoneLinkMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TimeZoneLinkMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TimeZoneLinkMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TimeZoneLinkMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TimeZoneLinkMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TimeZoneLinkMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown TimeZoneLink unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TimeZoneLinkMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown TimeZoneLink edge %s", name)
 }
 
 // TokenMutation represents an operation that mutates the Token nodes in the graph.

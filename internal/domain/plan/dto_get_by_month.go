@@ -13,11 +13,11 @@ type GetByMonthRequest struct {
 type GetByMonthResponse struct {
 	Success bool
 	Message string
-	Data    *PlanSummary
+	Data    interface{}
 	Error   error
 }
 
-func OkGetByMonth(data *PlanSummary) *GetByMonthResponse {
+func OkGetByMonth(data interface{}) *GetByMonthResponse {
 	return &GetByMonthResponse{
 		Success: true,
 		Message: "해당 월의 복용계획이 조회되었습니다.",

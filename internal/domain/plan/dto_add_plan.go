@@ -3,20 +3,17 @@ package plan
 import "github.com/google/uuid"
 
 type AddPlanRequest struct {
-	Name      string               `json:"name"`
-	Hospital  string               `json:"hospital"`
-	StartedAt string               `json:"started_at"`
-	TakeDays  float64              `json:"take_days"`
+	UserId    uuid.UUID            `json:"-"`
+	Name      string               `json:"name" validate:"required"`
+	Hospital  string               `json:"hospital" validate:"required"`
+	StartedAt string               `json:"started_at" validate:"required"`
+	TakeDays  int                  `json:"take_days" validate:"required"`
 	Memo      string               `json:"memo"`
 	Timezones []AddTimezoneRequest `json:"timezones"`
 }
 
 type AddTimezoneRequest struct {
-	TimezoneId uuid.UUID            `json:"timezone_id"`
-	Name       string               `json:"name"`
-	Midday     string               `json:"midday"`
-	Hour       string               `json:"hour"`
-	Minute     string               `json:"minute"`
+	TimezoneId uuid.UUID            `json:"timezone_id" validate:"required"`
 	Medicines  []AddMedicineRequest `json:"medicines"`
 }
 

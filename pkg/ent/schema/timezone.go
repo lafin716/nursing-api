@@ -7,17 +7,16 @@ import (
 	"time"
 )
 
-type PlanTimeZoneLink struct {
+type TimeZone struct {
 	ent.Schema
 }
 
-func (PlanTimeZoneLink) Fields() []ent.Field {
+func (TimeZone) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("prescription_id", uuid.UUID{}),
-		field.UUID("timezone_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
 		field.String("timezone_name").Optional().SchemaType(varchar(50)),
-		field.Bool("use_alert").Default(false),
+		field.Bool("is_default").Default(false),
 		field.String("midday").SchemaType(varchar(2)),
 		field.String("hour").SchemaType(varchar(2)),
 		field.String("minute").SchemaType(varchar(2)),
@@ -26,6 +25,6 @@ func (PlanTimeZoneLink) Fields() []ent.Field {
 	}
 }
 
-func (PlanTimeZoneLink) Edges() []ent.Edge {
+func (TimeZone) Edges() []ent.Edge {
 	return nil
 }

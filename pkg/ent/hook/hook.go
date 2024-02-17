@@ -20,30 +20,6 @@ func (f MedicineFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MedicineMutation", m)
 }
 
-// The PlanTimeZoneFunc type is an adapter to allow the use of ordinary
-// function as PlanTimeZone mutator.
-type PlanTimeZoneFunc func(context.Context, *ent.PlanTimeZoneMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f PlanTimeZoneFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.PlanTimeZoneMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlanTimeZoneMutation", m)
-}
-
-// The PlanTimeZoneLinkFunc type is an adapter to allow the use of ordinary
-// function as PlanTimeZoneLink mutator.
-type PlanTimeZoneLinkFunc func(context.Context, *ent.PlanTimeZoneLinkMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f PlanTimeZoneLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.PlanTimeZoneLinkMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlanTimeZoneLinkMutation", m)
-}
-
 // The PrescriptionFunc type is an adapter to allow the use of ordinary
 // function as Prescription mutator.
 type PrescriptionFunc func(context.Context, *ent.PrescriptionMutation) (ent.Value, error)
@@ -90,6 +66,30 @@ func (f TakeHistoryItemFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TakeHistoryItemMutation", m)
+}
+
+// The TimeZoneFunc type is an adapter to allow the use of ordinary
+// function as TimeZone mutator.
+type TimeZoneFunc func(context.Context, *ent.TimeZoneMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TimeZoneFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TimeZoneMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TimeZoneMutation", m)
+}
+
+// The TimeZoneLinkFunc type is an adapter to allow the use of ordinary
+// function as TimeZoneLink mutator.
+type TimeZoneLinkFunc func(context.Context, *ent.TimeZoneLinkMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TimeZoneLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TimeZoneLinkMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TimeZoneLinkMutation", m)
 }
 
 // The TokenFunc type is an adapter to allow the use of ordinary

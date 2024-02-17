@@ -4,13 +4,13 @@ package ent
 
 import (
 	"nursing_api/pkg/ent/medicine"
-	"nursing_api/pkg/ent/plantimezone"
-	"nursing_api/pkg/ent/plantimezonelink"
 	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/schema"
 	"nursing_api/pkg/ent/takehistory"
 	"nursing_api/pkg/ent/takehistoryitem"
+	"nursing_api/pkg/ent/timezone"
+	"nursing_api/pkg/ent/timezonelink"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
 	"time"
@@ -32,34 +32,6 @@ func init() {
 	medicineDescID := medicineFields[0].Descriptor()
 	// medicine.DefaultID holds the default value on creation for the id field.
 	medicine.DefaultID = medicineDescID.Default.(func() uuid.UUID)
-	plantimezoneFields := schema.PlanTimeZone{}.Fields()
-	_ = plantimezoneFields
-	// plantimezoneDescIsDefault is the schema descriptor for is_default field.
-	plantimezoneDescIsDefault := plantimezoneFields[3].Descriptor()
-	// plantimezone.DefaultIsDefault holds the default value on creation for the is_default field.
-	plantimezone.DefaultIsDefault = plantimezoneDescIsDefault.Default.(bool)
-	// plantimezoneDescCreatedAt is the schema descriptor for created_at field.
-	plantimezoneDescCreatedAt := plantimezoneFields[7].Descriptor()
-	// plantimezone.DefaultCreatedAt holds the default value on creation for the created_at field.
-	plantimezone.DefaultCreatedAt = plantimezoneDescCreatedAt.Default.(func() time.Time)
-	// plantimezoneDescID is the schema descriptor for id field.
-	plantimezoneDescID := plantimezoneFields[0].Descriptor()
-	// plantimezone.DefaultID holds the default value on creation for the id field.
-	plantimezone.DefaultID = plantimezoneDescID.Default.(func() uuid.UUID)
-	plantimezonelinkFields := schema.PlanTimeZoneLink{}.Fields()
-	_ = plantimezonelinkFields
-	// plantimezonelinkDescUseAlert is the schema descriptor for use_alert field.
-	plantimezonelinkDescUseAlert := plantimezonelinkFields[4].Descriptor()
-	// plantimezonelink.DefaultUseAlert holds the default value on creation for the use_alert field.
-	plantimezonelink.DefaultUseAlert = plantimezonelinkDescUseAlert.Default.(bool)
-	// plantimezonelinkDescCreatedAt is the schema descriptor for created_at field.
-	plantimezonelinkDescCreatedAt := plantimezonelinkFields[8].Descriptor()
-	// plantimezonelink.DefaultCreatedAt holds the default value on creation for the created_at field.
-	plantimezonelink.DefaultCreatedAt = plantimezonelinkDescCreatedAt.Default.(func() time.Time)
-	// plantimezonelinkDescID is the schema descriptor for id field.
-	plantimezonelinkDescID := plantimezonelinkFields[0].Descriptor()
-	// plantimezonelink.DefaultID holds the default value on creation for the id field.
-	plantimezonelink.DefaultID = plantimezonelinkDescID.Default.(func() uuid.UUID)
 	prescriptionFields := schema.Prescription{}.Fields()
 	_ = prescriptionFields
 	// prescriptionDescTakeDays is the schema descriptor for take_days field.
@@ -132,6 +104,34 @@ func init() {
 	takehistoryitemDescID := takehistoryitemFields[0].Descriptor()
 	// takehistoryitem.DefaultID holds the default value on creation for the id field.
 	takehistoryitem.DefaultID = takehistoryitemDescID.Default.(func() uuid.UUID)
+	timezoneFields := schema.TimeZone{}.Fields()
+	_ = timezoneFields
+	// timezoneDescIsDefault is the schema descriptor for is_default field.
+	timezoneDescIsDefault := timezoneFields[3].Descriptor()
+	// timezone.DefaultIsDefault holds the default value on creation for the is_default field.
+	timezone.DefaultIsDefault = timezoneDescIsDefault.Default.(bool)
+	// timezoneDescCreatedAt is the schema descriptor for created_at field.
+	timezoneDescCreatedAt := timezoneFields[7].Descriptor()
+	// timezone.DefaultCreatedAt holds the default value on creation for the created_at field.
+	timezone.DefaultCreatedAt = timezoneDescCreatedAt.Default.(func() time.Time)
+	// timezoneDescID is the schema descriptor for id field.
+	timezoneDescID := timezoneFields[0].Descriptor()
+	// timezone.DefaultID holds the default value on creation for the id field.
+	timezone.DefaultID = timezoneDescID.Default.(func() uuid.UUID)
+	timezonelinkFields := schema.TimeZoneLink{}.Fields()
+	_ = timezonelinkFields
+	// timezonelinkDescUseAlert is the schema descriptor for use_alert field.
+	timezonelinkDescUseAlert := timezonelinkFields[4].Descriptor()
+	// timezonelink.DefaultUseAlert holds the default value on creation for the use_alert field.
+	timezonelink.DefaultUseAlert = timezonelinkDescUseAlert.Default.(bool)
+	// timezonelinkDescCreatedAt is the schema descriptor for created_at field.
+	timezonelinkDescCreatedAt := timezonelinkFields[8].Descriptor()
+	// timezonelink.DefaultCreatedAt holds the default value on creation for the created_at field.
+	timezonelink.DefaultCreatedAt = timezonelinkDescCreatedAt.Default.(func() time.Time)
+	// timezonelinkDescID is the schema descriptor for id field.
+	timezonelinkDescID := timezonelinkFields[0].Descriptor()
+	// timezonelink.DefaultID holds the default value on creation for the id field.
+	timezonelink.DefaultID = timezonelinkDescID.Default.(func() uuid.UUID)
 	tokenFields := schema.Token{}.Fields()
 	_ = tokenFields
 	// tokenDescCreatedAt is the schema descriptor for created_at field.

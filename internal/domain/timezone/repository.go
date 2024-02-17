@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
-	schemaTimezone "nursing_api/pkg/ent/plantimezone"
+	schemaTimezone "nursing_api/pkg/ent/timezone"
 	"time"
 )
 
@@ -21,7 +21,7 @@ type Repository interface {
 
 type timezoneRepository struct {
 	root     *ent.Client
-	timezone *ent.PlanTimeZoneClient
+	timezone *ent.TimeZoneClient
 	c        context.Context
 }
 
@@ -30,7 +30,7 @@ func NewRepository(
 ) Repository {
 	return &timezoneRepository{
 		root:     dbClient.Client,
-		timezone: dbClient.Client.PlanTimeZone,
+		timezone: dbClient.Client.TimeZone,
 		c:        dbClient.Ctx,
 	}
 }
@@ -122,7 +122,7 @@ func (p timezoneRepository) GetDuplicate(
 	hour string,
 	minute string,
 ) (*TimeZone, error) {
-	found, err := p.root.Debug().PlanTimeZone.
+	found, err := p.root.Debug().TimeZone.
 		Query().
 		Where(
 			schemaTimezone.And(

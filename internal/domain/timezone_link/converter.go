@@ -1,8 +1,8 @@
-package timezone
+package timezonelink
 
 import "nursing_api/pkg/ent"
 
-func toDomainList(entities []*ent.PlanTimeZoneLink) []*TimeZoneLink {
+func toDomainList(entities []*ent.TimeZoneLink) []*TimeZoneLink {
 	domains := []*TimeZoneLink{}
 	for _, entity := range entities {
 		domains = append(domains, toDomain(entity))
@@ -11,7 +11,7 @@ func toDomainList(entities []*ent.PlanTimeZoneLink) []*TimeZoneLink {
 	return domains
 }
 
-func toDomain(entity *ent.PlanTimeZoneLink) *TimeZoneLink {
+func toDomain(entity *ent.TimeZoneLink) *TimeZoneLink {
 	return &TimeZoneLink{
 		ID:             entity.ID,
 		PrescriptionId: entity.PrescriptionID,

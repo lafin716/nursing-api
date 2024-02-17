@@ -9,12 +9,6 @@ import (
 // Medicine is the predicate function for medicine builders.
 type Medicine func(*sql.Selector)
 
-// PlanTimeZone is the predicate function for plantimezone builders.
-type PlanTimeZone func(*sql.Selector)
-
-// PlanTimeZoneLink is the predicate function for plantimezonelink builders.
-type PlanTimeZoneLink func(*sql.Selector)
-
 // Prescription is the predicate function for prescription builders.
 type Prescription func(*sql.Selector)
 
@@ -26,6 +20,12 @@ type TakeHistory func(*sql.Selector)
 
 // TakeHistoryItem is the predicate function for takehistoryitem builders.
 type TakeHistoryItem func(*sql.Selector)
+
+// TimeZone is the predicate function for timezone builders.
+type TimeZone func(*sql.Selector)
+
+// TimeZoneLink is the predicate function for timezonelink builders.
+type TimeZoneLink func(*sql.Selector)
 
 // Token is the predicate function for token builders.
 type Token func(*sql.Selector)

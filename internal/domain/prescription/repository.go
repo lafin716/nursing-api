@@ -3,7 +3,6 @@ package prescription
 import (
 	"context"
 	"github.com/google/uuid"
-	"log"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
 	schema "nursing_api/pkg/ent/prescription"
@@ -20,7 +19,7 @@ type Repository interface {
 	Update(prescription *Prescription) (int, error)
 	Delete(id uuid.UUID) (bool, error)
 	GetItemById(itemId uuid.UUID) (*PrescriptionItem, error)
-	AddItem(prescriptionId uuid.UUID, item *PrescriptionItem) (*PrescriptionItem, error)
+	AddItem(item *PrescriptionItem) (*PrescriptionItem, error)
 	UpdateItem(prescriptionItem *PrescriptionItem) (int, error)
 	DeleteItem(itemId uuid.UUID) (bool, error)
 }
@@ -48,6 +47,25 @@ func NewRepository(
 		itemClient: dbClient.Client.PrescriptionItem,
 		ctx:        dbClient.Ctx,
 	}
+}
+
+func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, error) {
+	saved, err := p.client.
+		Create().
+		SetUserID(prescription.UserId).
+		SetPrescriptionName(prescription.PrescriptionName).
+		SetHospitalName(prescription.HospitalName).
+		SetTakeDays(prescription.TakeDays).
+		SetStartedAt(prescription.StartedAt).
+		SetFinishedAt(prescription.FinishedAt).
+		SetMemo(prescription.Memo).
+		SetCreatedAt(prescription.CreatedAt).
+		Save(p.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomain(saved), nil
 }
 
 func (p prescriptionRepository) GetById(id uuid.UUID) (*Prescription, error) {
@@ -111,45 +129,6 @@ func (p prescriptionRepository) GetItemListBySearch(search *SearchCondition) ([]
 	return toDomainItems(found), nil
 }
 
-func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, error) {
-	tx, err := p.root.Tx(p.ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	saved, err := tx.Prescription.
-		Create().
-		SetUserID(prescription.UserId).
-		SetPrescriptionName(prescription.PrescriptionName).
-		SetHospitalName(prescription.HospitalName).
-		SetTakeDays(prescription.TakeDays).
-		SetStartedAt(prescription.StartedAt).
-		SetFinishedAt(prescription.FinishedAt).
-		SetMemo(prescription.Memo).
-		SetCreatedAt(prescription.CreatedAt).
-		Save(p.ctx)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	savedItems := []*ent.PrescriptionItem{}
-	for _, item := range prescription.PrescriptionItems {
-		saved, err := tx.PrescriptionItem.
-			Create().
-			Save(p.ctx)
-		if err != nil {
-			log.Printf("아이템 저장 실패:\n %+v\n", item)
-			tx.Rollback()
-			return nil, err
-		}
-		savedItems = append(savedItems, saved)
-	}
-
-	tx.Commit()
-	return toDomain(saved), nil
-}
-
 func (p prescriptionRepository) Update(prescription *Prescription) (int, error) {
 	saved, err := p.client.
 		Update().
@@ -208,9 +187,16 @@ func (p prescriptionRepository) GetItemById(itemId uuid.UUID) (*PrescriptionItem
 	return toDomainItem(found), nil
 }
 
-func (p prescriptionRepository) AddItem(prescriptionId uuid.UUID, item *PrescriptionItem) (*PrescriptionItem, error) {
+func (p prescriptionRepository) AddItem(item *PrescriptionItem) (*PrescriptionItem, error) {
 	savedItem, err := p.itemClient.
 		Create().
+		SetTimezoneLinkID(item.TimeZoneLinkId).
+		SetMedicineID(item.MedicineId).
+		SetMedicineName(item.MedicineName).
+		SetTakeAmount(item.TakeAmount).
+		SetMedicineUnit(item.MedicineUnit).
+		SetMemo(item.Memo).
+		SetCreatedAt(item.CreatedAt).
 		Save(p.ctx)
 	if err != nil {
 		return nil, err
