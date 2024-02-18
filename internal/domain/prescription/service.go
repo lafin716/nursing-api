@@ -31,6 +31,7 @@ func NewService(
 	return &prescriptionService{
 		repo:      repo,
 		jwtClient: jwtClient,
+		mono:      mono.NewMono(),
 	}
 }
 
