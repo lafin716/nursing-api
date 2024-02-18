@@ -121,6 +121,41 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {}
+            },
+            "post": {
+                "description": "복약계획을 생성하는 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복약 계획 등록",
+                "parameters": [
+                    {
+                        "description": "복용계획정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/plan.AddPlanRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/plan/:id": {
+            "delete": {
+                "description": "복약계획을 삭제하는 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복약 계획 삭제",
+                "responses": {}
             }
         },
         "/takehistory": {
@@ -224,6 +259,75 @@ const docTemplate = `{
                     "minLength": 2
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "plan.AddMedicineRequest": {
+            "type": "object",
+            "properties": {
+                "medicine_id": {
+                    "type": "string"
+                },
+                "memo": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "take_amount": {
+                    "type": "number"
+                },
+                "take_unit": {
+                    "type": "string"
+                }
+            }
+        },
+        "plan.AddPlanRequest": {
+            "type": "object",
+            "required": [
+                "hospital",
+                "name",
+                "started_at",
+                "take_days"
+            ],
+            "properties": {
+                "hospital": {
+                    "type": "string"
+                },
+                "memo": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "take_days": {
+                    "type": "integer"
+                },
+                "timezones": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/plan.AddTimezoneRequest"
+                    }
+                }
+            }
+        },
+        "plan.AddTimezoneRequest": {
+            "type": "object",
+            "required": [
+                "timezone_id"
+            ],
+            "properties": {
+                "medicines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/plan.AddMedicineRequest"
+                    }
+                },
+                "timezone_id": {
                     "type": "string"
                 }
             }

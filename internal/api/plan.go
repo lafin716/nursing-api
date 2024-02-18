@@ -98,26 +98,26 @@ func (p planHttpApi) GetByDate(ctx *fiber.Ctx) error {
 	req := new(plan.GetByDateRequest)
 	err := ctx.QueryParser(req)
 	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).Error(ctx)
+		return FailParam(err.Error(), ctx)
 	}
 
 	errs := validateParameter(req)
 	if errs != nil {
-		return response.New(response.CODE_INVALID_PARAM).SetErrors(errs).Error(ctx)
+		return FailParam(errs, ctx)
 	}
 
 	userId, err := getUserId(p.jwtClient, ctx)
 	if err != nil {
-		return response.New(response.CODE_INVALID_JWT).SetErrors(errs).Error(ctx)
+		return FailAuth(err.Error(), ctx)
 	}
 
 	req.UserId = userId
 	resp := p.service.GetByDate(req)
 	if !resp.Success {
-		return response.New(response.CODE_ERROR).SetMessage(resp.Message).SetErrors(resp.Error).Error(ctx)
+		return Fail(resp.Message, resp.Error, ctx)
 	}
 
-	return response.New(response.CODE_SUCCESS).SetData(resp.Data).Ok(ctx)
+	return Ok(resp.Data, ctx)
 }
 
 // 복용계획개요

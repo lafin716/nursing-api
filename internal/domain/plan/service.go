@@ -2,7 +2,6 @@ package plan
 
 import (
 	"github.com/google/uuid"
-	"log"
 	"nursing_api/internal/domain/medicine"
 	"nursing_api/internal/domain/prescription"
 	takehistory "nursing_api/internal/domain/take_history"
@@ -26,6 +25,7 @@ type UseCase interface {
 type planService struct {
 	db               *database.DatabaseClient
 	mono             *mono.Client
+	plan             Repository
 	prescriptionRepo prescription.Repository
 	timezoneRepo     timezone.Repository
 	timezoneLinkRepo timezonelink.Repository
@@ -36,6 +36,7 @@ type planService struct {
 func NewService(
 	db *database.DatabaseClient,
 	mono *mono.Client,
+	plan Repository,
 	prescriptionRepo prescription.Repository,
 	timezoneRepo timezone.Repository,
 	timezoneLinkRepo timezonelink.Repository,
@@ -45,6 +46,7 @@ func NewService(
 	return &planService{
 		db:               db,
 		mono:             mono,
+		plan:             plan,
 		prescriptionRepo: prescriptionRepo,
 		timezoneRepo:     timezoneRepo,
 		timezoneLinkRepo: timezoneLinkRepo,
@@ -213,20 +215,9 @@ func (p planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
 		currentDate = time.Now()
 	}
 
-	// 당일 처방전 조회
-	search := &prescription.SearchCondition{
-		UserId:     req.UserId,
-		TargetDate: currentDate,
-		Limit:      10,
-	}
-
-	origin, err := p.prescriptionRepo.GetItemListBySearch(search)
+	plans, err := p.plan.GetPlans(req.UserId, currentDate)
 	if err != nil {
-		return FailGetByDate("처방전 조회 중 오류가 발생하였습니다.", err)
-	}
-
-	for _, item := range origin {
-		log.Printf("처방전 목록: %+v", item)
+		return FailGetByDate("복용계획 조회 중 오류가 발생하였습니다.", err)
 	}
 
 	// 당일 복용내역 조회
@@ -235,10 +226,11 @@ func (p planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
 	}
 
 	// 당일 복용 계획 생성
-	plan := &TakePlan{
+	takePlan := &TakePlan{
 		CurrentDate: p.mono.Date.Format(currentDate, "Y-m-d"),
+		Plans:       plans,
 	}
-	return OkGetByDate(plan)
+	return OkGetByDate(takePlan)
 }
 
 func (p planService) UpdateMemo(req *UpdateMemoRequest) *UpdateMemoResponse {

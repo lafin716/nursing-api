@@ -31,6 +31,52 @@ definitions:
     - name
     - password
     type: object
+  plan.AddMedicineRequest:
+    properties:
+      medicine_id:
+        type: string
+      memo:
+        type: string
+      name:
+        type: string
+      take_amount:
+        type: number
+      take_unit:
+        type: string
+    type: object
+  plan.AddPlanRequest:
+    properties:
+      hospital:
+        type: string
+      memo:
+        type: string
+      name:
+        type: string
+      started_at:
+        type: string
+      take_days:
+        type: integer
+      timezones:
+        items:
+          $ref: '#/definitions/plan.AddTimezoneRequest'
+        type: array
+    required:
+    - hospital
+    - name
+    - started_at
+    - take_days
+    type: object
+  plan.AddTimezoneRequest:
+    properties:
+      medicines:
+        items:
+          $ref: '#/definitions/plan.AddMedicineRequest'
+        type: array
+      timezone_id:
+        type: string
+    required:
+    - timezone_id
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -111,6 +157,30 @@ paths:
       - application/json
       responses: {}
       summary: 날짜별 복약 계획
+    post:
+      consumes:
+      - application/json
+      description: 복약계획을 생성하는 엔드포인트
+      parameters:
+      - description: 복용계획정보
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/plan.AddPlanRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: 복약 계획 등록
+  /plan/:id:
+    delete:
+      consumes:
+      - application/json
+      description: 복약계획을 삭제하는 엔드포인트
+      produces:
+      - application/json
+      responses: {}
+      summary: 복약 계획 삭제
   /takehistory:
     get:
       consumes:

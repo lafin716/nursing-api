@@ -6,7 +6,7 @@ import (
 
 type GetByDateRequest struct {
 	UserId      uuid.UUID
-	CurrentDate string `query:"current_date"`
+	CurrentDate string `query:"date"`
 }
 
 type GetByDateResponse struct {

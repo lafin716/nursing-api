@@ -29,6 +29,7 @@ var repository = wire.NewSet(
 	takehistory.NewRepository,
 	timezone.NewRepository,
 	timezonelink.NewRepository,
+	plan.NewRepository,
 )
 
 var service = wire.NewSet(

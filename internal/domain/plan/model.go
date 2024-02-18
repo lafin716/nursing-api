@@ -10,20 +10,27 @@ type TakePlan struct {
 }
 
 type Plan struct {
-	PlanName     string `json:"plan_name"`
-	TakeTimeZone string `json:"take_time_zone"`
-	TakeStatus   bool   `json:"take_status"`
-	TakeDate     string `json:"take_date"`
-	Pills        []Pill `json:"pills"`
-	Memo         string `json:"memo"`
+	// 복용계획
+	PlanName string `json:"plan_name"`
+	Timezone string `json:"time_zone"`
+	TakeDate string `json:"take_date"`
+	Pills    []Pill `json:"pills"`
+
+	// 복용히스토리
+	TakeStatus bool   `json:"take_status"`
+	Memo       string `json:"memo"`
 }
 
 type Pill struct {
+	// 복용계획
 	PillName   string    `json:"pill_name"`
 	MedicineId uuid.UUID `json:"medicine_id"`
-	TakeStatus bool      `json:"take_status"`
-	TakeDate   string    `json:"take_date"`
+	TakeUnit   string    `json:"take_unit"`
 	TakeAmount float64   `json:"take_amount"`
+
+	// 복용히스토리
+	TakeStatus bool   `json:"take_status"`
+	TakeDate   string `json:"take_date"`
 }
 
 type Summary struct {
