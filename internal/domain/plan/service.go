@@ -62,7 +62,10 @@ func (p planService) Add(req *AddPlanRequest) *AddPlanResponse {
 	}
 
 	// 처방전 등록
-	startedAt := p.mono.Date.ParseForce("Y-m-d", req.StartedAt)
+	startedAt, err := p.mono.Date.Parse("Y-m-d", req.StartedAt)
+	if txErr != nil {
+		return FailAddPlan("날짜형식이 유효하지 않습니다", err)
+	}
 	finishedAt := startedAt.AddDate(0, 0, req.TakeDays)
 	psReq := &prescription.Prescription{
 		UserId:           req.UserId,
@@ -195,8 +198,82 @@ func (p planService) Delete(req *DeletePlanRequest) *DeletePlanResponse {
 }
 
 func (p planService) Take(req *TakeToggleRequest) *TakeToggleResponse {
-	//TODO implement me
-	panic("implement me")
+	p.db.BeginTx()
+	date, err := p.mono.Date.Parse("Y-m-d", req.TargetDate)
+	if err != nil {
+		return FailTakeToggle("날짜형식이 유효하지 않습니다", err)
+	}
+
+	// 복용여부
+	var isTaken bool
+
+	// 복용내역 조회
+	tz, err := p.takeHistoryRepo.GetByTimezoneId(req.UserId, req.TimezoneId, date)
+
+	// 있는 경우 복용 취소 처리
+	if tz != nil || err == nil {
+		isTaken = false
+		p.takeHistoryRepo.Delete(tz.ID)
+		p.takeHistoryRepo.DeleteItemByHistoryId(tz.ID)
+		p.db.CommitAndEnd()
+		return OkTakeToggle(isTaken)
+	}
+
+	// 없는 경우 복용처리
+	isTaken = true
+	newHistory := &takehistory.TakeHistory{
+		UserId:     req.UserId,
+		TimezoneId: req.TimezoneId,
+		TakeDate:   date,
+		TakeStatus: takehistory.DONE,
+	}
+
+	saved, err := p.takeHistoryRepo.Add(newHistory)
+	if saved == nil || err != nil {
+		p.db.RollbackAndEnd()
+		return FailTakeToggle("복용처리 중 오류가 발생하였습니다", err)
+	}
+
+	// 타임존링크 조회
+	tzlList, err := p.timezoneLinkRepo.GetByTimezoneId(req.TimezoneId)
+	if err != nil {
+		p.db.RollbackAndEnd()
+		return FailTakeToggle("복용시간대 조회 중 오류가 발생하였습니다", err)
+	}
+
+	var tzlSerial []uuid.UUID
+	for _, tzl := range tzlList {
+		tzlSerial = append(tzlSerial, tzl.ID)
+	}
+
+	// 복용아이템 조회
+	items, err := p.prescriptionRepo.GetItemListByTimezoneLinkIds(tzlSerial)
+	if err != nil {
+		p.db.RollbackAndEnd()
+		return FailTakeToggle("복용아이템 조회 중 오류가 발생하였습니다", err)
+	}
+
+	// 복용아이템 이력 추가
+	for _, item := range items {
+		newItem := &takehistory.TakeHistoryItem{
+			UserId:             req.UserId,
+			TakeHistoryId:      saved.ID,
+			PrescriptionItemId: item.ID,
+			TakeStatus:         takehistory.Y,
+			TakeAmount:         item.TakeAmount,
+			TakeUnit:           item.MedicineUnit,
+			TakeDate:           date,
+			CreatedAt:          item.CreatedAt,
+		}
+		result, err := p.takeHistoryRepo.AddItem(newItem)
+		if !result || err != nil {
+			p.db.RollbackAndEnd()
+			return FailTakeToggle("복용아이템 기록 중 오류가 발생하였습니다", err)
+		}
+	}
+
+	p.db.CommitAndEnd()
+	return OkTakeToggle(isTaken)
 }
 
 func (p planService) PillToggle(req *PillToggleRequest) *PillToggleResponse {
@@ -212,7 +289,7 @@ func (p planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
 	// 날짜 세팅
 	currentDate, err := p.mono.Date.Parse("Y-m-d", req.CurrentDate)
 	if err != nil {
-		currentDate = time.Now()
+		return FailGetByDate("날짜형식이 유효하지 않습니다", err)
 	}
 
 	plans, err := p.plan.GetPlans(req.UserId, currentDate)

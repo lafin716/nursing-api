@@ -11,10 +11,11 @@ type TakePlan struct {
 
 type Plan struct {
 	// 복용계획
-	PlanName string `json:"plan_name"`
-	Timezone string `json:"time_zone"`
-	TakeDate string `json:"take_date"`
-	Pills    []Pill `json:"pills"`
+	TimezoneId uuid.UUID `json:"timezone_id"`
+	PlanName   string    `json:"plan_name"`
+	Timezone   string    `json:"time_zone"`
+	TakeDate   string    `json:"take_date"`
+	Pills      []Pill    `json:"pills"`
 
 	// 복용히스토리
 	TakeStatus bool   `json:"take_status"`

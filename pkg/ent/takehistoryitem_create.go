@@ -67,45 +67,29 @@ func (thic *TakeHistoryItemCreate) SetNillableTakeAmount(f *float64) *TakeHistor
 	return thic
 }
 
-// SetTakeTimeZone sets the "take_time_zone" field.
-func (thic *TakeHistoryItemCreate) SetTakeTimeZone(s string) *TakeHistoryItemCreate {
-	thic.mutation.SetTakeTimeZone(s)
+// SetTakeUnit sets the "take_unit" field.
+func (thic *TakeHistoryItemCreate) SetTakeUnit(s string) *TakeHistoryItemCreate {
+	thic.mutation.SetTakeUnit(s)
 	return thic
 }
 
-// SetNillableTakeTimeZone sets the "take_time_zone" field if the given value is not nil.
-func (thic *TakeHistoryItemCreate) SetNillableTakeTimeZone(s *string) *TakeHistoryItemCreate {
+// SetMemo sets the "memo" field.
+func (thic *TakeHistoryItemCreate) SetMemo(s string) *TakeHistoryItemCreate {
+	thic.mutation.SetMemo(s)
+	return thic
+}
+
+// SetNillableMemo sets the "memo" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillableMemo(s *string) *TakeHistoryItemCreate {
 	if s != nil {
-		thic.SetTakeTimeZone(*s)
+		thic.SetMemo(*s)
 	}
 	return thic
 }
 
-// SetTakeMoment sets the "take_moment" field.
-func (thic *TakeHistoryItemCreate) SetTakeMoment(s string) *TakeHistoryItemCreate {
-	thic.mutation.SetTakeMoment(s)
-	return thic
-}
-
-// SetNillableTakeMoment sets the "take_moment" field if the given value is not nil.
-func (thic *TakeHistoryItemCreate) SetNillableTakeMoment(s *string) *TakeHistoryItemCreate {
-	if s != nil {
-		thic.SetTakeMoment(*s)
-	}
-	return thic
-}
-
-// SetTakeEtc sets the "take_etc" field.
-func (thic *TakeHistoryItemCreate) SetTakeEtc(s string) *TakeHistoryItemCreate {
-	thic.mutation.SetTakeEtc(s)
-	return thic
-}
-
-// SetNillableTakeEtc sets the "take_etc" field if the given value is not nil.
-func (thic *TakeHistoryItemCreate) SetNillableTakeEtc(s *string) *TakeHistoryItemCreate {
-	if s != nil {
-		thic.SetTakeEtc(*s)
-	}
+// SetTakeDate sets the "take_date" field.
+func (thic *TakeHistoryItemCreate) SetTakeDate(t time.Time) *TakeHistoryItemCreate {
+	thic.mutation.SetTakeDate(t)
 	return thic
 }
 
@@ -221,6 +205,12 @@ func (thic *TakeHistoryItemCreate) check() error {
 	if _, ok := thic.mutation.TakeAmount(); !ok {
 		return &ValidationError{Name: "take_amount", err: errors.New(`ent: missing required field "TakeHistoryItem.take_amount"`)}
 	}
+	if _, ok := thic.mutation.TakeUnit(); !ok {
+		return &ValidationError{Name: "take_unit", err: errors.New(`ent: missing required field "TakeHistoryItem.take_unit"`)}
+	}
+	if _, ok := thic.mutation.TakeDate(); !ok {
+		return &ValidationError{Name: "take_date", err: errors.New(`ent: missing required field "TakeHistoryItem.take_date"`)}
+	}
 	if _, ok := thic.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "TakeHistoryItem.created_at"`)}
 	}
@@ -279,17 +269,17 @@ func (thic *TakeHistoryItemCreate) createSpec() (*TakeHistoryItem, *sqlgraph.Cre
 		_spec.SetField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
 		_node.TakeAmount = value
 	}
-	if value, ok := thic.mutation.TakeTimeZone(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeTimeZone, field.TypeString, value)
-		_node.TakeTimeZone = value
+	if value, ok := thic.mutation.TakeUnit(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeUnit, field.TypeString, value)
+		_node.TakeUnit = value
 	}
-	if value, ok := thic.mutation.TakeMoment(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeMoment, field.TypeString, value)
-		_node.TakeMoment = value
+	if value, ok := thic.mutation.Memo(); ok {
+		_spec.SetField(takehistoryitem.FieldMemo, field.TypeString, value)
+		_node.Memo = value
 	}
-	if value, ok := thic.mutation.TakeEtc(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeEtc, field.TypeString, value)
-		_node.TakeEtc = value
+	if value, ok := thic.mutation.TakeDate(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeDate, field.TypeTime, value)
+		_node.TakeDate = value
 	}
 	if value, ok := thic.mutation.CreatedAt(); ok {
 		_spec.SetField(takehistoryitem.FieldCreatedAt, field.TypeTime, value)

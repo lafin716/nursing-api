@@ -57,6 +57,20 @@ func (thu *TakeHistoryUpdate) SetNillablePrescriptionID(u *uuid.UUID) *TakeHisto
 	return thu
 }
 
+// SetTimezoneID sets the "timezone_id" field.
+func (thu *TakeHistoryUpdate) SetTimezoneID(u uuid.UUID) *TakeHistoryUpdate {
+	thu.mutation.SetTimezoneID(u)
+	return thu
+}
+
+// SetNillableTimezoneID sets the "timezone_id" field if the given value is not nil.
+func (thu *TakeHistoryUpdate) SetNillableTimezoneID(u *uuid.UUID) *TakeHistoryUpdate {
+	if u != nil {
+		thu.SetTimezoneID(*u)
+	}
+	return thu
+}
+
 // SetTakeDate sets the "take_date" field.
 func (thu *TakeHistoryUpdate) SetTakeDate(t time.Time) *TakeHistoryUpdate {
 	thu.mutation.SetTakeDate(t)
@@ -68,12 +82,6 @@ func (thu *TakeHistoryUpdate) SetNillableTakeDate(t *time.Time) *TakeHistoryUpda
 	if t != nil {
 		thu.SetTakeDate(*t)
 	}
-	return thu
-}
-
-// ClearTakeDate clears the value of the "take_date" field.
-func (thu *TakeHistoryUpdate) ClearTakeDate() *TakeHistoryUpdate {
-	thu.mutation.ClearTakeDate()
 	return thu
 }
 
@@ -198,11 +206,11 @@ func (thu *TakeHistoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := thu.mutation.PrescriptionID(); ok {
 		_spec.SetField(takehistory.FieldPrescriptionID, field.TypeUUID, value)
 	}
+	if value, ok := thu.mutation.TimezoneID(); ok {
+		_spec.SetField(takehistory.FieldTimezoneID, field.TypeUUID, value)
+	}
 	if value, ok := thu.mutation.TakeDate(); ok {
 		_spec.SetField(takehistory.FieldTakeDate, field.TypeTime, value)
-	}
-	if thu.mutation.TakeDateCleared() {
-		_spec.ClearField(takehistory.FieldTakeDate, field.TypeTime)
 	}
 	if value, ok := thu.mutation.TakeStatus(); ok {
 		_spec.SetField(takehistory.FieldTakeStatus, field.TypeString, value)
@@ -273,6 +281,20 @@ func (thuo *TakeHistoryUpdateOne) SetNillablePrescriptionID(u *uuid.UUID) *TakeH
 	return thuo
 }
 
+// SetTimezoneID sets the "timezone_id" field.
+func (thuo *TakeHistoryUpdateOne) SetTimezoneID(u uuid.UUID) *TakeHistoryUpdateOne {
+	thuo.mutation.SetTimezoneID(u)
+	return thuo
+}
+
+// SetNillableTimezoneID sets the "timezone_id" field if the given value is not nil.
+func (thuo *TakeHistoryUpdateOne) SetNillableTimezoneID(u *uuid.UUID) *TakeHistoryUpdateOne {
+	if u != nil {
+		thuo.SetTimezoneID(*u)
+	}
+	return thuo
+}
+
 // SetTakeDate sets the "take_date" field.
 func (thuo *TakeHistoryUpdateOne) SetTakeDate(t time.Time) *TakeHistoryUpdateOne {
 	thuo.mutation.SetTakeDate(t)
@@ -284,12 +306,6 @@ func (thuo *TakeHistoryUpdateOne) SetNillableTakeDate(t *time.Time) *TakeHistory
 	if t != nil {
 		thuo.SetTakeDate(*t)
 	}
-	return thuo
-}
-
-// ClearTakeDate clears the value of the "take_date" field.
-func (thuo *TakeHistoryUpdateOne) ClearTakeDate() *TakeHistoryUpdateOne {
-	thuo.mutation.ClearTakeDate()
 	return thuo
 }
 
@@ -444,11 +460,11 @@ func (thuo *TakeHistoryUpdateOne) sqlSave(ctx context.Context) (_node *TakeHisto
 	if value, ok := thuo.mutation.PrescriptionID(); ok {
 		_spec.SetField(takehistory.FieldPrescriptionID, field.TypeUUID, value)
 	}
+	if value, ok := thuo.mutation.TimezoneID(); ok {
+		_spec.SetField(takehistory.FieldTimezoneID, field.TypeUUID, value)
+	}
 	if value, ok := thuo.mutation.TakeDate(); ok {
 		_spec.SetField(takehistory.FieldTakeDate, field.TypeTime, value)
-	}
-	if thuo.mutation.TakeDateCleared() {
-		_spec.ClearField(takehistory.FieldTakeDate, field.TypeTime)
 	}
 	if value, ok := thuo.mutation.TakeStatus(); ok {
 		_spec.SetField(takehistory.FieldTakeStatus, field.TypeString, value)

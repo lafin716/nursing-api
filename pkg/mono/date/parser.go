@@ -30,7 +30,7 @@ func (d parser) Parse(layout string, value string) (time.Time, error) {
 	replaced := ReplaceLayout(layout)
 	t, err := time.Parse(replaced, value)
 	if err != nil {
-		return time.Now(), err
+		return d.getToday(layout)
 	}
 
 	return t, nil
@@ -39,7 +39,7 @@ func (d parser) Parse(layout string, value string) (time.Time, error) {
 func (d parser) ParseForce(layout string, value string) time.Time {
 	t, err := d.Parse(layout, value)
 	if err != nil {
-		return time.Now()
+		t, _ = d.getToday(layout)
 	}
 
 	return t
@@ -52,4 +52,12 @@ func (d parser) ParseWithDefault(layout string, value string, zero time.Time) ti
 	}
 
 	return t
+}
+
+func (d parser) getToday(layout string) (time.Time, error) {
+	t := time.Now()
+	replaced := ReplaceLayout(layout)
+	form := t.Format(replaced)
+
+	return time.Parse(replaced, form)
 }

@@ -24,12 +24,12 @@ const (
 	FieldTakeStatus = "take_status"
 	// FieldTakeAmount holds the string denoting the take_amount field in the database.
 	FieldTakeAmount = "take_amount"
-	// FieldTakeTimeZone holds the string denoting the take_time_zone field in the database.
-	FieldTakeTimeZone = "take_time_zone"
-	// FieldTakeMoment holds the string denoting the take_moment field in the database.
-	FieldTakeMoment = "take_moment"
-	// FieldTakeEtc holds the string denoting the take_etc field in the database.
-	FieldTakeEtc = "take_etc"
+	// FieldTakeUnit holds the string denoting the take_unit field in the database.
+	FieldTakeUnit = "take_unit"
+	// FieldMemo holds the string denoting the memo field in the database.
+	FieldMemo = "memo"
+	// FieldTakeDate holds the string denoting the take_date field in the database.
+	FieldTakeDate = "take_date"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -46,9 +46,9 @@ var Columns = []string{
 	FieldPrescriptionItemID,
 	FieldTakeStatus,
 	FieldTakeAmount,
-	FieldTakeTimeZone,
-	FieldTakeMoment,
-	FieldTakeEtc,
+	FieldTakeUnit,
+	FieldMemo,
+	FieldTakeDate,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -107,19 +107,19 @@ func ByTakeAmount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTakeAmount, opts...).ToFunc()
 }
 
-// ByTakeTimeZone orders the results by the take_time_zone field.
-func ByTakeTimeZone(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTakeTimeZone, opts...).ToFunc()
+// ByTakeUnit orders the results by the take_unit field.
+func ByTakeUnit(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeUnit, opts...).ToFunc()
 }
 
-// ByTakeMoment orders the results by the take_moment field.
-func ByTakeMoment(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTakeMoment, opts...).ToFunc()
+// ByMemo orders the results by the memo field.
+func ByMemo(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMemo, opts...).ToFunc()
 }
 
-// ByTakeEtc orders the results by the take_etc field.
-func ByTakeEtc(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTakeEtc, opts...).ToFunc()
+// ByTakeDate orders the results by the take_date field.
+func ByTakeDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeDate, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

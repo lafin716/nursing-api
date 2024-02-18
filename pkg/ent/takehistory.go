@@ -22,6 +22,8 @@ type TakeHistory struct {
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// PrescriptionID holds the value of the "prescription_id" field.
 	PrescriptionID uuid.UUID `json:"prescription_id,omitempty"`
+	// TimezoneID holds the value of the "timezone_id" field.
+	TimezoneID uuid.UUID `json:"timezone_id,omitempty"`
 	// TakeDate holds the value of the "take_date" field.
 	TakeDate time.Time `json:"take_date,omitempty"`
 	// TakeStatus holds the value of the "take_status" field.
@@ -44,7 +46,7 @@ func (*TakeHistory) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case takehistory.FieldTakeDate, takehistory.FieldCreatedAt, takehistory.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case takehistory.FieldID, takehistory.FieldUserID, takehistory.FieldPrescriptionID:
+		case takehistory.FieldID, takehistory.FieldUserID, takehistory.FieldPrescriptionID, takehistory.FieldTimezoneID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -78,6 +80,12 @@ func (th *TakeHistory) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field prescription_id", values[i])
 			} else if value != nil {
 				th.PrescriptionID = *value
+			}
+		case takehistory.FieldTimezoneID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone_id", values[i])
+			} else if value != nil {
+				th.TimezoneID = *value
 			}
 		case takehistory.FieldTakeDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -150,6 +158,9 @@ func (th *TakeHistory) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("prescription_id=")
 	builder.WriteString(fmt.Sprintf("%v", th.PrescriptionID))
+	builder.WriteString(", ")
+	builder.WriteString("timezone_id=")
+	builder.WriteString(fmt.Sprintf("%v", th.TimezoneID))
 	builder.WriteString(", ")
 	builder.WriteString("take_date=")
 	builder.WriteString(th.TakeDate.Format(time.ANSIC))

@@ -28,12 +28,12 @@ type TakeHistoryItem struct {
 	TakeStatus string `json:"take_status,omitempty"`
 	// TakeAmount holds the value of the "take_amount" field.
 	TakeAmount float64 `json:"take_amount,omitempty"`
-	// TakeTimeZone holds the value of the "take_time_zone" field.
-	TakeTimeZone string `json:"take_time_zone,omitempty"`
-	// TakeMoment holds the value of the "take_moment" field.
-	TakeMoment string `json:"take_moment,omitempty"`
-	// TakeEtc holds the value of the "take_etc" field.
-	TakeEtc string `json:"take_etc,omitempty"`
+	// TakeUnit holds the value of the "take_unit" field.
+	TakeUnit string `json:"take_unit,omitempty"`
+	// Memo holds the value of the "memo" field.
+	Memo string `json:"memo,omitempty"`
+	// TakeDate holds the value of the "take_date" field.
+	TakeDate time.Time `json:"take_date,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -48,9 +48,9 @@ func (*TakeHistoryItem) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case takehistoryitem.FieldTakeAmount:
 			values[i] = new(sql.NullFloat64)
-		case takehistoryitem.FieldTakeStatus, takehistoryitem.FieldTakeTimeZone, takehistoryitem.FieldTakeMoment, takehistoryitem.FieldTakeEtc:
+		case takehistoryitem.FieldTakeStatus, takehistoryitem.FieldTakeUnit, takehistoryitem.FieldMemo:
 			values[i] = new(sql.NullString)
-		case takehistoryitem.FieldCreatedAt, takehistoryitem.FieldUpdatedAt:
+		case takehistoryitem.FieldTakeDate, takehistoryitem.FieldCreatedAt, takehistoryitem.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case takehistoryitem.FieldID, takehistoryitem.FieldUserID, takehistoryitem.FieldTakeHistoryID, takehistoryitem.FieldPrescriptionItemID:
 			values[i] = new(uuid.UUID)
@@ -105,23 +105,23 @@ func (thi *TakeHistoryItem) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				thi.TakeAmount = value.Float64
 			}
-		case takehistoryitem.FieldTakeTimeZone:
+		case takehistoryitem.FieldTakeUnit:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field take_time_zone", values[i])
+				return fmt.Errorf("unexpected type %T for field take_unit", values[i])
 			} else if value.Valid {
-				thi.TakeTimeZone = value.String
+				thi.TakeUnit = value.String
 			}
-		case takehistoryitem.FieldTakeMoment:
+		case takehistoryitem.FieldMemo:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field take_moment", values[i])
+				return fmt.Errorf("unexpected type %T for field memo", values[i])
 			} else if value.Valid {
-				thi.TakeMoment = value.String
+				thi.Memo = value.String
 			}
-		case takehistoryitem.FieldTakeEtc:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field take_etc", values[i])
+		case takehistoryitem.FieldTakeDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field take_date", values[i])
 			} else if value.Valid {
-				thi.TakeEtc = value.String
+				thi.TakeDate = value.Time
 			}
 		case takehistoryitem.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -186,14 +186,14 @@ func (thi *TakeHistoryItem) String() string {
 	builder.WriteString("take_amount=")
 	builder.WriteString(fmt.Sprintf("%v", thi.TakeAmount))
 	builder.WriteString(", ")
-	builder.WriteString("take_time_zone=")
-	builder.WriteString(thi.TakeTimeZone)
+	builder.WriteString("take_unit=")
+	builder.WriteString(thi.TakeUnit)
 	builder.WriteString(", ")
-	builder.WriteString("take_moment=")
-	builder.WriteString(thi.TakeMoment)
+	builder.WriteString("memo=")
+	builder.WriteString(thi.Memo)
 	builder.WriteString(", ")
-	builder.WriteString("take_etc=")
-	builder.WriteString(thi.TakeEtc)
+	builder.WriteString("take_date=")
+	builder.WriteString(thi.TakeDate.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(thi.CreatedAt.Format(time.ANSIC))

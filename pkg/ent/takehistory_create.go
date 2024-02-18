@@ -33,17 +33,15 @@ func (thc *TakeHistoryCreate) SetPrescriptionID(u uuid.UUID) *TakeHistoryCreate 
 	return thc
 }
 
-// SetTakeDate sets the "take_date" field.
-func (thc *TakeHistoryCreate) SetTakeDate(t time.Time) *TakeHistoryCreate {
-	thc.mutation.SetTakeDate(t)
+// SetTimezoneID sets the "timezone_id" field.
+func (thc *TakeHistoryCreate) SetTimezoneID(u uuid.UUID) *TakeHistoryCreate {
+	thc.mutation.SetTimezoneID(u)
 	return thc
 }
 
-// SetNillableTakeDate sets the "take_date" field if the given value is not nil.
-func (thc *TakeHistoryCreate) SetNillableTakeDate(t *time.Time) *TakeHistoryCreate {
-	if t != nil {
-		thc.SetTakeDate(*t)
-	}
+// SetTakeDate sets the "take_date" field.
+func (thc *TakeHistoryCreate) SetTakeDate(t time.Time) *TakeHistoryCreate {
+	thc.mutation.SetTakeDate(t)
 	return thc
 }
 
@@ -174,6 +172,12 @@ func (thc *TakeHistoryCreate) check() error {
 	if _, ok := thc.mutation.PrescriptionID(); !ok {
 		return &ValidationError{Name: "prescription_id", err: errors.New(`ent: missing required field "TakeHistory.prescription_id"`)}
 	}
+	if _, ok := thc.mutation.TimezoneID(); !ok {
+		return &ValidationError{Name: "timezone_id", err: errors.New(`ent: missing required field "TakeHistory.timezone_id"`)}
+	}
+	if _, ok := thc.mutation.TakeDate(); !ok {
+		return &ValidationError{Name: "take_date", err: errors.New(`ent: missing required field "TakeHistory.take_date"`)}
+	}
 	if _, ok := thc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "TakeHistory.created_at"`)}
 	}
@@ -219,6 +223,10 @@ func (thc *TakeHistoryCreate) createSpec() (*TakeHistory, *sqlgraph.CreateSpec) 
 	if value, ok := thc.mutation.PrescriptionID(); ok {
 		_spec.SetField(takehistory.FieldPrescriptionID, field.TypeUUID, value)
 		_node.PrescriptionID = value
+	}
+	if value, ok := thc.mutation.TimezoneID(); ok {
+		_spec.SetField(takehistory.FieldTimezoneID, field.TypeUUID, value)
+		_node.TimezoneID = value
 	}
 	if value, ok := thc.mutation.TakeDate(); ok {
 		_spec.SetField(takehistory.FieldTakeDate, field.TypeTime, value)

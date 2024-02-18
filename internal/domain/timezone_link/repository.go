@@ -18,6 +18,7 @@ type Repository interface {
 	ConnectPrescription(link *TimeZoneLink) (*TimeZoneLink, error)
 	GetByPrescription(prescriptionId uuid.UUID) ([]*TimeZoneLink, error)
 	DeleteByIds(ids []uuid.UUID) (bool, error)
+	GetByTimezoneId(timezoneId uuid.UUID) ([]*TimeZoneLink, error)
 }
 
 func NewRepository(
@@ -28,6 +29,11 @@ func NewRepository(
 		timezoneLink: db.Client.TimeZoneLink,
 		c:            db.Ctx,
 	}
+}
+
+func (r repository) GetByTimezoneId(timezoneId uuid.UUID) ([]*TimeZoneLink, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (r repository) ConnectPrescription(link *TimeZoneLink) (*TimeZoneLink, error) {

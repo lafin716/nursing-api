@@ -12,7 +12,7 @@ import (
 
 type Repository interface {
 	GetById(id uuid.UUID) (*Prescription, error)
-	GetListByUserId(search *SearchCondition) ([]*Prescription, error)
+	GetListBySearch(search *SearchCondition) ([]*Prescription, error)
 	GetItemListByTimezoneLinkId(timezoneLinkId uuid.UUID) ([]*PrescriptionItem, error)
 	GetItemListByTimezoneLinkIds(timezoneLinkIds []uuid.UUID) ([]*PrescriptionItem, error)
 	GetItemListBySearch(search *SearchCondition) ([]*PrescriptionItem, error)
@@ -84,7 +84,7 @@ func (p prescriptionRepository) GetById(id uuid.UUID) (*Prescription, error) {
 	return toDomain(found), nil
 }
 
-func (p prescriptionRepository) GetListByUserId(search *SearchCondition) ([]*Prescription, error) {
+func (p prescriptionRepository) GetListBySearch(search *SearchCondition) ([]*Prescription, error) {
 	foundList, err := p.root.Debug().Prescription.
 		Query().
 		Where(

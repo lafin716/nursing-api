@@ -96,22 +96,12 @@ func (p planHttpApi) Delete(ctx *fiber.Ctx) error {
 // @router /plan [get]
 func (p planHttpApi) GetByDate(ctx *fiber.Ctx) error {
 	req := new(plan.GetByDateRequest)
-	err := ctx.QueryParser(req)
-	if err != nil {
-		return FailParam(err.Error(), ctx)
+	parser := ParseRequest(req, QUERY, p.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
 	}
 
-	errs := validateParameter(req)
-	if errs != nil {
-		return FailParam(errs, ctx)
-	}
-
-	userId, err := getUserId(p.jwtClient, ctx)
-	if err != nil {
-		return FailAuth(err.Error(), ctx)
-	}
-
-	req.UserId = userId
+	req.UserId = parser.GetUserId()
 	resp := p.service.GetByDate(req)
 	if !resp.Success {
 		return Fail(resp.Message, resp.Error, ctx)
@@ -128,8 +118,19 @@ func (p planHttpApi) Summary(ctx *fiber.Ctx) error {
 
 // 복용처리
 func (p planHttpApi) Take(ctx *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	req := new(plan.TakeToggleRequest)
+	parser := ParseRequest(req, BODY, p.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
+	}
+
+	req.UserId = parser.GetUserId()
+	resp := p.service.Take(req)
+	if !resp.Success {
+		return Fail(resp.Message, resp.Error, ctx)
+	}
+
+	return Ok(nil, ctx)
 }
 
 // 의약품 복용처리

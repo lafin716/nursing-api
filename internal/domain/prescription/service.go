@@ -48,7 +48,7 @@ func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
 		TargetDate: targetDate,
 		Limit:      req.Limit,
 	}
-	resp, err := p.repo.GetListByUserId(search)
+	resp, err := p.repo.GetListBySearch(search)
 	for _, item := range resp {
 		prescriptionItems, err := p.repo.GetItemListByTimezoneLinkId(item.ID)
 		if err != nil {

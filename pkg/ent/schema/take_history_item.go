@@ -19,9 +19,9 @@ func (TakeHistoryItem) Fields() []ent.Field {
 		field.UUID("prescription_item_id", uuid.UUID{}),
 		field.String("take_status").Default("N").SchemaType(varchar(1)),
 		field.Float("take_amount").Default(0.0),
-		field.String("take_time_zone").Optional().SchemaType(varchar(10)),
-		field.String("take_moment").Optional().SchemaType(varchar(10)),
-		field.String("take_etc").Optional().SchemaType(varchar(50)),
+		field.String("take_unit").SchemaType(varchar(2)),
+		field.Text("memo").Optional(),
+		field.Time("take_date"),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Optional(),
 	}

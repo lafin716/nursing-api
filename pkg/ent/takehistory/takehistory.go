@@ -18,6 +18,8 @@ const (
 	FieldUserID = "user_id"
 	// FieldPrescriptionID holds the string denoting the prescription_id field in the database.
 	FieldPrescriptionID = "prescription_id"
+	// FieldTimezoneID holds the string denoting the timezone_id field in the database.
+	FieldTimezoneID = "timezone_id"
 	// FieldTakeDate holds the string denoting the take_date field in the database.
 	FieldTakeDate = "take_date"
 	// FieldTakeStatus holds the string denoting the take_status field in the database.
@@ -37,6 +39,7 @@ var Columns = []string{
 	FieldID,
 	FieldUserID,
 	FieldPrescriptionID,
+	FieldTimezoneID,
 	FieldTakeDate,
 	FieldTakeStatus,
 	FieldMemo,
@@ -79,6 +82,11 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 // ByPrescriptionID orders the results by the prescription_id field.
 func ByPrescriptionID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPrescriptionID, opts...).ToFunc()
+}
+
+// ByTimezoneID orders the results by the timezone_id field.
+func ByTimezoneID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezoneID, opts...).ToFunc()
 }
 
 // ByTakeDate orders the results by the take_date field.

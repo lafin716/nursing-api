@@ -75,11 +75,11 @@ func init() {
 	takehistoryFields := schema.TakeHistory{}.Fields()
 	_ = takehistoryFields
 	// takehistoryDescTakeStatus is the schema descriptor for take_status field.
-	takehistoryDescTakeStatus := takehistoryFields[4].Descriptor()
+	takehistoryDescTakeStatus := takehistoryFields[5].Descriptor()
 	// takehistory.DefaultTakeStatus holds the default value on creation for the take_status field.
 	takehistory.DefaultTakeStatus = takehistoryDescTakeStatus.Default.(string)
 	// takehistoryDescCreatedAt is the schema descriptor for created_at field.
-	takehistoryDescCreatedAt := takehistoryFields[6].Descriptor()
+	takehistoryDescCreatedAt := takehistoryFields[7].Descriptor()
 	// takehistory.DefaultCreatedAt holds the default value on creation for the created_at field.
 	takehistory.DefaultCreatedAt = takehistoryDescCreatedAt.Default.(func() time.Time)
 	// takehistoryDescID is the schema descriptor for id field.

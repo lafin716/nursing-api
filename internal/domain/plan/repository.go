@@ -46,7 +46,7 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 		),
 	).All(r.ctx)
 	if err != nil {
-		return nil, err
+		return []Plan{}, err
 	}
 
 	if len(pcs) == 0 {
@@ -56,16 +56,16 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 	pcsIds := Convert[uuid.UUID, *ent.Prescription](pcs, func(data *ent.Prescription) uuid.UUID { return data.ID })
 
 	// 처방전과 연결된 타임존 조회
-	tzls, err := r.timezoneLink.
+	tzls, err := r.root.Debug().TimeZoneLink.
 		Query().
 		Where(
-			scTzl.IDIn(pcsIds...),
+			scTzl.PrescriptionIDIn(pcsIds...),
 		).All(r.ctx)
 
 	// 타임존 고유번호로 타임존링크 고유번호 그룹핑
-	var tzMap map[uuid.UUID]*Plan
+	tzMap := map[uuid.UUID]*Plan{}
 	for _, tzl := range tzls {
-		pcsItems, err := r.prescriptionItem.Query().Where(scPsItem.TimezoneLinkID(tzl.ID)).All(r.ctx)
+		pcsItems, err := r.root.Debug().PrescriptionItem.Query().Where(scPsItem.TimezoneLinkID(tzl.ID)).All(r.ctx)
 		if err != nil {
 			return []Plan{}, err
 		}
@@ -84,8 +84,9 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 		if tzMap[tzl.TimezoneID] == nil {
 			tzText := fmt.Sprintf("%s %s:%s", tzl.Midday, tzl.Hour, tzl.Minute)
 			plan = &Plan{
-				PlanName: tzl.TimezoneName,
-				Timezone: tzText,
+				TimezoneId: tzl.TimezoneID,
+				PlanName:   tzl.TimezoneName,
+				Timezone:   tzText,
 			}
 		} else {
 			plan = tzMap[tzl.TimezoneID]

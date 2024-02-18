@@ -3459,6 +3459,7 @@ type TakeHistoryMutation struct {
 	id              *uuid.UUID
 	user_id         *uuid.UUID
 	prescription_id *uuid.UUID
+	timezone_id     *uuid.UUID
 	take_date       *time.Time
 	take_status     *string
 	memo            *string
@@ -3646,6 +3647,42 @@ func (m *TakeHistoryMutation) ResetPrescriptionID() {
 	m.prescription_id = nil
 }
 
+// SetTimezoneID sets the "timezone_id" field.
+func (m *TakeHistoryMutation) SetTimezoneID(u uuid.UUID) {
+	m.timezone_id = &u
+}
+
+// TimezoneID returns the value of the "timezone_id" field in the mutation.
+func (m *TakeHistoryMutation) TimezoneID() (r uuid.UUID, exists bool) {
+	v := m.timezone_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezoneID returns the old "timezone_id" field's value of the TakeHistory entity.
+// If the TakeHistory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryMutation) OldTimezoneID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezoneID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezoneID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezoneID: %w", err)
+	}
+	return oldValue.TimezoneID, nil
+}
+
+// ResetTimezoneID resets all changes to the "timezone_id" field.
+func (m *TakeHistoryMutation) ResetTimezoneID() {
+	m.timezone_id = nil
+}
+
 // SetTakeDate sets the "take_date" field.
 func (m *TakeHistoryMutation) SetTakeDate(t time.Time) {
 	m.take_date = &t
@@ -3677,22 +3714,9 @@ func (m *TakeHistoryMutation) OldTakeDate(ctx context.Context) (v time.Time, err
 	return oldValue.TakeDate, nil
 }
 
-// ClearTakeDate clears the value of the "take_date" field.
-func (m *TakeHistoryMutation) ClearTakeDate() {
-	m.take_date = nil
-	m.clearedFields[takehistory.FieldTakeDate] = struct{}{}
-}
-
-// TakeDateCleared returns if the "take_date" field was cleared in this mutation.
-func (m *TakeHistoryMutation) TakeDateCleared() bool {
-	_, ok := m.clearedFields[takehistory.FieldTakeDate]
-	return ok
-}
-
 // ResetTakeDate resets all changes to the "take_date" field.
 func (m *TakeHistoryMutation) ResetTakeDate() {
 	m.take_date = nil
-	delete(m.clearedFields, takehistory.FieldTakeDate)
 }
 
 // SetTakeStatus sets the "take_status" field.
@@ -3912,12 +3936,15 @@ func (m *TakeHistoryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TakeHistoryMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.user_id != nil {
 		fields = append(fields, takehistory.FieldUserID)
 	}
 	if m.prescription_id != nil {
 		fields = append(fields, takehistory.FieldPrescriptionID)
+	}
+	if m.timezone_id != nil {
+		fields = append(fields, takehistory.FieldTimezoneID)
 	}
 	if m.take_date != nil {
 		fields = append(fields, takehistory.FieldTakeDate)
@@ -3946,6 +3973,8 @@ func (m *TakeHistoryMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case takehistory.FieldPrescriptionID:
 		return m.PrescriptionID()
+	case takehistory.FieldTimezoneID:
+		return m.TimezoneID()
 	case takehistory.FieldTakeDate:
 		return m.TakeDate()
 	case takehistory.FieldTakeStatus:
@@ -3969,6 +3998,8 @@ func (m *TakeHistoryMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldUserID(ctx)
 	case takehistory.FieldPrescriptionID:
 		return m.OldPrescriptionID(ctx)
+	case takehistory.FieldTimezoneID:
+		return m.OldTimezoneID(ctx)
 	case takehistory.FieldTakeDate:
 		return m.OldTakeDate(ctx)
 	case takehistory.FieldTakeStatus:
@@ -4001,6 +4032,13 @@ func (m *TakeHistoryMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPrescriptionID(v)
+		return nil
+	case takehistory.FieldTimezoneID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneID(v)
 		return nil
 	case takehistory.FieldTakeDate:
 		v, ok := value.(time.Time)
@@ -4067,9 +4105,6 @@ func (m *TakeHistoryMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TakeHistoryMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(takehistory.FieldTakeDate) {
-		fields = append(fields, takehistory.FieldTakeDate)
-	}
 	if m.FieldCleared(takehistory.FieldTakeStatus) {
 		fields = append(fields, takehistory.FieldTakeStatus)
 	}
@@ -4093,9 +4128,6 @@ func (m *TakeHistoryMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TakeHistoryMutation) ClearField(name string) error {
 	switch name {
-	case takehistory.FieldTakeDate:
-		m.ClearTakeDate()
-		return nil
 	case takehistory.FieldTakeStatus:
 		m.ClearTakeStatus()
 		return nil
@@ -4118,6 +4150,9 @@ func (m *TakeHistoryMutation) ResetField(name string) error {
 		return nil
 	case takehistory.FieldPrescriptionID:
 		m.ResetPrescriptionID()
+		return nil
+	case takehistory.FieldTimezoneID:
+		m.ResetTimezoneID()
 		return nil
 	case takehistory.FieldTakeDate:
 		m.ResetTakeDate()
@@ -4198,9 +4233,9 @@ type TakeHistoryItemMutation struct {
 	take_status          *string
 	take_amount          *float64
 	addtake_amount       *float64
-	take_time_zone       *string
-	take_moment          *string
-	take_etc             *string
+	take_unit            *string
+	memo                 *string
+	take_date            *time.Time
 	created_at           *time.Time
 	updated_at           *time.Time
 	clearedFields        map[string]struct{}
@@ -4513,151 +4548,125 @@ func (m *TakeHistoryItemMutation) ResetTakeAmount() {
 	m.addtake_amount = nil
 }
 
-// SetTakeTimeZone sets the "take_time_zone" field.
-func (m *TakeHistoryItemMutation) SetTakeTimeZone(s string) {
-	m.take_time_zone = &s
+// SetTakeUnit sets the "take_unit" field.
+func (m *TakeHistoryItemMutation) SetTakeUnit(s string) {
+	m.take_unit = &s
 }
 
-// TakeTimeZone returns the value of the "take_time_zone" field in the mutation.
-func (m *TakeHistoryItemMutation) TakeTimeZone() (r string, exists bool) {
-	v := m.take_time_zone
+// TakeUnit returns the value of the "take_unit" field in the mutation.
+func (m *TakeHistoryItemMutation) TakeUnit() (r string, exists bool) {
+	v := m.take_unit
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTakeTimeZone returns the old "take_time_zone" field's value of the TakeHistoryItem entity.
+// OldTakeUnit returns the old "take_unit" field's value of the TakeHistoryItem entity.
 // If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryItemMutation) OldTakeTimeZone(ctx context.Context) (v string, err error) {
+func (m *TakeHistoryItemMutation) OldTakeUnit(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTakeTimeZone is only allowed on UpdateOne operations")
+		return v, errors.New("OldTakeUnit is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTakeTimeZone requires an ID field in the mutation")
+		return v, errors.New("OldTakeUnit requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTakeTimeZone: %w", err)
+		return v, fmt.Errorf("querying old value for OldTakeUnit: %w", err)
 	}
-	return oldValue.TakeTimeZone, nil
+	return oldValue.TakeUnit, nil
 }
 
-// ClearTakeTimeZone clears the value of the "take_time_zone" field.
-func (m *TakeHistoryItemMutation) ClearTakeTimeZone() {
-	m.take_time_zone = nil
-	m.clearedFields[takehistoryitem.FieldTakeTimeZone] = struct{}{}
+// ResetTakeUnit resets all changes to the "take_unit" field.
+func (m *TakeHistoryItemMutation) ResetTakeUnit() {
+	m.take_unit = nil
 }
 
-// TakeTimeZoneCleared returns if the "take_time_zone" field was cleared in this mutation.
-func (m *TakeHistoryItemMutation) TakeTimeZoneCleared() bool {
-	_, ok := m.clearedFields[takehistoryitem.FieldTakeTimeZone]
-	return ok
+// SetMemo sets the "memo" field.
+func (m *TakeHistoryItemMutation) SetMemo(s string) {
+	m.memo = &s
 }
 
-// ResetTakeTimeZone resets all changes to the "take_time_zone" field.
-func (m *TakeHistoryItemMutation) ResetTakeTimeZone() {
-	m.take_time_zone = nil
-	delete(m.clearedFields, takehistoryitem.FieldTakeTimeZone)
-}
-
-// SetTakeMoment sets the "take_moment" field.
-func (m *TakeHistoryItemMutation) SetTakeMoment(s string) {
-	m.take_moment = &s
-}
-
-// TakeMoment returns the value of the "take_moment" field in the mutation.
-func (m *TakeHistoryItemMutation) TakeMoment() (r string, exists bool) {
-	v := m.take_moment
+// Memo returns the value of the "memo" field in the mutation.
+func (m *TakeHistoryItemMutation) Memo() (r string, exists bool) {
+	v := m.memo
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTakeMoment returns the old "take_moment" field's value of the TakeHistoryItem entity.
+// OldMemo returns the old "memo" field's value of the TakeHistoryItem entity.
 // If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryItemMutation) OldTakeMoment(ctx context.Context) (v string, err error) {
+func (m *TakeHistoryItemMutation) OldMemo(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTakeMoment is only allowed on UpdateOne operations")
+		return v, errors.New("OldMemo is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTakeMoment requires an ID field in the mutation")
+		return v, errors.New("OldMemo requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTakeMoment: %w", err)
+		return v, fmt.Errorf("querying old value for OldMemo: %w", err)
 	}
-	return oldValue.TakeMoment, nil
+	return oldValue.Memo, nil
 }
 
-// ClearTakeMoment clears the value of the "take_moment" field.
-func (m *TakeHistoryItemMutation) ClearTakeMoment() {
-	m.take_moment = nil
-	m.clearedFields[takehistoryitem.FieldTakeMoment] = struct{}{}
+// ClearMemo clears the value of the "memo" field.
+func (m *TakeHistoryItemMutation) ClearMemo() {
+	m.memo = nil
+	m.clearedFields[takehistoryitem.FieldMemo] = struct{}{}
 }
 
-// TakeMomentCleared returns if the "take_moment" field was cleared in this mutation.
-func (m *TakeHistoryItemMutation) TakeMomentCleared() bool {
-	_, ok := m.clearedFields[takehistoryitem.FieldTakeMoment]
+// MemoCleared returns if the "memo" field was cleared in this mutation.
+func (m *TakeHistoryItemMutation) MemoCleared() bool {
+	_, ok := m.clearedFields[takehistoryitem.FieldMemo]
 	return ok
 }
 
-// ResetTakeMoment resets all changes to the "take_moment" field.
-func (m *TakeHistoryItemMutation) ResetTakeMoment() {
-	m.take_moment = nil
-	delete(m.clearedFields, takehistoryitem.FieldTakeMoment)
+// ResetMemo resets all changes to the "memo" field.
+func (m *TakeHistoryItemMutation) ResetMemo() {
+	m.memo = nil
+	delete(m.clearedFields, takehistoryitem.FieldMemo)
 }
 
-// SetTakeEtc sets the "take_etc" field.
-func (m *TakeHistoryItemMutation) SetTakeEtc(s string) {
-	m.take_etc = &s
+// SetTakeDate sets the "take_date" field.
+func (m *TakeHistoryItemMutation) SetTakeDate(t time.Time) {
+	m.take_date = &t
 }
 
-// TakeEtc returns the value of the "take_etc" field in the mutation.
-func (m *TakeHistoryItemMutation) TakeEtc() (r string, exists bool) {
-	v := m.take_etc
+// TakeDate returns the value of the "take_date" field in the mutation.
+func (m *TakeHistoryItemMutation) TakeDate() (r time.Time, exists bool) {
+	v := m.take_date
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTakeEtc returns the old "take_etc" field's value of the TakeHistoryItem entity.
+// OldTakeDate returns the old "take_date" field's value of the TakeHistoryItem entity.
 // If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryItemMutation) OldTakeEtc(ctx context.Context) (v string, err error) {
+func (m *TakeHistoryItemMutation) OldTakeDate(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTakeEtc is only allowed on UpdateOne operations")
+		return v, errors.New("OldTakeDate is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTakeEtc requires an ID field in the mutation")
+		return v, errors.New("OldTakeDate requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTakeEtc: %w", err)
+		return v, fmt.Errorf("querying old value for OldTakeDate: %w", err)
 	}
-	return oldValue.TakeEtc, nil
+	return oldValue.TakeDate, nil
 }
 
-// ClearTakeEtc clears the value of the "take_etc" field.
-func (m *TakeHistoryItemMutation) ClearTakeEtc() {
-	m.take_etc = nil
-	m.clearedFields[takehistoryitem.FieldTakeEtc] = struct{}{}
-}
-
-// TakeEtcCleared returns if the "take_etc" field was cleared in this mutation.
-func (m *TakeHistoryItemMutation) TakeEtcCleared() bool {
-	_, ok := m.clearedFields[takehistoryitem.FieldTakeEtc]
-	return ok
-}
-
-// ResetTakeEtc resets all changes to the "take_etc" field.
-func (m *TakeHistoryItemMutation) ResetTakeEtc() {
-	m.take_etc = nil
-	delete(m.clearedFields, takehistoryitem.FieldTakeEtc)
+// ResetTakeDate resets all changes to the "take_date" field.
+func (m *TakeHistoryItemMutation) ResetTakeDate() {
+	m.take_date = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -4795,14 +4804,14 @@ func (m *TakeHistoryItemMutation) Fields() []string {
 	if m.take_amount != nil {
 		fields = append(fields, takehistoryitem.FieldTakeAmount)
 	}
-	if m.take_time_zone != nil {
-		fields = append(fields, takehistoryitem.FieldTakeTimeZone)
+	if m.take_unit != nil {
+		fields = append(fields, takehistoryitem.FieldTakeUnit)
 	}
-	if m.take_moment != nil {
-		fields = append(fields, takehistoryitem.FieldTakeMoment)
+	if m.memo != nil {
+		fields = append(fields, takehistoryitem.FieldMemo)
 	}
-	if m.take_etc != nil {
-		fields = append(fields, takehistoryitem.FieldTakeEtc)
+	if m.take_date != nil {
+		fields = append(fields, takehistoryitem.FieldTakeDate)
 	}
 	if m.created_at != nil {
 		fields = append(fields, takehistoryitem.FieldCreatedAt)
@@ -4828,12 +4837,12 @@ func (m *TakeHistoryItemMutation) Field(name string) (ent.Value, bool) {
 		return m.TakeStatus()
 	case takehistoryitem.FieldTakeAmount:
 		return m.TakeAmount()
-	case takehistoryitem.FieldTakeTimeZone:
-		return m.TakeTimeZone()
-	case takehistoryitem.FieldTakeMoment:
-		return m.TakeMoment()
-	case takehistoryitem.FieldTakeEtc:
-		return m.TakeEtc()
+	case takehistoryitem.FieldTakeUnit:
+		return m.TakeUnit()
+	case takehistoryitem.FieldMemo:
+		return m.Memo()
+	case takehistoryitem.FieldTakeDate:
+		return m.TakeDate()
 	case takehistoryitem.FieldCreatedAt:
 		return m.CreatedAt()
 	case takehistoryitem.FieldUpdatedAt:
@@ -4857,12 +4866,12 @@ func (m *TakeHistoryItemMutation) OldField(ctx context.Context, name string) (en
 		return m.OldTakeStatus(ctx)
 	case takehistoryitem.FieldTakeAmount:
 		return m.OldTakeAmount(ctx)
-	case takehistoryitem.FieldTakeTimeZone:
-		return m.OldTakeTimeZone(ctx)
-	case takehistoryitem.FieldTakeMoment:
-		return m.OldTakeMoment(ctx)
-	case takehistoryitem.FieldTakeEtc:
-		return m.OldTakeEtc(ctx)
+	case takehistoryitem.FieldTakeUnit:
+		return m.OldTakeUnit(ctx)
+	case takehistoryitem.FieldMemo:
+		return m.OldMemo(ctx)
+	case takehistoryitem.FieldTakeDate:
+		return m.OldTakeDate(ctx)
 	case takehistoryitem.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case takehistoryitem.FieldUpdatedAt:
@@ -4911,26 +4920,26 @@ func (m *TakeHistoryItemMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTakeAmount(v)
 		return nil
-	case takehistoryitem.FieldTakeTimeZone:
+	case takehistoryitem.FieldTakeUnit:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTakeTimeZone(v)
+		m.SetTakeUnit(v)
 		return nil
-	case takehistoryitem.FieldTakeMoment:
+	case takehistoryitem.FieldMemo:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTakeMoment(v)
+		m.SetMemo(v)
 		return nil
-	case takehistoryitem.FieldTakeEtc:
-		v, ok := value.(string)
+	case takehistoryitem.FieldTakeDate:
+		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTakeEtc(v)
+		m.SetTakeDate(v)
 		return nil
 	case takehistoryitem.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -4991,14 +5000,8 @@ func (m *TakeHistoryItemMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TakeHistoryItemMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(takehistoryitem.FieldTakeTimeZone) {
-		fields = append(fields, takehistoryitem.FieldTakeTimeZone)
-	}
-	if m.FieldCleared(takehistoryitem.FieldTakeMoment) {
-		fields = append(fields, takehistoryitem.FieldTakeMoment)
-	}
-	if m.FieldCleared(takehistoryitem.FieldTakeEtc) {
-		fields = append(fields, takehistoryitem.FieldTakeEtc)
+	if m.FieldCleared(takehistoryitem.FieldMemo) {
+		fields = append(fields, takehistoryitem.FieldMemo)
 	}
 	if m.FieldCleared(takehistoryitem.FieldUpdatedAt) {
 		fields = append(fields, takehistoryitem.FieldUpdatedAt)
@@ -5017,14 +5020,8 @@ func (m *TakeHistoryItemMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TakeHistoryItemMutation) ClearField(name string) error {
 	switch name {
-	case takehistoryitem.FieldTakeTimeZone:
-		m.ClearTakeTimeZone()
-		return nil
-	case takehistoryitem.FieldTakeMoment:
-		m.ClearTakeMoment()
-		return nil
-	case takehistoryitem.FieldTakeEtc:
-		m.ClearTakeEtc()
+	case takehistoryitem.FieldMemo:
+		m.ClearMemo()
 		return nil
 	case takehistoryitem.FieldUpdatedAt:
 		m.ClearUpdatedAt()
@@ -5052,14 +5049,14 @@ func (m *TakeHistoryItemMutation) ResetField(name string) error {
 	case takehistoryitem.FieldTakeAmount:
 		m.ResetTakeAmount()
 		return nil
-	case takehistoryitem.FieldTakeTimeZone:
-		m.ResetTakeTimeZone()
+	case takehistoryitem.FieldTakeUnit:
+		m.ResetTakeUnit()
 		return nil
-	case takehistoryitem.FieldTakeMoment:
-		m.ResetTakeMoment()
+	case takehistoryitem.FieldMemo:
+		m.ResetMemo()
 		return nil
-	case takehistoryitem.FieldTakeEtc:
-		m.ResetTakeEtc()
+	case takehistoryitem.FieldTakeDate:
+		m.ResetTakeDate()
 		return nil
 	case takehistoryitem.FieldCreatedAt:
 		m.ResetCreatedAt()

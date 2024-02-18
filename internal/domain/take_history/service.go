@@ -48,10 +48,10 @@ func (t takeHistoryService) TakePlanToggle(req *TakePlanRequest) *TakePlanRespon
 	}
 
 	// 복용 완료상태인 경우
-	if found.TakeStatus == TS_DONE {
+	if found.TakeStatus == DONE {
 		found.TakeStatus = ""
 	} else {
-		found.TakeStatus = TS_DONE
+		found.TakeStatus = DONE
 		found.TakeDate = time.Now()
 	}
 	found.UpdatedAt = time.Now()

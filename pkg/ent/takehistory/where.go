@@ -65,6 +65,11 @@ func PrescriptionID(v uuid.UUID) predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldEQ(FieldPrescriptionID, v))
 }
 
+// TimezoneID applies equality check predicate on the "timezone_id" field. It's identical to TimezoneIDEQ.
+func TimezoneID(v uuid.UUID) predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldEQ(FieldTimezoneID, v))
+}
+
 // TakeDate applies equality check predicate on the "take_date" field. It's identical to TakeDateEQ.
 func TakeDate(v time.Time) predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldEQ(FieldTakeDate, v))
@@ -170,6 +175,46 @@ func PrescriptionIDLTE(v uuid.UUID) predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldLTE(FieldPrescriptionID, v))
 }
 
+// TimezoneIDEQ applies the EQ predicate on the "timezone_id" field.
+func TimezoneIDEQ(v uuid.UUID) predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldEQ(FieldTimezoneID, v))
+}
+
+// TimezoneIDNEQ applies the NEQ predicate on the "timezone_id" field.
+func TimezoneIDNEQ(v uuid.UUID) predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldNEQ(FieldTimezoneID, v))
+}
+
+// TimezoneIDIn applies the In predicate on the "timezone_id" field.
+func TimezoneIDIn(vs ...uuid.UUID) predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldIn(FieldTimezoneID, vs...))
+}
+
+// TimezoneIDNotIn applies the NotIn predicate on the "timezone_id" field.
+func TimezoneIDNotIn(vs ...uuid.UUID) predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldNotIn(FieldTimezoneID, vs...))
+}
+
+// TimezoneIDGT applies the GT predicate on the "timezone_id" field.
+func TimezoneIDGT(v uuid.UUID) predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldGT(FieldTimezoneID, v))
+}
+
+// TimezoneIDGTE applies the GTE predicate on the "timezone_id" field.
+func TimezoneIDGTE(v uuid.UUID) predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldGTE(FieldTimezoneID, v))
+}
+
+// TimezoneIDLT applies the LT predicate on the "timezone_id" field.
+func TimezoneIDLT(v uuid.UUID) predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldLT(FieldTimezoneID, v))
+}
+
+// TimezoneIDLTE applies the LTE predicate on the "timezone_id" field.
+func TimezoneIDLTE(v uuid.UUID) predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldLTE(FieldTimezoneID, v))
+}
+
 // TakeDateEQ applies the EQ predicate on the "take_date" field.
 func TakeDateEQ(v time.Time) predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldEQ(FieldTakeDate, v))
@@ -208,16 +253,6 @@ func TakeDateLT(v time.Time) predicate.TakeHistory {
 // TakeDateLTE applies the LTE predicate on the "take_date" field.
 func TakeDateLTE(v time.Time) predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldLTE(FieldTakeDate, v))
-}
-
-// TakeDateIsNil applies the IsNil predicate on the "take_date" field.
-func TakeDateIsNil() predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldIsNull(FieldTakeDate))
-}
-
-// TakeDateNotNil applies the NotNil predicate on the "take_date" field.
-func TakeDateNotNil() predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldNotNull(FieldTakeDate))
 }
 
 // TakeStatusEQ applies the EQ predicate on the "take_status" field.

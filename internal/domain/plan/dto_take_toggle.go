@@ -3,8 +3,9 @@ package plan
 import "github.com/google/uuid"
 
 type TakeToggleRequest struct {
-	UserId         uuid.UUID
-	PlanTimezoneId uuid.UUID `json:"plan_timezone_id" validate:"required"`
+	UserId     uuid.UUID
+	TargetDate string    `json:"target_date" validate:"required"`
+	TimezoneId uuid.UUID `json:"timezone_id" validate:"required"`
 }
 
 type TakeToggleResponse struct {
