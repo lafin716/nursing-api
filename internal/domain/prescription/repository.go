@@ -13,7 +13,8 @@ import (
 type Repository interface {
 	GetById(id uuid.UUID) (*Prescription, error)
 	GetListByUserId(search *SearchCondition) ([]*Prescription, error)
-	GetItemListByPrescriptionId(timezoneId uuid.UUID) ([]*PrescriptionItem, error)
+	GetItemListByTimezoneLinkId(timezoneLinkId uuid.UUID) ([]*PrescriptionItem, error)
+	GetItemListByTimezoneLinkIds(timezoneLinkIds []uuid.UUID) ([]*PrescriptionItem, error)
 	GetItemListBySearch(search *SearchCondition) ([]*PrescriptionItem, error)
 	Add(prescription *Prescription) (*Prescription, error)
 	Update(prescription *Prescription) (int, error)
@@ -22,6 +23,7 @@ type Repository interface {
 	AddItem(item *PrescriptionItem) (*PrescriptionItem, error)
 	UpdateItem(prescriptionItem *PrescriptionItem) (int, error)
 	DeleteItem(itemId uuid.UUID) (bool, error)
+	DeleteItemByIds(itemIds []uuid.UUID) (bool, error)
 }
 
 type prescriptionRepository struct {
@@ -101,14 +103,27 @@ func (p prescriptionRepository) GetListByUserId(search *SearchCondition) ([]*Pre
 	return toDomains(foundList), nil
 }
 
-func (p prescriptionRepository) GetItemListByPrescriptionId(timezoneId uuid.UUID) ([]*PrescriptionItem, error) {
+func (p prescriptionRepository) GetItemListByTimezoneLinkId(timezoneLinkId uuid.UUID) ([]*PrescriptionItem, error) {
 	foundItemList, err := p.root.Debug().
 		PrescriptionItem.
 		Query().
 		Where(
-			prescriptionitem.And(
-				prescriptionitem.TimezoneLinkID(timezoneId),
-			),
+			prescriptionitem.TimezoneLinkID(timezoneLinkId),
+		).
+		All(p.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainItems(foundItemList), nil
+}
+
+func (p prescriptionRepository) GetItemListByTimezoneLinkIds(timezoneLinkIds []uuid.UUID) ([]*PrescriptionItem, error) {
+	foundItemList, err := p.root.Debug().
+		PrescriptionItem.
+		Query().
+		Where(
+			prescriptionitem.TimezoneLinkIDIn(timezoneLinkIds...),
 		).
 		All(p.ctx)
 	if err != nil {
@@ -220,6 +235,14 @@ func (p prescriptionRepository) UpdateItem(prescriptionItem *PrescriptionItem) (
 
 func (p prescriptionRepository) DeleteItem(itemId uuid.UUID) (bool, error) {
 	_, err := p.itemClient.Delete().Where(prescriptionitem.ID(itemId)).Exec(p.ctx)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (p prescriptionRepository) DeleteItemByIds(itemIds []uuid.UUID) (bool, error) {
+	_, err := p.itemClient.Delete().Where(prescriptionitem.IDIn(itemIds...)).Exec(p.ctx)
 	if err != nil {
 		return false, err
 	}

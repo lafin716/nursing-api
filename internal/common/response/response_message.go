@@ -25,6 +25,8 @@ const (
 	CODE_FAIL_UPDATEITEM_PRESCRIPTION = 524
 	CODE_FAIL_DELETEITEM_PRESCRIPTION = 525
 
+	CODE_FAIL_DELETE_PLAN = 550
+
 	CODE_DUPLICATE_EMAIL = 600
 	CODE_USER_NOTFOUND   = 601
 )
@@ -49,6 +51,7 @@ var codeMessages = map[int]string{
 	CODE_FAIL_ADDITEM_PRESCRIPTION:    "처방전 의약품 등록 중 오류가 발생하였습니다.",
 	CODE_FAIL_UPDATEITEM_PRESCRIPTION: "처방전 의약품 업데이트 중 오류가 발생하였습니다.",
 	CODE_FAIL_DELETEITEM_PRESCRIPTION: "처방전 의약품 삭제 중 오류가 발생하였습니다.",
+	CODE_FAIL_DELETE_PLAN:             "복용계획 삭제 중 오류가 발생하였습니다.",
 	CODE_DUPLICATE_EMAIL:              "이미 가입된 이메일입니다.",
 	CODE_USER_NOTFOUND:                "회원정보를 찾을 수 없습니다.",
 }

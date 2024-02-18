@@ -50,7 +50,7 @@ func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
 	}
 	resp, err := p.repo.GetListByUserId(search)
 	for _, item := range resp {
-		prescriptionItems, err := p.repo.GetItemListByPrescriptionId(item.ID)
+		prescriptionItems, err := p.repo.GetItemListByTimezoneLinkId(item.ID)
 		if err != nil {
 			item.PrescriptionItems = []*PrescriptionItem{}
 			continue

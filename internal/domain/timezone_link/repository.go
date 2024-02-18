@@ -2,8 +2,10 @@ package timezonelink
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
+	schema "nursing_api/pkg/ent/timezonelink"
 )
 
 type repository struct {
@@ -14,6 +16,8 @@ type repository struct {
 
 type Repository interface {
 	ConnectPrescription(link *TimeZoneLink) (*TimeZoneLink, error)
+	GetByPrescription(prescriptionId uuid.UUID) ([]*TimeZoneLink, error)
+	DeleteByIds(ids []uuid.UUID) (bool, error)
 }
 
 func NewRepository(
@@ -43,4 +47,27 @@ func (r repository) ConnectPrescription(link *TimeZoneLink) (*TimeZoneLink, erro
 	}
 
 	return toDomain(saved), nil
+}
+
+func (r repository) GetByPrescription(prescriptionId uuid.UUID) ([]*TimeZoneLink, error) {
+	founds, err := r.timezoneLink.
+		Query().
+		Where(
+			schema.PrescriptionID(prescriptionId),
+		).
+		All(r.c)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomainList(founds), nil
+}
+
+func (r repository) DeleteByIds(ids []uuid.UUID) (bool, error) {
+	result, err := r.timezoneLink.Delete().Where(schema.IDIn(ids...)).Exec(r.c)
+	if err != nil {
+		return false, err
+	}
+
+	return result > 0, nil
 }

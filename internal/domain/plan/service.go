@@ -1,6 +1,7 @@
 package plan
 
 import (
+	"github.com/google/uuid"
 	"log"
 	"nursing_api/internal/domain/medicine"
 	"nursing_api/internal/domain/prescription"
@@ -14,6 +15,7 @@ import (
 
 type UseCase interface {
 	Add(req *AddPlanRequest) *AddPlanResponse
+	Delete(req *DeletePlanRequest) *DeletePlanResponse
 	GetByMonth(req *GetByMonthRequest) *GetByMonthResponse
 	GetByDate(req *GetByDateRequest) *GetByDateResponse
 	Take(req *TakeToggleRequest) *TakeToggleResponse
@@ -58,12 +60,15 @@ func (p planService) Add(req *AddPlanRequest) *AddPlanResponse {
 	}
 
 	// 처방전 등록
+	startedAt := p.mono.Date.ParseForce("Y-m-d", req.StartedAt)
+	finishedAt := startedAt.AddDate(0, 0, req.TakeDays)
 	psReq := &prescription.Prescription{
 		UserId:           req.UserId,
 		PrescriptionName: req.Name,
 		HospitalName:     req.Hospital,
 		TakeDays:         req.TakeDays,
-		StartedAt:        p.mono.Date.ParseForce("Y-m-d", req.StartedAt),
+		StartedAt:        startedAt,
+		FinishedAt:       finishedAt,
 		Memo:             req.Memo,
 	}
 	savedPs, err := p.prescriptionRepo.Add(psReq)
@@ -124,7 +129,67 @@ func (p planService) Add(req *AddPlanRequest) *AddPlanResponse {
 	}
 
 	p.db.CommitAndEnd()
-	return nil
+	return OkAddPlan()
+}
+
+func (p planService) Delete(req *DeletePlanRequest) *DeletePlanResponse {
+	p.db.BeginTx()
+
+	// 복용계획 조회
+	ps, err := p.prescriptionRepo.GetById(req.ID)
+	if err != nil {
+		return FailDeletePlan("복용계획을 찾을 수 없습니다", err)
+	}
+
+	// 복용계획 삭제처리
+	result, err := p.prescriptionRepo.Delete(ps.ID)
+	if !result || err != nil {
+		p.db.RollbackAndEnd()
+		return FailDeletePlan("복용계획 삭제가 실패하였습니다", err)
+	}
+
+	// 복용시간대 링크 조회
+	tzls, err := p.timezoneLinkRepo.GetByPrescription(ps.ID)
+	// 없을 수도 있으므로 없는경우 정상 응답
+	if err == nil {
+		p.db.CommitAndEnd()
+		return OkDeletePlan()
+	}
+
+	// 시간대 고유번호를 배열화
+	tzlIds := []uuid.UUID{}
+	for _, tzl := range tzls {
+		tzlIds = append(tzlIds, tzl.ID)
+	}
+
+	// 시간대 삭제처리
+	result, err = p.timezoneLinkRepo.DeleteByIds(tzlIds)
+	if !result || err != nil {
+		p.db.RollbackAndEnd()
+		return FailDeletePlan("복용 타임존 삭제 중 오류가 발생하였습니다", err)
+	}
+
+	// 복용계획 아이템 조회
+	psItems, err := p.prescriptionRepo.GetItemListByTimezoneLinkIds(tzlIds)
+	// 없을 수도 있으므로 없는 경우 정상응답
+	if err != nil {
+		p.db.CommitAndEnd()
+		return OkDeletePlan()
+	}
+
+	// 복용계획 아이템 삭제처리
+	psItemIds := []uuid.UUID{}
+	for _, psItem := range psItems {
+		psItemIds = append(psItemIds, psItem.ID)
+	}
+	result, err = p.prescriptionRepo.DeleteItemByIds(psItemIds)
+	if !result || err != nil {
+		p.db.RollbackAndEnd()
+		return FailDeletePlan("복용 의약품 삭제 중 오류가 발생하였습니다", err)
+	}
+
+	p.db.CommitAndEnd()
+	return OkDeletePlan()
 }
 
 func (p planService) Take(req *TakeToggleRequest) *TakeToggleResponse {
@@ -155,7 +220,6 @@ func (p planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
 		Limit:      10,
 	}
 
-	log.Printf("처방전 파라미터: %+v", search)
 	origin, err := p.prescriptionRepo.GetItemListBySearch(search)
 	if err != nil {
 		return FailGetByDate("처방전 조회 중 오류가 발생하였습니다.", err)

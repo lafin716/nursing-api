@@ -9,6 +9,7 @@ import (
 
 type PlanHttpApi interface {
 	Add(ctx *fiber.Ctx) error
+	Delete(ctx *fiber.Ctx) error
 	GetByDate(ctx *fiber.Ctx) error
 	Summary(ctx *fiber.Ctx) error
 	Take(ctx *fiber.Ctx) error
@@ -31,8 +32,60 @@ func NewPlanHttpApi(
 	}
 }
 
+// @summary 복약 계획 등록
+// @description 복약계획을 생성하는 엔드포인트
+// @accept json
+// @produce json
+// @param dto body plan.AddPlanRequest true "복용계획정보"
+// @router /plan [post]
 func (p planHttpApi) Add(ctx *fiber.Ctx) error {
-	return nil
+	req := new(plan.AddPlanRequest)
+	err := ctx.BodyParser(req)
+	if err != nil {
+		return FailParam(err.Error(), ctx)
+	}
+
+	errs := validateParameter(req)
+	if errs != nil {
+		return FailParam(errs, ctx)
+	}
+
+	userId, err := getUserId(p.jwtClient, ctx)
+	if err != nil {
+		return FailAuth(err.Error(), ctx)
+	}
+	req.UserId = userId
+	resp := p.service.Add(req)
+	if !resp.Success {
+		return Fail(resp.Message, resp.Error, ctx)
+	}
+
+	return Ok(nil, ctx)
+}
+
+// @summary 복약 계획 삭제
+// @description 복약계획을 삭제하는 엔드포인트
+// @accept json
+// @produce json
+// @router /plan/:id [delete]
+func (p planHttpApi) Delete(ctx *fiber.Ctx) error {
+	req := new(plan.DeletePlanRequest)
+	err := ctx.ParamsParser(req)
+	if err != nil {
+		return FailParam(err.Error(), ctx)
+	}
+
+	resp := p.service.Delete(req)
+	if !resp.Success {
+		return response.New(response.CODE_FAIL_DELETE_PLAN).
+			SetMessage(resp.Message).
+			SetErrors(resp.Error).
+			Error(ctx)
+	}
+
+	return response.New(response.CODE_SUCCESS).
+		SetMessage(resp.Message).
+		Ok(ctx)
 }
 
 // @summary 날짜별 복약 계획
