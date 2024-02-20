@@ -60,11 +60,6 @@ func UserID(v uuid.UUID) predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldEQ(FieldUserID, v))
 }
 
-// PrescriptionID applies equality check predicate on the "prescription_id" field. It's identical to PrescriptionIDEQ.
-func PrescriptionID(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldEQ(FieldPrescriptionID, v))
-}
-
 // TimezoneID applies equality check predicate on the "timezone_id" field. It's identical to TimezoneIDEQ.
 func TimezoneID(v uuid.UUID) predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldEQ(FieldTimezoneID, v))
@@ -133,46 +128,6 @@ func UserIDLT(v uuid.UUID) predicate.TakeHistory {
 // UserIDLTE applies the LTE predicate on the "user_id" field.
 func UserIDLTE(v uuid.UUID) predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldLTE(FieldUserID, v))
-}
-
-// PrescriptionIDEQ applies the EQ predicate on the "prescription_id" field.
-func PrescriptionIDEQ(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldEQ(FieldPrescriptionID, v))
-}
-
-// PrescriptionIDNEQ applies the NEQ predicate on the "prescription_id" field.
-func PrescriptionIDNEQ(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldNEQ(FieldPrescriptionID, v))
-}
-
-// PrescriptionIDIn applies the In predicate on the "prescription_id" field.
-func PrescriptionIDIn(vs ...uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldIn(FieldPrescriptionID, vs...))
-}
-
-// PrescriptionIDNotIn applies the NotIn predicate on the "prescription_id" field.
-func PrescriptionIDNotIn(vs ...uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldNotIn(FieldPrescriptionID, vs...))
-}
-
-// PrescriptionIDGT applies the GT predicate on the "prescription_id" field.
-func PrescriptionIDGT(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldGT(FieldPrescriptionID, v))
-}
-
-// PrescriptionIDGTE applies the GTE predicate on the "prescription_id" field.
-func PrescriptionIDGTE(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldGTE(FieldPrescriptionID, v))
-}
-
-// PrescriptionIDLT applies the LT predicate on the "prescription_id" field.
-func PrescriptionIDLT(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldLT(FieldPrescriptionID, v))
-}
-
-// PrescriptionIDLTE applies the LTE predicate on the "prescription_id" field.
-func PrescriptionIDLTE(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldLTE(FieldPrescriptionID, v))
 }
 
 // TimezoneIDEQ applies the EQ predicate on the "timezone_id" field.

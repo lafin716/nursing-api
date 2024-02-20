@@ -27,12 +27,6 @@ func (thc *TakeHistoryCreate) SetUserID(u uuid.UUID) *TakeHistoryCreate {
 	return thc
 }
 
-// SetPrescriptionID sets the "prescription_id" field.
-func (thc *TakeHistoryCreate) SetPrescriptionID(u uuid.UUID) *TakeHistoryCreate {
-	thc.mutation.SetPrescriptionID(u)
-	return thc
-}
-
 // SetTimezoneID sets the "timezone_id" field.
 func (thc *TakeHistoryCreate) SetTimezoneID(u uuid.UUID) *TakeHistoryCreate {
 	thc.mutation.SetTimezoneID(u)
@@ -169,9 +163,6 @@ func (thc *TakeHistoryCreate) check() error {
 	if _, ok := thc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "TakeHistory.user_id"`)}
 	}
-	if _, ok := thc.mutation.PrescriptionID(); !ok {
-		return &ValidationError{Name: "prescription_id", err: errors.New(`ent: missing required field "TakeHistory.prescription_id"`)}
-	}
 	if _, ok := thc.mutation.TimezoneID(); !ok {
 		return &ValidationError{Name: "timezone_id", err: errors.New(`ent: missing required field "TakeHistory.timezone_id"`)}
 	}
@@ -219,10 +210,6 @@ func (thc *TakeHistoryCreate) createSpec() (*TakeHistory, *sqlgraph.CreateSpec) 
 	if value, ok := thc.mutation.UserID(); ok {
 		_spec.SetField(takehistory.FieldUserID, field.TypeUUID, value)
 		_node.UserID = value
-	}
-	if value, ok := thc.mutation.PrescriptionID(); ok {
-		_spec.SetField(takehistory.FieldPrescriptionID, field.TypeUUID, value)
-		_node.PrescriptionID = value
 	}
 	if value, ok := thc.mutation.TimezoneID(); ok {
 		_spec.SetField(takehistory.FieldTimezoneID, field.TypeUUID, value)

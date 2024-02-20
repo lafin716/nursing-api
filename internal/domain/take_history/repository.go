@@ -3,6 +3,7 @@ package takehistory
 import (
 	"context"
 	"github.com/google/uuid"
+	"log"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
 	schema "nursing_api/pkg/ent/takehistory"
@@ -15,6 +16,7 @@ type Repository interface {
 	GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory, error)
 	GetById(id uuid.UUID) (*TakeHistory, error)
 	GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, date time.Time) (*TakeHistory, error)
+	GetItemById(userId uuid.UUID, takeHistoryItemId uuid.UUID) (*TakeHistoryItem, error)
 	GetItemsByHistoryId(userId uuid.UUID, historyId uuid.UUID, date time.Time) ([]*TakeHistoryItem, error)
 	Add(newData *TakeHistory) (*TakeHistory, error)
 	Update(newData *TakeHistory) (bool, error)
@@ -26,6 +28,7 @@ type Repository interface {
 }
 
 type repository struct {
+	root       *ent.Client
 	client     *ent.TakeHistoryClient
 	itemClient *ent.TakeHistoryItemClient
 	ctx        context.Context
@@ -35,12 +38,13 @@ func NewRepository(
 	dbClient *database.DatabaseClient,
 ) Repository {
 	return &repository{
+		root:       dbClient.Client,
 		client:     dbClient.Client.TakeHistory,
 		itemClient: dbClient.Client.TakeHistoryItem,
 		ctx:        dbClient.Ctx,
 	}
 }
-func (t repository) GetList(userId uuid.UUID) ([]*TakeHistory, error) {
+func (t *repository) GetList(userId uuid.UUID) ([]*TakeHistory, error) {
 	list, err := t.client.
 		Query().
 		Where(
@@ -54,14 +58,18 @@ func (t repository) GetList(userId uuid.UUID) ([]*TakeHistory, error) {
 	return toModelList(list), nil
 }
 
-func (t repository) GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, date time.Time) (*TakeHistory, error) {
-	history, err := t.client.Query().Where(
-		schema.And(
-			schema.UserID(userId),
-			schema.TimezoneID(timezoneId),
-			schema.TakeDateEQ(date),
-		),
-	).Only(t.ctx)
+func (t *repository) GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, date time.Time) (*TakeHistory, error) {
+	log.Println("takehistory.GetByTimezoneId")
+	history, err := t.root.Debug().TakeHistory.
+		Query().
+		Where(
+			schema.And(
+				schema.UserID(userId),
+				schema.TimezoneID(timezoneId),
+				schema.TakeDateGTE(date),
+				schema.TakeDateLT(date.AddDate(0, 0, 1)),
+			),
+		).Only(t.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +77,21 @@ func (t repository) GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, date
 	return toModel(history), nil
 }
 
-func (t repository) GetItemsByHistoryId(userId uuid.UUID, historyId uuid.UUID, date time.Time) ([]*TakeHistoryItem, error) {
+func (t *repository) GetItemById(userId uuid.UUID, takeHistoryItemId uuid.UUID) (*TakeHistoryItem, error) {
+	item, err := t.itemClient.
+		Query().
+		Where(
+			schemaItem.UserID(userId),
+			schemaItem.ID(takeHistoryItemId),
+		).Only(t.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toModelItem(item), nil
+}
+
+func (t *repository) GetItemsByHistoryId(userId uuid.UUID, historyId uuid.UUID, date time.Time) ([]*TakeHistoryItem, error) {
 	historyItems, err := t.itemClient.Query().Where(
 		schemaItem.And(
 			schemaItem.UserID(userId),
@@ -84,7 +106,7 @@ func (t repository) GetItemsByHistoryId(userId uuid.UUID, historyId uuid.UUID, d
 	return toModelItemList(historyItems), nil
 }
 
-func (t repository) GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory, error) {
+func (t *repository) GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory, error) {
 	found, err := t.client.
 		Query().
 		Where(
@@ -99,7 +121,7 @@ func (t repository) GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory,
 	return toModel(found), nil
 }
 
-func (t repository) GetById(id uuid.UUID) (*TakeHistory, error) {
+func (t *repository) GetById(id uuid.UUID) (*TakeHistory, error) {
 	found, err := t.client.
 		Query().
 		Where(schema.ID(id)).
@@ -111,12 +133,11 @@ func (t repository) GetById(id uuid.UUID) (*TakeHistory, error) {
 	return toModel(found), nil
 }
 
-func (t repository) Add(newData *TakeHistory) (*TakeHistory, error) {
+func (t *repository) Add(newData *TakeHistory) (*TakeHistory, error) {
 	saved, err := t.client.
 		Create().
-		SetID(newData.ID).
 		SetUserID(newData.UserId).
-		SetPrescriptionID(newData.PrescriptionId).
+		SetTimezoneID(newData.TimezoneId).
 		SetTakeDate(newData.TakeDate).
 		SetTakeStatus(string(newData.TakeStatus)).
 		SetMemo(newData.Memo).
@@ -129,7 +150,7 @@ func (t repository) Add(newData *TakeHistory) (*TakeHistory, error) {
 	return toModel(saved), nil
 }
 
-func (t repository) Update(newData *TakeHistory) (bool, error) {
+func (t *repository) Update(newData *TakeHistory) (bool, error) {
 	result, err := t.client.
 		Update().
 		SetTakeDate(newData.TakeDate).
@@ -147,7 +168,7 @@ func (t repository) Update(newData *TakeHistory) (bool, error) {
 	return result > 0, nil
 }
 
-func (t repository) Delete(takeHistoryId uuid.UUID) (bool, error) {
+func (t *repository) Delete(takeHistoryId uuid.UUID) (bool, error) {
 	result, err := t.client.Delete().Where(schema.ID(takeHistoryId)).Exec(t.ctx)
 	if err != nil {
 		return false, err
@@ -156,7 +177,7 @@ func (t repository) Delete(takeHistoryId uuid.UUID) (bool, error) {
 	return result > 0, nil
 }
 
-func (t repository) AddItem(item *TakeHistoryItem) (bool, error) {
+func (t *repository) AddItem(item *TakeHistoryItem) (bool, error) {
 	_, err := t.itemClient.
 		Create().
 		SetUserID(item.UserId).
@@ -164,6 +185,7 @@ func (t repository) AddItem(item *TakeHistoryItem) (bool, error) {
 		SetPrescriptionItemID(item.PrescriptionItemId).
 		SetTakeAmount(item.TakeAmount).
 		SetTakeUnit(item.TakeUnit).
+		SetTakeDate(item.TakeDate).
 		SetTakeStatus(string(item.TakeStatus)).
 		SetCreatedAt(time.Now()).
 		Save(t.ctx)
@@ -174,12 +196,12 @@ func (t repository) AddItem(item *TakeHistoryItem) (bool, error) {
 	return true, nil
 }
 
-func (t repository) UpdateItem(item *TakeHistoryItem) (bool, error) {
+func (t *repository) UpdateItem(item *TakeHistoryItem) (bool, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (t repository) DeleteItem(takeHistoryItemId uuid.UUID) (bool, error) {
+func (t *repository) DeleteItem(takeHistoryItemId uuid.UUID) (bool, error) {
 	result, err := t.itemClient.Delete().Where(schemaItem.ID(takeHistoryItemId)).Exec(t.ctx)
 	if err != nil {
 		return false, err
@@ -188,7 +210,7 @@ func (t repository) DeleteItem(takeHistoryItemId uuid.UUID) (bool, error) {
 	return result > 0, nil
 }
 
-func (t repository) DeleteItemByHistoryId(takeHistoryId uuid.UUID) (bool, error) {
+func (t *repository) DeleteItemByHistoryId(takeHistoryId uuid.UUID) (bool, error) {
 	result, err := t.itemClient.Delete().Where(schemaItem.TakeHistoryID(takeHistoryId)).Exec(t.ctx)
 	if err != nil {
 		return false, err

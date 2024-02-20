@@ -3454,21 +3454,20 @@ func (m *PrescriptionItemMutation) ResetEdge(name string) error {
 // TakeHistoryMutation represents an operation that mutates the TakeHistory nodes in the graph.
 type TakeHistoryMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	user_id         *uuid.UUID
-	prescription_id *uuid.UUID
-	timezone_id     *uuid.UUID
-	take_date       *time.Time
-	take_status     *string
-	memo            *string
-	created_at      *time.Time
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*TakeHistory, error)
-	predicates      []predicate.TakeHistory
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	user_id       *uuid.UUID
+	timezone_id   *uuid.UUID
+	take_date     *time.Time
+	take_status   *string
+	memo          *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*TakeHistory, error)
+	predicates    []predicate.TakeHistory
 }
 
 var _ ent.Mutation = (*TakeHistoryMutation)(nil)
@@ -3609,42 +3608,6 @@ func (m *TakeHistoryMutation) OldUserID(ctx context.Context) (v uuid.UUID, err e
 // ResetUserID resets all changes to the "user_id" field.
 func (m *TakeHistoryMutation) ResetUserID() {
 	m.user_id = nil
-}
-
-// SetPrescriptionID sets the "prescription_id" field.
-func (m *TakeHistoryMutation) SetPrescriptionID(u uuid.UUID) {
-	m.prescription_id = &u
-}
-
-// PrescriptionID returns the value of the "prescription_id" field in the mutation.
-func (m *TakeHistoryMutation) PrescriptionID() (r uuid.UUID, exists bool) {
-	v := m.prescription_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPrescriptionID returns the old "prescription_id" field's value of the TakeHistory entity.
-// If the TakeHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryMutation) OldPrescriptionID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPrescriptionID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPrescriptionID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPrescriptionID: %w", err)
-	}
-	return oldValue.PrescriptionID, nil
-}
-
-// ResetPrescriptionID resets all changes to the "prescription_id" field.
-func (m *TakeHistoryMutation) ResetPrescriptionID() {
-	m.prescription_id = nil
 }
 
 // SetTimezoneID sets the "timezone_id" field.
@@ -3936,12 +3899,9 @@ func (m *TakeHistoryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TakeHistoryMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m.user_id != nil {
 		fields = append(fields, takehistory.FieldUserID)
-	}
-	if m.prescription_id != nil {
-		fields = append(fields, takehistory.FieldPrescriptionID)
 	}
 	if m.timezone_id != nil {
 		fields = append(fields, takehistory.FieldTimezoneID)
@@ -3971,8 +3931,6 @@ func (m *TakeHistoryMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case takehistory.FieldUserID:
 		return m.UserID()
-	case takehistory.FieldPrescriptionID:
-		return m.PrescriptionID()
 	case takehistory.FieldTimezoneID:
 		return m.TimezoneID()
 	case takehistory.FieldTakeDate:
@@ -3996,8 +3954,6 @@ func (m *TakeHistoryMutation) OldField(ctx context.Context, name string) (ent.Va
 	switch name {
 	case takehistory.FieldUserID:
 		return m.OldUserID(ctx)
-	case takehistory.FieldPrescriptionID:
-		return m.OldPrescriptionID(ctx)
 	case takehistory.FieldTimezoneID:
 		return m.OldTimezoneID(ctx)
 	case takehistory.FieldTakeDate:
@@ -4025,13 +3981,6 @@ func (m *TakeHistoryMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserID(v)
-		return nil
-	case takehistory.FieldPrescriptionID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPrescriptionID(v)
 		return nil
 	case takehistory.FieldTimezoneID:
 		v, ok := value.(uuid.UUID)
@@ -4147,9 +4096,6 @@ func (m *TakeHistoryMutation) ResetField(name string) error {
 	switch name {
 	case takehistory.FieldUserID:
 		m.ResetUserID()
-		return nil
-	case takehistory.FieldPrescriptionID:
-		m.ResetPrescriptionID()
 		return nil
 	case takehistory.FieldTimezoneID:
 		m.ResetTimezoneID()

@@ -29,7 +29,12 @@ type ParamParser interface {
 	GetUserId() uuid.UUID
 }
 
-func ParseRequest(dto interface{}, paramType ParamType, jwtClient *jwt.JwtClient, c *fiber.Ctx) ParamParser {
+func ParseRequest(
+	dto interface{},
+	paramType ParamType,
+	jwtClient *jwt.JwtClient,
+	c *fiber.Ctx,
+) ParamParser {
 	parser := &paramParser{
 		paramType: paramType,
 		dto:       dto,
@@ -41,7 +46,7 @@ func ParseRequest(dto interface{}, paramType ParamType, jwtClient *jwt.JwtClient
 	return parser
 }
 
-func (p paramParser) init() {
+func (p *paramParser) init() {
 	err := p.parse()
 	if err != nil {
 		p.err = err
@@ -59,11 +64,10 @@ func (p paramParser) init() {
 		p.err = FailAuth(err.Error(), p.ctx)
 		return
 	}
-
 	p.userId = userId
 }
 
-func (p paramParser) parse() error {
+func (p *paramParser) parse() error {
 	var err error
 	switch p.paramType {
 	case QUERY:
@@ -77,10 +81,10 @@ func (p paramParser) parse() error {
 	return err
 }
 
-func (p paramParser) GetUserId() uuid.UUID {
+func (p *paramParser) GetUserId() uuid.UUID {
 	return p.userId
 }
 
-func (p paramParser) Error() error {
+func (p *paramParser) Error() error {
 	return p.err
 }

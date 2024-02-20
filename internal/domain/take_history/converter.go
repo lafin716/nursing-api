@@ -13,14 +13,13 @@ func toModelList(entities []*ent.TakeHistory) []*TakeHistory {
 
 func toModel(entity *ent.TakeHistory) *TakeHistory {
 	return &TakeHistory{
-		ID:             entity.ID,
-		UserId:         entity.UserID,
-		PrescriptionId: entity.PrescriptionID,
-		TakeDate:       entity.TakeDate,
-		TakeStatus:     TakeStatus(entity.TakeStatus),
-		Memo:           entity.Memo,
-		CreatedAt:      entity.CreatedAt,
-		UpdatedAt:      entity.UpdatedAt,
+		ID:         entity.ID,
+		UserId:     entity.UserID,
+		TakeDate:   entity.TakeDate,
+		TakeStatus: TakeStatus(entity.TakeStatus),
+		Memo:       entity.Memo,
+		CreatedAt:  entity.CreatedAt,
+		UpdatedAt:  entity.UpdatedAt,
 	}
 }
 

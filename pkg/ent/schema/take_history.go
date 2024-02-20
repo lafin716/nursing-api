@@ -15,7 +15,6 @@ func (TakeHistory) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("user_id", uuid.UUID{}),
-		field.UUID("prescription_id", uuid.UUID{}),
 		field.UUID("timezone_id", uuid.UUID{}),
 		field.Time("take_date"),
 		field.String("take_status").Optional().Default("NEVER").SchemaType(varchar(10)),

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"nursing_api/internal/common/response"
 	"nursing_api/internal/domain/plan"
@@ -127,7 +128,8 @@ func (p planHttpApi) Take(ctx *fiber.Ctx) error {
 	req.UserId = parser.GetUserId()
 	resp := p.service.Take(req)
 	if !resp.Success {
-		return Fail(resp.Message, resp.Error, ctx)
+		fmt.Printf("take error : %+v \n", resp.Error)
+		return Fail(resp.Message, resp.Error.Error(), ctx)
 	}
 
 	return Ok(nil, ctx)

@@ -43,20 +43,6 @@ func (thu *TakeHistoryUpdate) SetNillableUserID(u *uuid.UUID) *TakeHistoryUpdate
 	return thu
 }
 
-// SetPrescriptionID sets the "prescription_id" field.
-func (thu *TakeHistoryUpdate) SetPrescriptionID(u uuid.UUID) *TakeHistoryUpdate {
-	thu.mutation.SetPrescriptionID(u)
-	return thu
-}
-
-// SetNillablePrescriptionID sets the "prescription_id" field if the given value is not nil.
-func (thu *TakeHistoryUpdate) SetNillablePrescriptionID(u *uuid.UUID) *TakeHistoryUpdate {
-	if u != nil {
-		thu.SetPrescriptionID(*u)
-	}
-	return thu
-}
-
 // SetTimezoneID sets the "timezone_id" field.
 func (thu *TakeHistoryUpdate) SetTimezoneID(u uuid.UUID) *TakeHistoryUpdate {
 	thu.mutation.SetTimezoneID(u)
@@ -203,9 +189,6 @@ func (thu *TakeHistoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := thu.mutation.UserID(); ok {
 		_spec.SetField(takehistory.FieldUserID, field.TypeUUID, value)
 	}
-	if value, ok := thu.mutation.PrescriptionID(); ok {
-		_spec.SetField(takehistory.FieldPrescriptionID, field.TypeUUID, value)
-	}
 	if value, ok := thu.mutation.TimezoneID(); ok {
 		_spec.SetField(takehistory.FieldTimezoneID, field.TypeUUID, value)
 	}
@@ -263,20 +246,6 @@ func (thuo *TakeHistoryUpdateOne) SetUserID(u uuid.UUID) *TakeHistoryUpdateOne {
 func (thuo *TakeHistoryUpdateOne) SetNillableUserID(u *uuid.UUID) *TakeHistoryUpdateOne {
 	if u != nil {
 		thuo.SetUserID(*u)
-	}
-	return thuo
-}
-
-// SetPrescriptionID sets the "prescription_id" field.
-func (thuo *TakeHistoryUpdateOne) SetPrescriptionID(u uuid.UUID) *TakeHistoryUpdateOne {
-	thuo.mutation.SetPrescriptionID(u)
-	return thuo
-}
-
-// SetNillablePrescriptionID sets the "prescription_id" field if the given value is not nil.
-func (thuo *TakeHistoryUpdateOne) SetNillablePrescriptionID(u *uuid.UUID) *TakeHistoryUpdateOne {
-	if u != nil {
-		thuo.SetPrescriptionID(*u)
 	}
 	return thuo
 }
@@ -456,9 +425,6 @@ func (thuo *TakeHistoryUpdateOne) sqlSave(ctx context.Context) (_node *TakeHisto
 	}
 	if value, ok := thuo.mutation.UserID(); ok {
 		_spec.SetField(takehistory.FieldUserID, field.TypeUUID, value)
-	}
-	if value, ok := thuo.mutation.PrescriptionID(); ok {
-		_spec.SetField(takehistory.FieldPrescriptionID, field.TypeUUID, value)
 	}
 	if value, ok := thuo.mutation.TimezoneID(); ok {
 		_spec.SetField(takehistory.FieldTimezoneID, field.TypeUUID, value)

@@ -7,7 +7,7 @@ var layoutMap = map[string]TimeLayout{
 	"m": MONTH,
 	"d": DATE,
 	"H": HOUR,
-	"M": MINUTE,
+	"i": MINUTE,
 	"s": SECOND,
 }
 

@@ -79,7 +79,6 @@ var (
 	TakeHistoriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "prescription_id", Type: field.TypeUUID},
 		{Name: "timezone_id", Type: field.TypeUUID},
 		{Name: "take_date", Type: field.TypeTime},
 		{Name: "take_status", Type: field.TypeString, Nullable: true, Default: "NEVER", SchemaType: map[string]string{"postgres": "varchar(10)"}},

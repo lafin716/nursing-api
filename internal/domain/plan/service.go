@@ -55,7 +55,7 @@ func NewService(
 	}
 }
 
-func (p planService) Add(req *AddPlanRequest) *AddPlanResponse {
+func (p *planService) Add(req *AddPlanRequest) *AddPlanResponse {
 	txErr := p.db.BeginTx()
 	if txErr != nil {
 		return FailAddPlan("트랜잭션 생성 실패", txErr)
@@ -137,7 +137,7 @@ func (p planService) Add(req *AddPlanRequest) *AddPlanResponse {
 	return OkAddPlan()
 }
 
-func (p planService) Delete(req *DeletePlanRequest) *DeletePlanResponse {
+func (p *planService) Delete(req *DeletePlanRequest) *DeletePlanResponse {
 	p.db.BeginTx()
 
 	// 복용계획 조회
@@ -197,9 +197,9 @@ func (p planService) Delete(req *DeletePlanRequest) *DeletePlanResponse {
 	return OkDeletePlan()
 }
 
-func (p planService) Take(req *TakeToggleRequest) *TakeToggleResponse {
+func (p *planService) Take(req *TakeToggleRequest) *TakeToggleResponse {
 	p.db.BeginTx()
-	date, err := p.mono.Date.Parse("Y-m-d", req.TargetDate)
+	dateTime, err := p.mono.Date.Parse("Y-m-d H:i:s", req.TargetDate)
 	if err != nil {
 		return FailTakeToggle("날짜형식이 유효하지 않습니다", err)
 	}
@@ -207,8 +207,18 @@ func (p planService) Take(req *TakeToggleRequest) *TakeToggleResponse {
 	// 복용여부
 	var isTaken bool
 
+	// 날짜기준 유효한 처방전 조회
+	psList, err := p.prescriptionRepo.GetListBySearch(&prescription.SearchCondition{
+		UserId:     req.UserId,
+		TargetDate: dateTime,
+	})
+	if err != nil {
+		return FailTakeToggle("해당 날짜에 등록된 처방전이 없습니다", err)
+	}
+
 	// 복용내역 조회
-	tz, err := p.takeHistoryRepo.GetByTimezoneId(req.UserId, req.TimezoneId, date)
+	truncatedDate := p.mono.Date.TruncateToDate(dateTime)
+	tz, err := p.takeHistoryRepo.GetByTimezoneId(req.UserId, req.TimezoneId, truncatedDate)
 
 	// 있는 경우 복용 취소 처리
 	if tz != nil || err == nil {
@@ -224,18 +234,24 @@ func (p planService) Take(req *TakeToggleRequest) *TakeToggleResponse {
 	newHistory := &takehistory.TakeHistory{
 		UserId:     req.UserId,
 		TimezoneId: req.TimezoneId,
-		TakeDate:   date,
+		TakeDate:   dateTime,
 		TakeStatus: takehistory.DONE,
+		CreatedAt:  time.Now(),
 	}
-
 	saved, err := p.takeHistoryRepo.Add(newHistory)
 	if saved == nil || err != nil {
 		p.db.RollbackAndEnd()
 		return FailTakeToggle("복용처리 중 오류가 발생하였습니다", err)
 	}
 
+	// 처방전 고유번호 슬라이스 가공
+	var prescriptionIds []uuid.UUID
+	for _, ps := range psList {
+		prescriptionIds = append(prescriptionIds, ps.ID)
+	}
+
 	// 타임존링크 조회
-	tzlList, err := p.timezoneLinkRepo.GetByTimezoneId(req.TimezoneId)
+	tzlList, err := p.timezoneLinkRepo.GetByTimezoneIdAndPrescriptionIds(req.TimezoneId, prescriptionIds)
 	if err != nil {
 		p.db.RollbackAndEnd()
 		return FailTakeToggle("복용시간대 조회 중 오류가 발생하였습니다", err)
@@ -262,7 +278,7 @@ func (p planService) Take(req *TakeToggleRequest) *TakeToggleResponse {
 			TakeStatus:         takehistory.Y,
 			TakeAmount:         item.TakeAmount,
 			TakeUnit:           item.MedicineUnit,
-			TakeDate:           date,
+			TakeDate:           dateTime,
 			CreatedAt:          item.CreatedAt,
 		}
 		result, err := p.takeHistoryRepo.AddItem(newItem)
@@ -276,16 +292,31 @@ func (p planService) Take(req *TakeToggleRequest) *TakeToggleResponse {
 	return OkTakeToggle(isTaken)
 }
 
-func (p planService) PillToggle(req *PillToggleRequest) *PillToggleResponse {
-	//TODO implement me
-	panic("implement me")
+func (p *planService) PillToggle(req *PillToggleRequest) *PillToggleResponse {
+	item, err := p.takeHistoryRepo.GetItemById(req.UserId, req.PillId)
+	if err != nil {
+		return FailPillToggle("복용 의약품을 찾을 수 없습니다", err)
+	}
+
+	isTaken := takehistory.Y == item.TakeStatus
+	if isTaken {
+		item.TakeStatus = takehistory.N
+	} else {
+		item.TakeStatus = takehistory.Y
+	}
+	saved, err := p.takeHistoryRepo.UpdateItem(item)
+	if !saved || err != nil {
+		return FailPillToggle("의약품 복용 처리 중 오류가 발생하였습니다", err)
+	}
+
+	return OkPillToggle(!isTaken)
 }
 
-func (p planService) GetByMonth(req *GetByMonthRequest) *GetByMonthResponse {
+func (p *planService) GetByMonth(req *GetByMonthRequest) *GetByMonthResponse {
 	panic("")
 }
 
-func (p planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
+func (p *planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
 	// 날짜 세팅
 	currentDate, err := p.mono.Date.Parse("Y-m-d", req.CurrentDate)
 	if err != nil {
@@ -310,7 +341,21 @@ func (p planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
 	return OkGetByDate(takePlan)
 }
 
-func (p planService) UpdateMemo(req *UpdateMemoRequest) *UpdateMemoResponse {
-	//TODO implement me
-	panic("implement me")
+func (p *planService) UpdateMemo(req *UpdateMemoRequest) *UpdateMemoResponse {
+	dateTime, err := p.mono.Date.Parse("Y-m-d", req.Date)
+	if err != nil {
+		return FailUpdateMemo("날짜 형식이 아닙니다", err)
+	}
+	tz, err := p.takeHistoryRepo.GetByTimezoneId(req.UserId, req.TimezoneId, dateTime)
+	if err != nil {
+		return FailUpdateMemo("복용처리 이후 메모를 업데이트 할 수 있습니다", err)
+	}
+
+	tz.Memo = req.Memo
+	result, err := p.takeHistoryRepo.Update(tz)
+	if !result || err != nil {
+		return FailUpdateMemo("메모 업데이트 중 오류가 발생하였습니다", err)
+	}
+
+	return OkUpdateMemo()
 }
