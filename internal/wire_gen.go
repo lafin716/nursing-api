@@ -61,7 +61,7 @@ func New() (*Server, error) {
 	takehistoryUseCase := takehistory.NewService(takehistoryRepository, prescriptionRepository)
 	takeHistoryHttpApi := api.NewTakeHistoryHttpApi(takehistoryUseCase, jwtClient)
 	client := mono.NewMono()
-	planRepository := plan.NewRepository(databaseClient)
+	planRepository := plan.NewRepository(client, databaseClient)
 	timezoneRepository := timezone.NewRepository(databaseClient)
 	timezonelinkRepository := timezonelink.NewRepository(databaseClient)
 	planUseCase := plan.NewService(databaseClient, client, planRepository, prescriptionRepository, timezoneRepository, timezonelinkRepository, takehistoryRepository, medicineRepository)

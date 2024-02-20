@@ -132,13 +132,25 @@ func (p planHttpApi) Take(ctx *fiber.Ctx) error {
 		return Fail(resp.Message, resp.Error.Error(), ctx)
 	}
 
-	return Ok(nil, ctx)
+	return OkWithMessage(resp.Message, nil, ctx)
 }
 
 // 의약품 복용처리
 func (p planHttpApi) PillToggle(ctx *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	req := new(plan.PillToggleRequest)
+	parser := ParseRequest(req, BODY, p.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
+	}
+
+	req.UserId = parser.GetUserId()
+	resp := p.service.PillToggle(req)
+	if !resp.Success {
+		fmt.Printf("take pill error : %+v \n", resp.Error)
+		return Fail(resp.Message, resp.Error.Error(), ctx)
+	}
+
+	return OkWithMessage(resp.Message, nil, ctx)
 }
 
 // 메모 업데이트

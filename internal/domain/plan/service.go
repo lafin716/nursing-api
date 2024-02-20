@@ -323,14 +323,10 @@ func (p *planService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
 		return FailGetByDate("날짜형식이 유효하지 않습니다", err)
 	}
 
+	// 해당 날짜에 등록된 처방 의약품 일괄 조회
 	plans, err := p.plan.GetPlans(req.UserId, currentDate)
 	if err != nil {
 		return FailGetByDate("복용계획 조회 중 오류가 발생하였습니다.", err)
-	}
-
-	// 당일 복용내역 조회
-	if err != nil {
-		return FailGetByDate("복용내역 조회 중 오류가 발생하였습니다.", err)
 	}
 
 	// 당일 복용 계획 생성

@@ -14,24 +14,26 @@ type Plan struct {
 	TimezoneId uuid.UUID `json:"timezone_id"`
 	PlanName   string    `json:"plan_name"`
 	Timezone   string    `json:"time_zone"`
-	TakeDate   string    `json:"take_date"`
 	Pills      []Pill    `json:"pills"`
 
 	// 복용히스토리
 	TakeStatus bool   `json:"take_status"`
+	TakeDate   string `json:"take_date,omitempty"`
 	Memo       string `json:"memo"`
 }
 
 type Pill struct {
 	// 복용계획
-	PillName   string    `json:"pill_name"`
-	MedicineId uuid.UUID `json:"medicine_id"`
-	TakeUnit   string    `json:"take_unit"`
-	TakeAmount float64   `json:"take_amount"`
+	PrescriptionItemId uuid.UUID `json:"prescription_item_id"`
+	PillName           string    `json:"pill_name"`
+	MedicineId         uuid.UUID `json:"medicine_id"`
+	TakeUnit           string    `json:"take_unit"`
+	TakeAmount         float64   `json:"take_amount"`
 
 	// 복용히스토리
-	TakeStatus bool   `json:"take_status"`
-	TakeDate   string `json:"take_date"`
+	TakeHistoryItemId uuid.UUID `json:"take_history_item_id,omitempty"`
+	TakeStatus        bool      `json:"take_status"`
+	TakeDate          string    `json:"take_date,omitempty"`
 }
 
 type Summary struct {

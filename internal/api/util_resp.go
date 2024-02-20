@@ -11,6 +11,13 @@ func Ok(data interface{}, c *fiber.Ctx) error {
 		Ok(c)
 }
 
+func OkWithMessage(message string, data interface{}, c *fiber.Ctx) error {
+	return response.New(response.CODE_SUCCESS).
+		SetMessage(message).
+		SetData(data).
+		Ok(c)
+}
+
 func Fail(message string, err interface{}, c *fiber.Ctx) error {
 	return response.New(response.CODE_ERROR).
 		SetMessage(message).
