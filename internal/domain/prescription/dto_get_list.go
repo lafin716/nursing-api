@@ -15,9 +15,6 @@ type GetListResponse struct {
 	Error   error
 }
 
-type GetListData struct {
-}
-
 func OkGetListMessage(message string) *GetListResponse {
 	return &GetListResponse{
 		Success: true,
@@ -29,7 +26,7 @@ func OkGetListMessage(message string) *GetListResponse {
 func OkGetList(prescriptions []*Prescription) *GetListResponse {
 	return &GetListResponse{
 		Success: true,
-		Message: "조회되었습니다.",
+		Message: "처방전 목록이 조회되었습니다.",
 		Data:    prescriptions,
 	}
 }

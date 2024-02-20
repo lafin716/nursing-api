@@ -197,8 +197,20 @@ func (t *repository) AddItem(item *TakeHistoryItem) (bool, error) {
 }
 
 func (t *repository) UpdateItem(item *TakeHistoryItem) (bool, error) {
-	//TODO implement me
-	panic("implement me")
+	err := t.itemClient.
+		Update().
+		SetTakeStatus(string(item.TakeStatus)).
+		SetMemo(item.Memo).
+		Where(
+			schemaItem.ID(item.ID),
+			schemaItem.UserID(item.UserId),
+		).
+		Exec(t.ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (t *repository) DeleteItem(takeHistoryItemId uuid.UUID) (bool, error) {

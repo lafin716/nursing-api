@@ -7,12 +7,15 @@ import (
 	"nursing_api/pkg/jwt"
 )
 
-// @Deprecated 복용계획으로 통합될 예정
 type PrescriptionApi interface {
 	Register(ctx *fiber.Ctx) error
 	GetList(ctx *fiber.Ctx) error
+	GetById(ctx *fiber.Ctx) error
 	Update(ctx *fiber.Ctx) error
 	Delete(ctx *fiber.Ctx) error
+
+	GetItemList(ctx *fiber.Ctx) error
+	GetItemById(ctx *fiber.Ctx) error
 	AddItem(ctx *fiber.Ctx) error
 	UpdateItem(ctx *fiber.Ctx) error
 	DeleteItem(ctx *fiber.Ctx) error
@@ -33,132 +36,162 @@ func NewPrescriptionApi(
 	}
 }
 
-// 처방전 리스트
+// @summary 처방전 리스트 조회
+// @description 해당 날짜의 처방전 목록을 조회하는 엔드포인트
+// @produce json
+// @param date query string true "조회날짜 (YYYY-MM-DD)"
+// @param limit query int true "조회갯수"
+// @router /prescription [get]
 func (a *prescriptionApi) GetList(ctx *fiber.Ctx) error {
 	req := new(prescription.GetListRequest)
-	err := ctx.QueryParser(req)
-	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).SetErrors(err).Error(ctx)
+	parser := ParseRequest(req, QUERY, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
 	}
 
-	userId, err := getUserId(a.jwtClient, ctx)
-	if err != nil {
-		return err
-	}
-	req.UserId = userId
-
+	req.UserId = parser.GetUserId()
 	resp := a.service.GetList(req)
 	if !resp.Success {
-		return response.New(response.CODE_NO_DATA).SetErrors(err).Error(ctx)
+		return Fail(resp.Message, resp.Error.Error(), ctx)
 	}
 
-	return response.New(response.CODE_SUCCESS).
-		SetData(resp.Data).
-		SetMessage(resp.Message).
-		Ok(ctx)
+	return OkWithMessage(resp.Message, resp.Data, ctx)
 }
 
-// 처방전 등록
+// @summary 처방전 상세 조회
+// @description 처방전 상세정보를 조회하는 엔드포인트
+// @produce json
+// @param id path uuid.UUID true "처방전 고유번호"
+// @router /prescription/:id [get]
+func (a *prescriptionApi) GetById(ctx *fiber.Ctx) error {
+	req := new(prescription.GetByIdRequest)
+	parser := ParseRequest(req, PARAM, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
+	}
+
+	req.UserId = parser.GetUserId()
+	resp := a.service.GetById(req)
+	if !resp.Success {
+		return Fail(resp.Message, resp.Error.Error(), ctx)
+	}
+
+	return OkWithMessage(resp.Message, resp.Data, ctx)
+}
+
+// @summary 처방전 등록
+// @description [Deprecated:복용계획에서 등록하는 프로세스로 변경됨] 처방전을 등록하는 엔드포인트
+// @produce json
+// @param dto body prescription.RegisterRequest true "처방전 등록정보"
+// @router /prescription [post]
 func (a *prescriptionApi) Register(ctx *fiber.Ctx) error {
-	userId, err := getUserId(a.jwtClient, ctx)
-	if err != nil {
-		return err
-	}
-
 	req := new(prescription.RegisterRequest)
-	err = ctx.BodyParser(req)
-	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(err).
-			Error(ctx)
+	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
 	}
-
-	req.UserId = userId
-	errs := validateParameter(req)
-	if errs != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(errs).
-			Error(ctx)
-	}
+	req.UserId = parser.GetUserId()
 
 	resp := a.service.Register(req)
 	if !resp.Success {
-		return response.New(response.CODE_FAIL_ADD_PRESCRIPTION).
-			SetMessage(resp.Message).
-			SetErrors(resp.Error).
-			Error(ctx)
+		return Fail(resp.Message, resp.Error.Error(), ctx)
 	}
 
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		Ok(ctx)
+	return OkWithMessage(resp.Message, nil, ctx)
 }
 
-// 처방전 업데이트
+// @summary 처방전 업데이트
+// @description 처방전을 업데이트하는 엔드포인트
+// @produce json
+// @param dto body prescription.UpdateRequest true "처방전 정보"
+// @router /prescription [patch]
 func (a *prescriptionApi) Update(ctx *fiber.Ctx) error {
 	req := new(prescription.UpdateRequest)
-	err := ctx.BodyParser(req)
-	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(err.Error()).
-			Error(ctx)
-	}
-
-	errs := validateParameter(req)
-	if errs != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(errs).
-			Error(ctx)
+	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
 	}
 
 	resp := a.service.Update(req)
 	if !resp.Success {
-		return response.New(response.CODE_FAIL_UPDATE_PRESCRIPTION).
-			SetMessage(resp.Message).
-			SetErrors(resp.Error).
-			Error(ctx)
+		return Fail(resp.Message, resp.Error.Error(), ctx)
 	}
 
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		SetData(resp.Data).
-		Ok(ctx)
+	return OkWithMessage(resp.Message, nil, ctx)
 }
 
-// 처방전 삭제
+// @summary 처방전 삭제
+// @description 처방전을 삭제하는 엔드포인트
+// @produce json
+// @param id path uuid.UUID true "처방전 고유번호"
+// @router /prescription/:id [delete]
 func (a *prescriptionApi) Delete(ctx *fiber.Ctx) error {
 	req := new(prescription.DeleteRequest)
-	err := ctx.ParamsParser(req)
-	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(err.Error()).
-			Error(ctx)
+	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
 	}
 
 	resp := a.service.Delete(req)
 	if !resp.Success {
-		return response.New(response.CODE_FAIL_DELETE_PRESCRIPTION).
-			SetMessage(resp.Message).
-			SetErrors(resp.Error).
-			Error(ctx)
+		return Fail(resp.Message, resp.Error.Error(), ctx)
 	}
 
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		Ok(ctx)
+	return OkWithMessage(resp.Message, nil, ctx)
 }
 
-// 처방전 의약품 추가
-func (a *prescriptionApi) AddItem(ctx *fiber.Ctx) error {
-	req := new(prescription.AddItemRequest)
-	err := ctx.BodyParser(req)
-	if err != nil {
-		return FailParam(err.Error(), ctx)
+// @summary 처방전 의약품 목록 조회
+// @description 처방전 상세에서 의약품 목록을 조회하는 엔드포인트
+// @produce json
+// @param date query string true "조회날짜 (YYYY-MM-DD)"
+// @router /prescription/items [get]
+func (a *prescriptionApi) GetItemList(ctx *fiber.Ctx) error {
+	req := new(prescription.GetItemListRequest)
+	parser := ParseRequest(req, QUERY, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
+	}
+	req.UserId = parser.GetUserId()
+
+	resp := a.service.GetItemList(req)
+	if !resp.Success {
+		return Fail(resp.Message, resp.Error.Error(), ctx)
 	}
 
-	errs := validateParameter(req)
-	if errs != nil {
-		return FailParam(errs, ctx)
+	return OkWithMessage(resp.Message, resp.Data, ctx)
+}
+
+// @summary 처방전 의약품 상세 조회
+// @description 처방전 상세정보를 조회하는 엔드포인트
+// @produce json
+// @param id path uuid.UUID true "처방전 의약품 고유번호"
+// @router /prescription/:id [get]
+func (a *prescriptionApi) GetItemById(ctx *fiber.Ctx) error {
+	req := new(prescription.GetItemByIdRequest)
+	parser := ParseRequest(req, PARAM, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
+	}
+
+	req.UserId = parser.GetUserId()
+	resp := a.service.GetItemById(req)
+	if !resp.Success {
+		return Fail(resp.Message, resp.Error.Error(), ctx)
+	}
+
+	return OkWithMessage(resp.Message, resp.Data, ctx)
+}
+
+// @summary 처방전 의약품 등록
+// @description 처방전 의약품을 등록하는 엔드포인트
+// @produce json
+// @param dto body prescription.AddItemRequest true "처방전 의약품 등록정보"
+// @router /prescription/items [post]
+func (a *prescriptionApi) AddItem(ctx *fiber.Ctx) error {
+	req := new(prescription.AddItemRequest)
+	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
 	}
 
 	resp := a.service.AddItem(req)
@@ -169,26 +202,19 @@ func (a *prescriptionApi) AddItem(ctx *fiber.Ctx) error {
 			Error(ctx)
 	}
 
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		Ok(ctx)
+	return OkWithMessage(resp.Message, nil, ctx)
 }
 
-// 처방전 의약품 업데이트
+// @summary 처방전 의약품 업데이트
+// @description 처방전 의약품을 업데이트하는 엔드포인트
+// @produce json
+// @param dto body prescription.UpdateRequest true "처방전 의약품 정보"
+// @router /prescription/items [patch]
 func (a *prescriptionApi) UpdateItem(ctx *fiber.Ctx) error {
 	req := new(prescription.UpdateItemRequest)
-	err := ctx.BodyParser(req)
-	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(err.Error()).
-			Error(ctx)
-	}
-
-	errs := validateParameter(req)
-	if errs != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(errs).
-			Error(ctx)
+	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
 	}
 
 	resp := a.service.UpdateItem(req)
@@ -199,26 +225,19 @@ func (a *prescriptionApi) UpdateItem(ctx *fiber.Ctx) error {
 			Error(ctx)
 	}
 
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		Ok(ctx)
+	return OkWithMessage(resp.Message, nil, ctx)
 }
 
-// 처방전 아이템 삭제
+// @summary 처방전 의약품 삭제
+// @description 처방전 의약품을 삭제하는 엔드포인트
+// @produce json
+// @param id path uuid.UUID true "처방전 의약품 고유번호"
+// @router /prescription/items/:id [delete]
 func (a *prescriptionApi) DeleteItem(ctx *fiber.Ctx) error {
 	req := new(prescription.DeleteItemRequest)
-	err := ctx.ParamsParser(req)
-	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(err.Error()).
-			Error(ctx)
-	}
-
-	errs := validateParameter(req)
-	if errs != nil {
-		return response.New(response.CODE_INVALID_PARAM).
-			SetErrors(errs).
-			Error(ctx)
+	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
 	}
 
 	resp := a.service.DeleteItem(req)
@@ -229,7 +248,5 @@ func (a *prescriptionApi) DeleteItem(ctx *fiber.Ctx) error {
 			Error(ctx)
 	}
 
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		Ok(ctx)
+	return OkWithMessage(resp.Message, nil, ctx)
 }

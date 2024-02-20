@@ -1,6 +1,7 @@
 package prescription
 
 import (
+	"nursing_api/pkg/database"
 	"nursing_api/pkg/jwt"
 	"nursing_api/pkg/mono"
 	"strings"
@@ -8,27 +9,33 @@ import (
 )
 
 type UseCase interface {
-	GetByDate(req *GetByDateRequest) *GetByDateResponse
 	GetList(req *GetListRequest) *GetListResponse
+	GetById(req *GetByIdRequest) *GetByIdResponse
 	Register(req *RegisterRequest) *RegisterResponse
 	Update(req *UpdateRequest) *UpdateResponse
 	Delete(req *DeleteRequest) *DeleteResponse
+
+	GetItemList(req *GetItemListRequest) *GetItemListResponse
+	GetItemById(req *GetItemByIdRequest) *GetItemByIdResponse
 	AddItem(req *AddItemRequest) *AddItemResponse
 	UpdateItem(req *UpdateItemRequest) *UpdateItemResponse
 	DeleteItem(req *DeleteItemRequest) *DeleteItemResponse
 }
 
 type prescriptionService struct {
+	db        *database.DatabaseClient
 	repo      Repository
 	mono      *mono.Client
 	jwtClient *jwt.JwtClient
 }
 
 func NewService(
+	db *database.DatabaseClient,
 	repo Repository,
 	jwtClient *jwt.JwtClient,
 ) UseCase {
 	return &prescriptionService{
+		db:        db,
 		repo:      repo,
 		jwtClient: jwtClient,
 		mono:      mono.NewMono(),
@@ -65,6 +72,15 @@ func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
 	}
 
 	return OkGetList(resp)
+}
+
+func (p prescriptionService) GetById(req *GetByIdRequest) *GetByIdResponse {
+	ps, err := p.repo.GetById(req.PrescriptionId)
+	if err != nil {
+		return FailGetById("처방전 조회 중 오류가 발생하였습니다", err)
+	}
+
+	return OkGetById(ps)
 }
 
 func (p prescriptionService) Register(req *RegisterRequest) *RegisterResponse {
@@ -178,6 +194,16 @@ func (p prescriptionService) Delete(req *DeleteRequest) *DeleteResponse {
 	return OkDelete()
 }
 
+func (p prescriptionService) GetItemList(req *GetItemListRequest) *GetItemListResponse {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p prescriptionService) GetItemById(req *GetItemByIdRequest) *GetItemByIdResponse {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (p prescriptionService) AddItem(req *AddItemRequest) *AddItemResponse {
 	return OkAddItem()
 }
@@ -217,9 +243,4 @@ func (p prescriptionService) DeleteItem(req *DeleteItemRequest) *DeleteItemRespo
 	}
 
 	return OkDeleteItem()
-}
-
-func (p prescriptionService) GetByDate(req *GetByDateRequest) *GetByDateResponse {
-	//TODO implement me
-	panic("implement me")
 }

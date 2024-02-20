@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"nursing_api/internal/common/response"
 	"nursing_api/internal/domain/plan"
@@ -117,7 +116,11 @@ func (p planHttpApi) Summary(ctx *fiber.Ctx) error {
 	panic("implement me")
 }
 
-// 복용처리
+// @summary 복용처리
+// @description 복용계획 시간대 전체 복용/미복용처리 (토글로 동작함)
+// @produce json
+// @param dto body plan.TakeToggleRequest true "복용시간대 정보"
+// @router /plan/take [post]
 func (p planHttpApi) Take(ctx *fiber.Ctx) error {
 	req := new(plan.TakeToggleRequest)
 	parser := ParseRequest(req, BODY, p.jwtClient, ctx)
@@ -128,14 +131,17 @@ func (p planHttpApi) Take(ctx *fiber.Ctx) error {
 	req.UserId = parser.GetUserId()
 	resp := p.service.Take(req)
 	if !resp.Success {
-		fmt.Printf("take error : %+v \n", resp.Error)
 		return Fail(resp.Message, resp.Error.Error(), ctx)
 	}
 
 	return OkWithMessage(resp.Message, nil, ctx)
 }
 
-// 의약품 복용처리
+// @summary 개별 의약품 복용처리
+// @description 복용계획 시간대내 의약품 복용/미복용처리 (토글로 동작함), 기획 상 전체 복용처리를 한 뒤에 실행 가능
+// @produce json
+// @param dto body plan.PillToggleRequest true "복용계획 의약품 정보"
+// @router /plan/take/pill [post]
 func (p planHttpApi) PillToggle(ctx *fiber.Ctx) error {
 	req := new(plan.PillToggleRequest)
 	parser := ParseRequest(req, BODY, p.jwtClient, ctx)
@@ -146,15 +152,29 @@ func (p planHttpApi) PillToggle(ctx *fiber.Ctx) error {
 	req.UserId = parser.GetUserId()
 	resp := p.service.PillToggle(req)
 	if !resp.Success {
-		fmt.Printf("take pill error : %+v \n", resp.Error)
 		return Fail(resp.Message, resp.Error.Error(), ctx)
 	}
 
 	return OkWithMessage(resp.Message, nil, ctx)
 }
 
-// 메모 업데이트
+// @summary 메모 업데이트
+// @description 날짜별 복용계획 시간대의 메모를 업데이트
+// @produce json
+// @param dto body plan.UpdateMemoRequest true "복용계획 메모 정보"
+// @router /plan/take/pill [post]
 func (p planHttpApi) UpdateMemo(ctx *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	req := new(plan.UpdateMemoRequest)
+	parser := ParseRequest(req, BODY, p.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
+	}
+
+	req.UserId = parser.GetUserId()
+	resp := p.service.UpdateMemo(req)
+	if !resp.Success {
+		return Fail(resp.Message, resp.Error.Error(), ctx)
+	}
+
+	return OkWithMessage(resp.Message, nil, ctx)
 }
