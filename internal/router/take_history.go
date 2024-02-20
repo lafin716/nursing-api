@@ -5,7 +5,5 @@ func (c *container) RegisterTakeHistoryRoute() {
 	{
 		r.Get("", c.AuthMiddleware(c.handler.takehistory.GetList)...)
 		r.Get("/:id", c.AuthMiddleware(c.handler.takehistory.GetDetail)...)
-		r.Post("", c.AuthMiddleware(c.handler.takehistory.TakePlan)...)
-		r.Patch("/:id", c.AuthMiddleware(c.handler.takehistory.TakePill)...)
 	}
 }

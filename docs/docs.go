@@ -79,22 +79,21 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/medicine/search": {
+        "/medicine/search/{pillName}": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "의약품을 검색하는 엔드포인트. 공공 API를 통해 조회하며, 1번 조회 시 DB에 캐싱처리함",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
                 "summary": "의약품 검색",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "의약품 이름(like 검색)",
-                        "name": "dto",
-                        "in": "query",
+                        "name": "pillName",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -103,6 +102,11 @@ const docTemplate = `{
         },
         "/plan": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "해당 날짜의 복약계획을 조회하는 엔드포인트, 복용상태 및 복용시간을 같이 응답한다.",
                 "consumes": [
                     "application/json"
@@ -114,15 +118,19 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "조회날짜 (YYYY-MM-DD)",
-                        "name": "current_date",
-                        "in": "query",
-                        "required": true
+                        "description": "조회날짜 (YYYY-MM-DD), 미입력 시 현재날짜로 세팅",
+                        "name": "date",
+                        "in": "query"
                     }
                 ],
                 "responses": {}
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "복약계획을 생성하는 엔드포인트",
                 "consumes": [
                     "application/json"
@@ -147,6 +155,11 @@ const docTemplate = `{
         },
         "/plan/:id": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "복약계획을 삭제하는 엔드포인트",
                 "consumes": [
                     "application/json"
@@ -158,8 +171,334 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/plan/memo": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "날짜별 복용계획 시간대의 메모를 업데이트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "메모 업데이트",
+                "parameters": [
+                    {
+                        "description": "복용계획 메모 정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/plan.UpdateMemoRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/plan/take": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "복용계획 시간대 전체 복용/미복용처리 (토글로 동작함)",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복용처리",
+                "parameters": [
+                    {
+                        "description": "복용시간대 정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/plan.TakeToggleRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/plan/take/pill": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "복용계획 시간대내 의약품 복용/미복용처리 (토글로 동작함), 기획 상 전체 복용처리를 한 뒤에 실행 가능",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "개별 의약품 복용처리",
+                "parameters": [
+                    {
+                        "description": "복용계획 의약품 정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/plan.PillToggleRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/prescription": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "해당 날짜의 처방전 목록을 조회하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 리스트 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "조회날짜 (YYYY-MM-DD)",
+                        "name": "date",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "조회갯수",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "[Deprecated:복용계획에서 등록하는 프로세스로 변경됨] 처방전을 등록하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 등록",
+                "parameters": [
+                    {
+                        "description": "처방전 등록정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/prescription.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "처방전을 업데이트하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 업데이트",
+                "parameters": [
+                    {
+                        "description": "처방전 정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/prescription.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/prescription/:id": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "처방전 상세정보를 조회하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 상세 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "처방전 고유번호",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "처방전을 삭제하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 삭제",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "처방전 고유번호",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/prescription/items": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "처방전 상세에서 의약품 목록을 조회하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 의약품 목록 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "조회날짜 (YYYY-MM-DD)",
+                        "name": "date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "처방전 의약품을 등록하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 의약품 등록",
+                "parameters": [
+                    {
+                        "description": "처방전 의약품 등록정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/prescription.AddItemRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "처방전 의약품을 업데이트하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 의약품 업데이트",
+                "parameters": [
+                    {
+                        "description": "처방전 의약품 정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/prescription.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/prescription/items/:id": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "처방전 상세정보를 조회하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 의약품 상세 조회",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "처방전 의약품 고유번호",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "처방전 의약품을 삭제하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "처방전 의약품 삭제",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "처방전 의약품 고유번호",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/takehistory": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "복용내역을 조회하는 엔드포인트",
                 "consumes": [
                     "application/json"
@@ -181,6 +520,11 @@ const docTemplate = `{
         },
         "/takehistory/:id": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "복용내역 상세를 조회하는 엔드포인트",
                 "consumes": [
                     "application/json"
@@ -192,8 +536,98 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/timezone": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "복용시간대 목록을 조회하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복용시간대 목록 조회",
+                "responses": {}
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "복용시간대 템플릿을 생성하는 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복용시간대 추가",
+                "parameters": [
+                    {
+                        "description": "복용시간대 정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/timezone.CreateTimeZoneRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "복용시간대 정보를 업데이트하는 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복용시간대 업데이트",
+                "responses": {}
+            }
+        },
+        "/timezone/:id": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "복용시간대를 삭제하는 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복용시간대 삭제",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "복용시간대 고유번호",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/user/leave": {
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "회원탈퇴 엔드포인트",
                 "consumes": [
                     "application/json"
@@ -207,6 +641,11 @@ const docTemplate = `{
         },
         "/user/me": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "회원정보를 조회하는 엔드포인트",
                 "consumes": [
                     "application/json"
@@ -228,15 +667,18 @@ const docTemplate = `{
             ],
             "properties": {
                 "auto_login": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": false
                 },
                 "email": {
                     "type": "string",
                     "maxLength": 255,
-                    "minLength": 1
+                    "minLength": 1,
+                    "example": "lafin716@gmail.com"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "lafin1234"
                 }
             }
         },
@@ -331,6 +773,242 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "plan.PillToggleRequest": {
+            "type": "object",
+            "required": [
+                "pill_id"
+            ],
+            "properties": {
+                "pill_id": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "plan.TakeToggleRequest": {
+            "type": "object",
+            "required": [
+                "target_date",
+                "timezone_id"
+            ],
+            "properties": {
+                "target_date": {
+                    "type": "string"
+                },
+                "timezone_id": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "plan.UpdateMemoRequest": {
+            "type": "object",
+            "required": [
+                "date",
+                "memo",
+                "timezone_id"
+            ],
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "memo": {
+                    "type": "string"
+                },
+                "timezone_id": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "prescription.AddItemRequest": {
+            "type": "object",
+            "required": [
+                "medicine_id",
+                "medicine_name",
+                "take_time_zone",
+                "timezone_id"
+            ],
+            "properties": {
+                "medicine_id": {
+                    "type": "string"
+                },
+                "medicine_name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "medicine_unit": {
+                    "type": "string"
+                },
+                "memo": {
+                    "type": "string"
+                },
+                "take_amount": {
+                    "type": "number"
+                },
+                "take_etc": {
+                    "type": "string"
+                },
+                "take_moment": {
+                    "type": "string"
+                },
+                "take_time_zone": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "timezone_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "prescription.RegisterItemRequest": {
+            "type": "object",
+            "required": [
+                "medicine_id",
+                "medicine_name",
+                "take_time_zone"
+            ],
+            "properties": {
+                "medicine_id": {
+                    "type": "string"
+                },
+                "medicine_name": {
+                    "type": "string"
+                },
+                "medicine_unit": {
+                    "type": "string"
+                },
+                "memo": {
+                    "type": "string"
+                },
+                "take_amount": {
+                    "type": "number"
+                },
+                "take_etc": {
+                    "type": "string"
+                },
+                "take_moment": {
+                    "type": "string"
+                },
+                "take_time_zone": {
+                    "type": "string"
+                }
+            }
+        },
+        "prescription.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "hospital_name",
+                "items",
+                "started_at",
+                "take_days",
+                "user_id"
+            ],
+            "properties": {
+                "finished_at": {
+                    "type": "string"
+                },
+                "hospital_name": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/prescription.RegisterItemRequest"
+                    }
+                },
+                "memo": {
+                    "type": "string"
+                },
+                "prescription_name": {
+                    "type": "string",
+                    "maxLength": 30
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "take_days": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "prescription.UpdateRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "finished_at": {
+                    "type": "string"
+                },
+                "hospital_name": {
+                    "type": "string",
+                    "maxLength": 30
+                },
+                "id": {
+                    "type": "string"
+                },
+                "memo": {
+                    "type": "string"
+                },
+                "prescription_name": {
+                    "type": "string"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "take_days": {
+                    "type": "integer"
+                }
+            }
+        },
+        "timezone.CreateTimeZoneRequest": {
+            "type": "object",
+            "required": [
+                "hour",
+                "midday",
+                "minute",
+                "name",
+                "use_alert"
+            ],
+            "properties": {
+                "hour": {
+                    "type": "string",
+                    "maxLength": 2
+                },
+                "midday": {
+                    "type": "string",
+                    "maxLength": 2
+                },
+                "minute": {
+                    "type": "string",
+                    "maxLength": 2
+                },
+                "name": {
+                    "type": "string"
+                },
+                "use_alert": {
+                    "type": "boolean"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "Bearer": {
+            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

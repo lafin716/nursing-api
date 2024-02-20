@@ -32,6 +32,7 @@ func NewUserHttpApi(
 // @accept json
 // @produce json
 // @router /user/me [get]
+// @Security Bearer
 func (h *userHttpApi) Me(ctx *fiber.Ctx) error {
 	claims, err := h.jwtClient.Parser.ExtractTokenMetadata(ctx)
 	if err != nil {
@@ -59,6 +60,7 @@ func (h *userHttpApi) Me(ctx *fiber.Ctx) error {
 // @accept json
 // @produce json
 // @router /user/leave [delete]
+// @Security Bearer
 func (a userHttpApi) Leave(ctx *fiber.Ctx) error {
 	claims, err := a.jwtClient.Parser.ExtractTokenMetadata(ctx)
 	if err != nil {

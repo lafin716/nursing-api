@@ -23,13 +23,11 @@ func NewMedicineHttpApi(
 	}
 }
 
-// TODO 검색어 2자 이상 유효성검사 구조체로 변경
 // @summary 의약품 검색
 // @description 의약품을 검색하는 엔드포인트. 공공 API를 통해 조회하며, 1번 조회 시 DB에 캐싱처리함
-// @accept json
-// @produce json
-// @param dto query string true "의약품 이름(like 검색)"
-// @router /medicine/search [get]
+// @param pillName path string true "의약품 이름(like 검색)"
+// @router /medicine/search/{pillName} [get]
+// @Security Bearer
 func (u *medicineHttpApi) Search(ctx *fiber.Ctx) error {
 	pillName := ctx.Params("pillName", "")
 	if strings.TrimSpace(pillName) == "" {

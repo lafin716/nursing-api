@@ -10,8 +10,6 @@ import (
 type TakeHistoryHttpApi interface {
 	GetList(ctx *fiber.Ctx) error
 	GetDetail(ctx *fiber.Ctx) error
-	TakePlan(ctx *fiber.Ctx) error
-	TakePill(ctx *fiber.Ctx) error
 }
 
 type takeHistoryHttpApi struct {
@@ -35,6 +33,7 @@ func NewTakeHistoryHttpApi(
 // @produce json
 // @param dto query takehistory.GetListRequest true "복용내역 조회 조건 파라미터"
 // @router /takehistory [get]
+// @Security Bearer
 func (t takeHistoryHttpApi) GetList(ctx *fiber.Ctx) error {
 	req := new(takehistory.GetListRequest)
 	err := ctx.QueryParser(req)
@@ -64,35 +63,8 @@ func (t takeHistoryHttpApi) GetList(ctx *fiber.Ctx) error {
 // @accept json
 // @produce json
 // @router /takehistory/:id [get]
+// @Security Bearer
 func (t takeHistoryHttpApi) GetDetail(ctx *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (t takeHistoryHttpApi) TakePlan(ctx *fiber.Ctx) error {
-	req := new(takehistory.TakePlanRequest)
-	err := ctx.BodyParser(req)
-	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).SetErrors(err).Error(ctx)
-	}
-
-	userId, err := getUserId(t.jwtClient, ctx)
-	if err != nil {
-		return err
-	}
-	req.UserId = userId
-
-	resp := t.service.TakePlanToggle(req)
-	if !resp.Success {
-		return response.New(response.CODE_NO_DATA).SetErrors(err).Error(ctx)
-	}
-
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		Ok(ctx)
-}
-
-func (t takeHistoryHttpApi) TakePill(ctx *fiber.Ctx) error {
 	//TODO implement me
 	panic("implement me")
 }

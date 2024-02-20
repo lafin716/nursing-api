@@ -38,6 +38,7 @@ func NewPlanHttpApi(
 // @produce json
 // @param dto body plan.AddPlanRequest true "복용계획정보"
 // @router /plan [post]
+// @Security Bearer
 func (p planHttpApi) Add(ctx *fiber.Ctx) error {
 	req := new(plan.AddPlanRequest)
 	err := ctx.BodyParser(req)
@@ -68,6 +69,7 @@ func (p planHttpApi) Add(ctx *fiber.Ctx) error {
 // @accept json
 // @produce json
 // @router /plan/:id [delete]
+// @Security Bearer
 func (p planHttpApi) Delete(ctx *fiber.Ctx) error {
 	req := new(plan.DeletePlanRequest)
 	err := ctx.ParamsParser(req)
@@ -92,8 +94,9 @@ func (p planHttpApi) Delete(ctx *fiber.Ctx) error {
 // @description 해당 날짜의 복약계획을 조회하는 엔드포인트, 복용상태 및 복용시간을 같이 응답한다.
 // @accept json
 // @produce json
-// @param current_date query string true "조회날짜 (YYYY-MM-DD)"
+// @param date query string false "조회날짜 (YYYY-MM-DD), 미입력 시 현재날짜로 세팅"
 // @router /plan [get]
+// @Security Bearer
 func (p planHttpApi) GetByDate(ctx *fiber.Ctx) error {
 	req := new(plan.GetByDateRequest)
 	parser := ParseRequest(req, QUERY, p.jwtClient, ctx)
@@ -121,6 +124,7 @@ func (p planHttpApi) Summary(ctx *fiber.Ctx) error {
 // @produce json
 // @param dto body plan.TakeToggleRequest true "복용시간대 정보"
 // @router /plan/take [post]
+// @Security Bearer
 func (p planHttpApi) Take(ctx *fiber.Ctx) error {
 	req := new(plan.TakeToggleRequest)
 	parser := ParseRequest(req, BODY, p.jwtClient, ctx)
@@ -142,6 +146,7 @@ func (p planHttpApi) Take(ctx *fiber.Ctx) error {
 // @produce json
 // @param dto body plan.PillToggleRequest true "복용계획 의약품 정보"
 // @router /plan/take/pill [post]
+// @Security Bearer
 func (p planHttpApi) PillToggle(ctx *fiber.Ctx) error {
 	req := new(plan.PillToggleRequest)
 	parser := ParseRequest(req, BODY, p.jwtClient, ctx)
@@ -162,7 +167,8 @@ func (p planHttpApi) PillToggle(ctx *fiber.Ctx) error {
 // @description 날짜별 복용계획 시간대의 메모를 업데이트
 // @produce json
 // @param dto body plan.UpdateMemoRequest true "복용계획 메모 정보"
-// @router /plan/take/pill [post]
+// @router /plan/memo [post]
+// @Security Bearer
 func (p planHttpApi) UpdateMemo(ctx *fiber.Ctx) error {
 	req := new(plan.UpdateMemoRequest)
 	parser := ParseRequest(req, BODY, p.jwtClient, ctx)

@@ -42,6 +42,7 @@ func NewPrescriptionApi(
 // @param date query string true "조회날짜 (YYYY-MM-DD)"
 // @param limit query int true "조회갯수"
 // @router /prescription [get]
+// @Security Bearer
 func (a *prescriptionApi) GetList(ctx *fiber.Ctx) error {
 	req := new(prescription.GetListRequest)
 	parser := ParseRequest(req, QUERY, a.jwtClient, ctx)
@@ -61,8 +62,9 @@ func (a *prescriptionApi) GetList(ctx *fiber.Ctx) error {
 // @summary 처방전 상세 조회
 // @description 처방전 상세정보를 조회하는 엔드포인트
 // @produce json
-// @param id path uuid.UUID true "처방전 고유번호"
+// @param id path string true "처방전 고유번호"
 // @router /prescription/:id [get]
+// @Security Bearer
 func (a *prescriptionApi) GetById(ctx *fiber.Ctx) error {
 	req := new(prescription.GetByIdRequest)
 	parser := ParseRequest(req, PARAM, a.jwtClient, ctx)
@@ -84,6 +86,7 @@ func (a *prescriptionApi) GetById(ctx *fiber.Ctx) error {
 // @produce json
 // @param dto body prescription.RegisterRequest true "처방전 등록정보"
 // @router /prescription [post]
+// @Security Bearer
 func (a *prescriptionApi) Register(ctx *fiber.Ctx) error {
 	req := new(prescription.RegisterRequest)
 	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
@@ -105,6 +108,7 @@ func (a *prescriptionApi) Register(ctx *fiber.Ctx) error {
 // @produce json
 // @param dto body prescription.UpdateRequest true "처방전 정보"
 // @router /prescription [patch]
+// @Security Bearer
 func (a *prescriptionApi) Update(ctx *fiber.Ctx) error {
 	req := new(prescription.UpdateRequest)
 	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
@@ -123,8 +127,9 @@ func (a *prescriptionApi) Update(ctx *fiber.Ctx) error {
 // @summary 처방전 삭제
 // @description 처방전을 삭제하는 엔드포인트
 // @produce json
-// @param id path uuid.UUID true "처방전 고유번호"
+// @param id path string true "처방전 고유번호"
 // @router /prescription/:id [delete]
+// @Security Bearer
 func (a *prescriptionApi) Delete(ctx *fiber.Ctx) error {
 	req := new(prescription.DeleteRequest)
 	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
@@ -145,6 +150,7 @@ func (a *prescriptionApi) Delete(ctx *fiber.Ctx) error {
 // @produce json
 // @param date query string true "조회날짜 (YYYY-MM-DD)"
 // @router /prescription/items [get]
+// @Security Bearer
 func (a *prescriptionApi) GetItemList(ctx *fiber.Ctx) error {
 	req := new(prescription.GetItemListRequest)
 	parser := ParseRequest(req, QUERY, a.jwtClient, ctx)
@@ -164,8 +170,9 @@ func (a *prescriptionApi) GetItemList(ctx *fiber.Ctx) error {
 // @summary 처방전 의약품 상세 조회
 // @description 처방전 상세정보를 조회하는 엔드포인트
 // @produce json
-// @param id path uuid.UUID true "처방전 의약품 고유번호"
-// @router /prescription/:id [get]
+// @param id path string true "처방전 의약품 고유번호"
+// @router /prescription/items/:id [get]
+// @Security Bearer
 func (a *prescriptionApi) GetItemById(ctx *fiber.Ctx) error {
 	req := new(prescription.GetItemByIdRequest)
 	parser := ParseRequest(req, PARAM, a.jwtClient, ctx)
@@ -187,6 +194,7 @@ func (a *prescriptionApi) GetItemById(ctx *fiber.Ctx) error {
 // @produce json
 // @param dto body prescription.AddItemRequest true "처방전 의약품 등록정보"
 // @router /prescription/items [post]
+// @Security Bearer
 func (a *prescriptionApi) AddItem(ctx *fiber.Ctx) error {
 	req := new(prescription.AddItemRequest)
 	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
@@ -210,6 +218,7 @@ func (a *prescriptionApi) AddItem(ctx *fiber.Ctx) error {
 // @produce json
 // @param dto body prescription.UpdateRequest true "처방전 의약품 정보"
 // @router /prescription/items [patch]
+// @Security Bearer
 func (a *prescriptionApi) UpdateItem(ctx *fiber.Ctx) error {
 	req := new(prescription.UpdateItemRequest)
 	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
@@ -231,8 +240,9 @@ func (a *prescriptionApi) UpdateItem(ctx *fiber.Ctx) error {
 // @summary 처방전 의약품 삭제
 // @description 처방전 의약품을 삭제하는 엔드포인트
 // @produce json
-// @param id path uuid.UUID true "처방전 의약품 고유번호"
+// @param id path string true "처방전 의약품 고유번호"
 // @router /prescription/items/:id [delete]
+// @Security Bearer
 func (a *prescriptionApi) DeleteItem(ctx *fiber.Ctx) error {
 	req := new(prescription.DeleteItemRequest)
 	parser := ParseRequest(req, BODY, a.jwtClient, ctx)

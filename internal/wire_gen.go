@@ -55,7 +55,7 @@ func New() (*Server, error) {
 	medicineUseCase := medicine.NewService(medicineRepository, medicineApi)
 	medicineHttpApi := api.NewMedicineHttpApi(medicineUseCase)
 	prescriptionRepository := prescription.NewRepository(databaseClient)
-	prescriptionUseCase := prescription.NewService(prescriptionRepository, jwtClient)
+	prescriptionUseCase := prescription.NewService(databaseClient, prescriptionRepository, jwtClient)
 	prescriptionApi := api.NewPrescriptionApi(prescriptionUseCase, jwtClient)
 	takehistoryRepository := takehistory.NewRepository(databaseClient)
 	takehistoryUseCase := takehistory.NewService(takehistoryRepository, prescriptionRepository)

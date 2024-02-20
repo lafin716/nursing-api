@@ -100,6 +100,8 @@ func (a authHttpApi) SignUp(ctx *fiber.Ctx) error {
 
 // @summary 로그아웃
 // @description 로그아웃 처리, 로그인 된 상태에서만 사용가능 (JWT토큰 폐기처리)
+// @securitydefinitions.apikey Authentication
+// @in header
 // @accept json
 // @produce json
 // @router /auth/signout [post]
