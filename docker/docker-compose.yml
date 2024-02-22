@@ -1,10 +1,16 @@
 # docker-compose.yml
 version: '3'
 services:
+  app:
+    build:
+      context: app
+      dockerfile: app/Dockerfile
+    ports:
+      - "80:80"
   db:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: db
+      dockerfile: db/Dockerfile
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
