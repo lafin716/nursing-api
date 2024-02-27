@@ -2,12 +2,11 @@ package takehistory
 
 import (
 	"github.com/google/uuid"
-	"time"
 )
 
 type GetListRequest struct {
-	UserId     uuid.UUID `json:"-"`
-	TargetDate time.Time `json:"target_date" validate:"required"`
+	UserId     uuid.UUID
+	TargetDate string `query:"date"`
 }
 
 type GetListResponse struct {

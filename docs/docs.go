@@ -510,9 +510,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "name": "target_date",
-                        "in": "query",
-                        "required": true
+                        "name": "targetDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "userId",
+                        "in": "query"
                     }
                 ],
                 "responses": {}

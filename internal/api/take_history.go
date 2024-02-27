@@ -36,26 +36,18 @@ func NewTakeHistoryHttpApi(
 // @Security Bearer
 func (t takeHistoryHttpApi) GetList(ctx *fiber.Ctx) error {
 	req := new(takehistory.GetListRequest)
-	err := ctx.QueryParser(req)
-	if err != nil {
-		return response.New(response.CODE_INVALID_PARAM).SetErrors(err).Error(ctx)
+	parser := ParseRequest(req, QUERY, t.jwtClient, ctx)
+	if parser.Error() != nil {
+		return FailParam(parser.Error(), ctx)
 	}
-
-	userId, err := getUserId(t.jwtClient, ctx)
-	if err != nil {
-		return err
-	}
-	req.UserId = userId
+	req.UserId = parser.GetUserId()
 
 	resp := t.service.GetList(req)
 	if !resp.Success {
-		return response.New(response.CODE_NO_DATA).SetErrors(err).Error(ctx)
+		return response.New(response.CODE_NO_DATA).SetErrors(resp.Error).Error(ctx)
 	}
 
-	return response.New(response.CODE_SUCCESS).
-		SetData(resp.Data).
-		SetMessage(resp.Message).
-		Ok(ctx)
+	return OkWithMessage(resp.Message, resp.Data, ctx)
 }
 
 // @summary 복용내역 상세

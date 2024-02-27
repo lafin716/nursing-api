@@ -552,8 +552,10 @@ paths:
       description: 복용내역을 조회하는 엔드포인트
       parameters:
       - in: query
-        name: target_date
-        required: true
+        name: targetDate
+        type: string
+      - in: query
+        name: userId
         type: string
       produces:
       - application/json
