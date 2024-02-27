@@ -13,7 +13,7 @@ import (
 
 type Repository interface {
 	GetList(userId uuid.UUID) ([]*TakeHistory, error)
-	GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory, error)
+	GetListByDate(userId uuid.UUID, today time.Time) ([]*TakeHistory, error)
 	GetById(id uuid.UUID) (*TakeHistory, error)
 	GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, date time.Time) (*TakeHistory, error)
 	GetItemById(userId uuid.UUID, takeHistoryItemId uuid.UUID) (*TakeHistoryItem, error)
@@ -96,7 +96,8 @@ func (t *repository) GetItemsByHistoryId(userId uuid.UUID, historyId uuid.UUID, 
 		schemaItem.And(
 			schemaItem.UserID(userId),
 			schemaItem.TakeHistoryID(historyId),
-			schemaItem.TakeDateEQ(date),
+			schemaItem.TakeDateGTE(date),
+			schemaItem.TakeDateLT(date.AddDate(0, 0, 1)),
 		),
 	).All(t.ctx)
 	if err != nil {
@@ -106,19 +107,20 @@ func (t *repository) GetItemsByHistoryId(userId uuid.UUID, historyId uuid.UUID, 
 	return toModelItemList(historyItems), nil
 }
 
-func (t *repository) GetByToday(userId uuid.UUID, today time.Time) (*TakeHistory, error) {
+func (t *repository) GetListByDate(userId uuid.UUID, date time.Time) ([]*TakeHistory, error) {
 	found, err := t.client.
 		Query().
 		Where(
 			schema.UserID(userId),
-			schema.TakeDateEQ(today),
+			schema.TakeDateGTE(date),
+			schema.TakeDateLT(date.AddDate(0, 0, 1)),
 		).
-		Only(t.ctx)
+		All(t.ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return toModel(found), nil
+	return toModelList(found), nil
 }
 
 func (t *repository) GetById(id uuid.UUID) (*TakeHistory, error) {
