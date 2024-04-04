@@ -10,6 +10,7 @@ import (
 type UserHttpApi interface {
 	Me(ctx *fiber.Ctx) error
 	Leave(ctx *fiber.Ctx) error
+	CheckEmail(ctx *fiber.Ctx) error
 }
 
 type userHttpApi struct {
@@ -33,8 +34,8 @@ func NewUserHttpApi(
 // @produce json
 // @router /user/me [get]
 // @Security Bearer
-func (h *userHttpApi) Me(ctx *fiber.Ctx) error {
-	claims, err := h.jwtClient.Parser.ExtractTokenMetadata(ctx)
+func (a userHttpApi) Me(ctx *fiber.Ctx) error {
+	claims, err := a.jwtClient.Parser.ExtractTokenMetadata(ctx)
 	if err != nil {
 		return response.New(response.CODE_INVALID_JWT).
 			SetErrors(err).
@@ -42,7 +43,7 @@ func (h *userHttpApi) Me(ctx *fiber.Ctx) error {
 	}
 
 	userId := claims.UserID
-	result := h.userUseCase.GetUser(userId)
+	result := a.userUseCase.GetUser(userId)
 	if !result.Success {
 		return response.New(response.CODE_USER_NOTFOUND).
 			SetMessage(result.Message).
@@ -84,4 +85,36 @@ func (a userHttpApi) Leave(ctx *fiber.Ctx) error {
 
 	return response.New(response.CODE_SUCCESS).
 		Ok(ctx)
+}
+
+// @summary 이메일 중복확인
+// @description 이메일 중복확인 엔드포인트
+// @accept json
+// @produce json
+// @router /user/check-email [post]
+func (a userHttpApi) CheckEmail(ctx *fiber.Ctx) error {
+	req := new(user.CheckEmailRequest)
+	err := ctx.BodyParser(req)
+	if err != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(err).
+			Error(ctx)
+	}
+
+	errs := validateParameter(req)
+	if errs != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(errs).
+			Error(ctx)
+	}
+
+	resp := a.userUseCase.CheckDuplicatedEmail(req)
+	if !resp.Success {
+		return response.New(response.CODE_ERROR).
+			SetMessage(resp.Message).
+			SetErrors(resp.Error).
+			Error(ctx)
+	}
+
+	return response.New(response.CODE_SUCCESS).SetMessage(resp.Message).Ok(ctx)
 }

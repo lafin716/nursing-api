@@ -625,6 +625,19 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/user/check-email": {
+            "post": {
+                "description": "이메일 중복확인 엔드포인트",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "이메일 중복확인",
+                "responses": {}
+            }
+        },
         "/user/leave": {
             "delete": {
                 "security": [

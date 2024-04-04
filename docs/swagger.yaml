@@ -627,6 +627,15 @@ paths:
       security:
       - Bearer: []
       summary: 복용시간대 삭제
+  /user/check-email:
+    post:
+      consumes:
+      - application/json
+      description: 이메일 중복확인 엔드포인트
+      produces:
+      - application/json
+      responses: {}
+      summary: 이메일 중복확인
   /user/leave:
     delete:
       consumes:

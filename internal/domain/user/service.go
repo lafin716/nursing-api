@@ -2,7 +2,9 @@ package user
 
 import (
 	"github.com/google/uuid"
+	"log"
 	"nursing_api/internal/common/utils"
+	"strings"
 )
 
 type UseCase interface {
@@ -10,6 +12,7 @@ type UseCase interface {
 	VerifyUser(req *LoginRequest) *LoginResponse
 	GetUser(userId uuid.UUID) *GetUserResponse
 	Leave(userId uuid.UUID) (bool, error)
+	CheckDuplicatedEmail(req *CheckEmailRequest) *CheckEmailResponse
 }
 
 type service struct {
@@ -69,4 +72,18 @@ func (u service) VerifyUser(req *LoginRequest) *LoginResponse {
 
 func (u service) Leave(userId uuid.UUID) (bool, error) {
 	return u.userRepo.Delete(userId)
+}
+
+func (u service) CheckDuplicatedEmail(req *CheckEmailRequest) *CheckEmailResponse {
+	foundUser, err := u.userRepo.GetUserByEmail(req.Email)
+	if foundUser != nil {
+		return FailCheckEmail("이미 등록된 이메일입니다.", nil)
+	}
+
+	if err != nil && !strings.Contains(err.Error(), "user not found") {
+		log.Printf("err : %v", err)
+		return FailCheckEmail("중복 확인 중 오류가 발생하였습니다.", err)
+	}
+
+	return OkCheckEmail()
 }
