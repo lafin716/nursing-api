@@ -8,11 +8,12 @@ RUN go mod download
 COPY . .
 RUN cp -f .env.docker .env
 RUN chmod 744 .env
+RUN go mod tidy
 RUN go install github.com/google/wire/cmd/wire@latest
-RUN go install github.com/swaggo/swag/cmd/swag@latest
+# RUN go install github.com/swaggo/swag/cmd/swag@latest
 RUN go generate ./pkg/ent
 RUN wire ./internal
-RUN swag init -g cmd/main.go
+# RUN swag init -g cmd/main.go
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main ./cmd
 
