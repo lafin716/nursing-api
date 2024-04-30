@@ -2,15 +2,19 @@
 version: '3'
 services:
   app:
+    container_name: nss_app
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
     ports:
       - "8080:8080"
     depends_on: [
       db
     ]
   db:
+    container_name: nss_db
     build:
       context: docker/db
       dockerfile: Dockerfile
