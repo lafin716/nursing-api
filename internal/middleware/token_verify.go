@@ -96,6 +96,10 @@ func (t *TokenVerifyMiddleware) expireProtected() func(*fiber.Ctx) error {
 	}
 }
 
+func test() {
+	fiber.NewError(400, "error")
+}
+
 var (
 	INVALID_TOKEN     = errors.New("유효하지 않은 토큰입니다.")
 	EXPIRE_TOKEN      = errors.New("토큰이 만료되었습니다. 다시 로그인 해주세요.")

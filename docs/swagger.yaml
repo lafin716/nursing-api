@@ -246,6 +246,15 @@ info:
   title: 간병관리 서비스 API
   version: "1.0"
 paths:
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: JWT 토큰 갱신 처리, RefreshToken을 사용하여 AccessToken 재발급
+      produces:
+      - application/json
+      responses: {}
+      summary: 토큰 갱신
   /auth/signin:
     post:
       consumes:

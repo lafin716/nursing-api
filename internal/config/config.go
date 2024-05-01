@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"log"
 	"nursing_api/internal/common/errors"
 	"nursing_api/internal/common/response"
 	"nursing_api/pkg/api/medicine"
@@ -56,6 +57,7 @@ func defaultJwtErrorHandler(c *fiber.Ctx, err error) error {
 func NewDatabaseConfig() *database.Config {
 	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
 	if err != nil {
+		log.Println("DB_PORT 값 로드 실패")
 		return nil
 	}
 
@@ -78,6 +80,8 @@ func NewDatabaseConfig() *database.Config {
 		SSLEnable: sslMode,
 		Debug:     dbDebug,
 	}
+
+	log.Printf("데이터베이스 정보 : %+v", config)
 
 	return config
 }

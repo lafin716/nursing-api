@@ -17,6 +17,7 @@ type UseCase interface {
 	SignIn(req *SignInRequest) *SignInResponse
 	SignUp(req *SignUpRequest) *SignUpResponse
 	SignOut(userId uuid.UUID) error
+	RefreshToken(req *RefreshTokenRequest) *RefreshTokenResponse
 }
 
 func NewService(
@@ -109,4 +110,32 @@ func (a authService) SignOut(userId uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (a authService) RefreshToken(req *RefreshTokenRequest) *RefreshTokenResponse {
+	userId := req.AccessToken.UserID
+	// 토큰 생성
+	tokenRequest := &jwt.TokenRequest{
+		ID:          userId.String(),
+		Credentials: []string{},
+	}
+	jwtToken, err := a.jwtClient.Generator.GenerateNewTokens(tokenRequest)
+	if err != nil {
+		return FailRefreshToken("토큰 생성에 실패하였습니다.", err)
+	}
+
+	// 토큰 저장
+	newToken := &Token{
+		AccessToken:         jwtToken.AccessToken,
+		AccessTokenExpires:  jwtToken.AccessTokenExpires,
+		RefreshToken:        jwtToken.RefreshToken,
+		RefreshTokenExpires: jwtToken.RefreshTokenExpires,
+	}
+	a.authRepository.DeleteToken(userId)
+	savedToken, err := a.authRepository.SaveToken(userId, newToken)
+	if err != nil {
+		return FailRefreshToken("토큰 저장에 실패하였습니다.", err)
+	}
+
+	return OkRefreshToken(savedToken)
 }

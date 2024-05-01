@@ -9,6 +9,7 @@ package server
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
+	"github.com/pinpoint-apm/pinpoint-go-agent/plugin/fiber"
 	"nursing_api/internal/api"
 	"nursing_api/internal/config"
 	"nursing_api/internal/domain/auth"
@@ -86,8 +87,10 @@ func NewServer(
 	dbClient *database.DatabaseClient, router2 router.Routable,
 
 ) *Server {
+
 	fiberClient := web.NewFiberClient(cfg)
 	app := fiberClient.GetApp()
+	app.Use(ppfiber.Middleware())
 	app.Get("/swagger/*", swagger.HandlerDefault)
 	api2 := app.Group("/api")
 	v1 := api2.Group("/v1")

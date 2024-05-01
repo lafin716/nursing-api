@@ -23,9 +23,10 @@ func NewErrorHttpApi(code HTTP_ERROR_CODE) ErrorHttpApi {
 }
 
 func (e errorHttpApi) Handle(ctx *fiber.Ctx) error {
+	msg := codeMessages[e.code]
 	return response.New(int(e.code)).
-		SetMessage(e.message).
-		Error(ctx)
+		SetMessage(msg).
+		CustomResponse(ctx)
 }
 
 const (

@@ -11,6 +11,7 @@ type AuthHttpApi interface {
 	SignIn(ctx *fiber.Ctx) error
 	SignUp(ctx *fiber.Ctx) error
 	SignOut(ctx *fiber.Ctx) error
+	RefreshToken(ctx *fiber.Ctx) error
 }
 
 type authHttpApi struct {
@@ -122,5 +123,41 @@ func (a authHttpApi) SignOut(ctx *fiber.Ctx) error {
 
 	return response.New(response.CODE_SUCCESS).
 		SetMessage("로그아웃 되었습니다.").
+		Ok(ctx)
+}
+
+// @summary 토큰 갱신
+// @description JWT 토큰 갱신 처리, RefreshToken을 사용하여 AccessToken 재발급
+// @securitydefinitions.apikey Authentication
+// @in header
+// @accept json
+// @produce json
+// @router /auth/refresh [post]
+func (a authHttpApi) RefreshToken(ctx *fiber.Ctx) error {
+	accessTk, err := a.jwtClient.Parser.ExtractTokenMetadata(ctx)
+	if err != nil {
+		return response.New(response.CODE_INVALID_JWT).
+			SetErrors(err).
+			Error(ctx)
+	}
+
+	refreshTk, err := a.jwtClient.Parser.ExtractRefreshTokenMetadata(ctx)
+	if err != nil {
+		return response.New(response.CODE_INVALID_JWT).SetErrors(err).Error(ctx)
+	}
+
+	resp := a.authUseCase.RefreshToken(&auth.RefreshTokenRequest{
+		AccessToken:  accessTk,
+		RefreshToken: refreshTk,
+	})
+	if !resp.Success {
+		return response.New(response.CODE_FAIL_REFRESH_TOKEN).
+			SetMessage(resp.Message).
+			SetErrors(resp.Error).
+			Error(ctx)
+	}
+
+	return response.New(response.CODE_SUCCESS).
+		SetData(resp.Token).
 		Ok(ctx)
 }

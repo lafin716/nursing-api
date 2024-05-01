@@ -58,12 +58,26 @@ func (entity *ResponseEntity) SetErrors(errs interface{}) *ResponseEntity {
 	return entity
 }
 
+// 정상 응답
 func (entity *ResponseEntity) Ok(c *fiber.Ctx) error {
 	resolveMessage(entity)
 	return c.Status(fiber.StatusOK).JSON(entity)
 }
 
+// 로직 에러
 func (entity *ResponseEntity) Error(c *fiber.Ctx) error {
+	resolveMessage(entity)
+	return c.Status(fiber.StatusOK).JSON(entity)
+}
+
+// 커스텀응답코드
+func (entity *ResponseEntity) CustomResponse(c *fiber.Ctx) error {
+	resolveMessage(entity)
+	return c.Status(entity.Code).JSON(entity)
+}
+
+// 시스템에러
+func (entity *ResponseEntity) SysError(c *fiber.Ctx) error {
 	resolveMessage(entity)
 	return c.Status(fiber.StatusInternalServerError).JSON(entity)
 }

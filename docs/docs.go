@@ -18,6 +18,19 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/refresh": {
+            "post": {
+                "description": "JWT 토큰 갱신 처리, RefreshToken을 사용하여 AccessToken 재발급",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "토큰 갱신",
+                "responses": {}
+            }
+        },
         "/auth/signin": {
             "post": {
                 "description": "회원정보로 인증을 수행하는 엔드포인트. 로그인 성공 시 JWT 토큰 반환.",
