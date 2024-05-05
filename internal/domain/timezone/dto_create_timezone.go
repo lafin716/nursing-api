@@ -12,26 +12,3 @@ type CreateTimeZoneRequest struct {
 	Hour     string    `json:"hour" validate:"required,max=2"`
 	Minute   string    `json:"minute" validate:"required,max=2"`
 }
-
-type CreateTimeZoneResponse struct {
-	Success bool
-	Message string
-	Data    *TimeZone
-	Error   error
-}
-
-func OkCreateTimeZone(data *TimeZone) *CreateTimeZoneResponse {
-	return &CreateTimeZoneResponse{
-		Success: true,
-		Message: "정상적으로 생성되었습니다",
-		Data:    data,
-	}
-}
-
-func FailCreateTimeZone(message string, err error) *CreateTimeZoneResponse {
-	return &CreateTimeZoneResponse{
-		Success: false,
-		Message: message,
-		Error:   err,
-	}
-}

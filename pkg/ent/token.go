@@ -28,8 +28,6 @@ type Token struct {
 	AccessTokenExpires time.Time `json:"access_token_expires,omitempty"`
 	// RefreshTokenExpires holds the value of the "refresh_token_expires" field.
 	RefreshTokenExpires time.Time `json:"refresh_token_expires,omitempty"`
-	// AutoLogin holds the value of the "auto_login" field.
-	AutoLogin bool `json:"auto_login,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -42,8 +40,6 @@ func (*Token) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case token.FieldAutoLogin:
-			values[i] = new(sql.NullBool)
 		case token.FieldID:
 			values[i] = new(sql.NullInt64)
 		case token.FieldAccessToken, token.FieldRefreshToken:
@@ -102,12 +98,6 @@ func (t *Token) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field refresh_token_expires", values[i])
 			} else if value.Valid {
 				t.RefreshTokenExpires = value.Time
-			}
-		case token.FieldAutoLogin:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field auto_login", values[i])
-			} else if value.Valid {
-				t.AutoLogin = value.Bool
 			}
 		case token.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -171,9 +161,6 @@ func (t *Token) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("refresh_token_expires=")
 	builder.WriteString(t.RefreshTokenExpires.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("auto_login=")
-	builder.WriteString(fmt.Sprintf("%v", t.AutoLogin))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(t.CreatedAt.Format(time.ANSIC))

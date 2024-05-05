@@ -24,24 +24,3 @@ type AddMedicineRequest struct {
 	TakeUnit   string    `json:"take_unit"`
 	Memo       string    `json:"memo"`
 }
-
-type AddPlanResponse struct {
-	Success bool
-	Message string
-	Error   error
-}
-
-func OkAddPlan() *AddPlanResponse {
-	return &AddPlanResponse{
-		Success: true,
-		Message: "복용계획이 정상 추가되었습니다",
-	}
-}
-
-func FailAddPlan(message string, err error) *AddPlanResponse {
-	return &AddPlanResponse{
-		Success: false,
-		Message: message,
-		Error:   err,
-	}
-}

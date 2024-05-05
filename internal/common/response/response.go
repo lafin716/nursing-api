@@ -19,15 +19,21 @@ func resolveMessage(entity *ResponseEntity) {
 	}
 
 	if len(entity.MessageParams) > 0 {
-		entity.Message = GetMessage(entity.Code, entity.MessageParams...)
+		entity.Message = GetMessage(ResultCode(entity.Code), entity.MessageParams...)
 	}
 
 	if strings.TrimSpace(entity.Message) == "" {
-		entity.Message = GetMessage(entity.Code)
+		entity.Message = GetMessage(ResultCode(entity.Code))
 	}
 }
 
-func New(code int) *ResponseEntity {
+func New(code ResultCode) *ResponseEntity {
+	return &ResponseEntity{
+		Code: int(code),
+	}
+}
+
+func NewWithCode(code int) *ResponseEntity {
 	return &ResponseEntity{
 		Code: code,
 	}

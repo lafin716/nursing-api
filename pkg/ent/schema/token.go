@@ -18,7 +18,6 @@ func (Token) Fields() []ent.Field {
 		field.String("refresh_token").SchemaType(varchar(200)),
 		field.Time("access_token_expires"),
 		field.Time("refresh_token_expires"),
-		field.Bool("auto_login"),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Optional(),
 	}

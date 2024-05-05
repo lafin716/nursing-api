@@ -2,12 +2,14 @@ package medicine
 
 import (
 	"net/url"
+	"nursing_api/internal/common/dto"
+	"nursing_api/internal/common/response"
 	medicine_api "nursing_api/pkg/api/medicine"
 	"strings"
 )
 
 type UseCase interface {
-	Search(pillName string) *SearchPillResponse
+	Search(pillName string) dto.BaseResponse[[]*Medicine]
 }
 
 type medicineService struct {
@@ -25,44 +27,51 @@ func NewService(
 	}
 }
 
-func (m medicineService) Search(pillName string) *SearchPillResponse {
+func (m medicineService) Search(pillName string) dto.BaseResponse[[]*Medicine] {
 	// DB에 이미 존재하는 경우 API 통신하지않고 바로 반환
 	decoded, err := url.QueryUnescape(pillName)
 	decoded = strings.ReplaceAll(decoded, "\b", "")
 	if err != nil {
-		return FailSearchPill("검색어가 유효하지 않습니다.", err)
+		return dto.Fail[[]*Medicine](response.CODE_NOT_AVAILABLE_MEDICINE_KEY, err)
 	}
 
 	medicines, _ := m.medicineRepo.GetPillsByNames(decoded)
 	if medicines != nil {
-		return OkSearchPill(medicines)
+		return dto.Ok[[]*Medicine](response.CODE_SUCCESS, &medicines)
 	}
 
 	// 의약품 API를 통해 가져온다
 	resp := m.medicineApi.Summary().RetrievePill(pillName)
 	if resp == nil {
-		return FailSearchPill("의약품 정보를 찾을 수 없습니다.", nil)
+		return dto.Fail[[]*Medicine](response.CODE_NOT_FOUND_MEDICINE, err)
 	}
 	summaryPills := m.fetchSummary(pillName)
 	if summaryPills == nil || len(summaryPills) == 0 {
-		return FailSearchPill("의약품 검색 결과: 0건", nil)
+		return dto.Fail[[]*Medicine](response.CODE_SEARCH_MEDICINE_ZERO, err)
 	}
 
 	// API 결과를 DB에 저장
 	okCount, err := m.medicineRepo.SavePills(summaryPills)
 	if err != nil {
-		return FailSearchPill("의약품 검색 결과 저장 실패", err)
+		return dto.Fail[[]*Medicine](response.CODE_FAIL_SAVE_MEDICINE_DATA, err)
 	}
 	if okCount == 0 {
-		return FailSearchPill("의약품 검색 결과 저장: 0건", nil)
+		return dto.Fail[[]*Medicine](response.CODE_FAIL_SAVE_MEDICINE_ZERO, nil)
 	}
 
-	apiLimit := 10
-	if len(summaryPills) < apiLimit {
-		apiLimit = len(summaryPills)
+	// 저장된 데이터를 다시 조회하여 반환
+	medicines, _ = m.medicineRepo.GetPillsByNames(decoded)
+	if medicines != nil {
+		return dto.Ok[[]*Medicine](response.CODE_SUCCESS, &medicines)
+	} else {
+		// 저장된 데이터가 없을 경우 API 결과를 반환
+		apiLimit := 10
+		if len(summaryPills) < apiLimit {
+			apiLimit = len(summaryPills)
+		}
+		limitedPills := summaryPills[:apiLimit]
+		return dto.Ok[[]*Medicine](response.CODE_SUCCESS, &limitedPills)
 	}
-
-	return OkSearchPill(summaryPills[:apiLimit])
 }
 
 // 의약품 개요정보 조회

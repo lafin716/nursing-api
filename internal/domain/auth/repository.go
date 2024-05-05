@@ -34,7 +34,6 @@ func (u authRepository) SaveToken(userId uuid.UUID, token *Token) (*Token, error
 		SetAccessTokenExpires(time.Unix(token.AccessTokenExpires, 0)).
 		SetRefreshToken(token.RefreshToken).
 		SetRefreshTokenExpires(time.Unix(token.RefreshTokenExpires, 0)).
-		SetAutoLogin(token.AutoLogin).
 		Save(u.ctx)
 	if err != nil {
 		return nil, err
@@ -76,7 +75,6 @@ func toTokenModel(entity *ent.Token) *Token {
 		AccessTokenExpires:  entity.AccessTokenExpires.Unix(),
 		RefreshToken:        entity.RefreshToken,
 		RefreshTokenExpires: entity.RefreshTokenExpires.Unix(),
-		AutoLogin:           entity.AutoLogin,
 	}
 }
 
@@ -86,6 +84,5 @@ func toTokenEntity(model *Token) *ent.Token {
 		AccessTokenExpires:  time.Unix(model.AccessTokenExpires, 0),
 		RefreshToken:        model.RefreshToken,
 		RefreshTokenExpires: time.Unix(model.RefreshTokenExpires, 0),
-		AutoLogin:           model.AutoLogin,
 	}
 }

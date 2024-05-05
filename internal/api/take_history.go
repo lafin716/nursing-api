@@ -2,7 +2,6 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"nursing_api/internal/common/response"
 	takehistory "nursing_api/internal/domain/take_history"
 	"nursing_api/pkg/jwt"
 )
@@ -43,11 +42,7 @@ func (t takeHistoryHttpApi) GetList(ctx *fiber.Ctx) error {
 	req.UserId = parser.GetUserId()
 
 	resp := t.service.GetList(req)
-	if !resp.Success {
-		return response.New(response.CODE_NO_DATA).SetErrors(resp.Error).Error(ctx)
-	}
-
-	return OkWithMessage(resp.Message, resp.Data, ctx)
+	return ResolveResponse(resp, ctx)
 }
 
 // @summary 복용내역 상세

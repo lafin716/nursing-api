@@ -2,9 +2,6 @@ basePath: /api/v1
 definitions:
   auth.SignInRequest:
     properties:
-      auto_login:
-        example: false
-        type: boolean
       email:
         example: lafin716@gmail.com
         maxLength: 255
@@ -237,7 +234,6 @@ definitions:
     - name
     - use_alert
     type: object
-host: localhost:8080
 info:
   contact:
     email: lafin716@gmail.com

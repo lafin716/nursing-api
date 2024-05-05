@@ -9,7 +9,6 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
     "basePath": "/api/v1",
     "paths": {
         "/auth/refresh": {
@@ -690,10 +689,6 @@
                 "password"
             ],
             "properties": {
-                "auto_login": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "email": {
                     "type": "string",
                     "maxLength": 255,

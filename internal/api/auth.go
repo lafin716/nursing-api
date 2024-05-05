@@ -52,16 +52,7 @@ func (a authHttpApi) SignIn(ctx *fiber.Ctx) error {
 	}
 
 	result := a.authUseCase.SignIn(req)
-	if !result.Success {
-		return response.New(response.CODE_FAIL_SIGN_UP).
-			SetMessage(result.Message).
-			SetErrors(result.Error).
-			Error(ctx)
-	}
-
-	return response.New(response.CODE_SUCCESS).
-		SetData(result.Token).
-		Ok(ctx)
+	return ResolveResponse(result, ctx)
 }
 
 // @summary 회원가입
@@ -87,16 +78,7 @@ func (a authHttpApi) SignUp(ctx *fiber.Ctx) error {
 	}
 
 	result := a.authUseCase.SignUp(req)
-	if !result.Success {
-		return response.New(response.CODE_FAIL_SIGN_UP).
-			SetMessage(result.Message).
-			SetErrors(result.Error).
-			Error(ctx)
-	}
-
-	return response.New(response.CODE_SUCCESS).
-		SetData(result.Token).
-		Ok(ctx)
+	return ResolveResponse(result, ctx)
 }
 
 // @summary 로그아웃
@@ -122,7 +104,6 @@ func (a authHttpApi) SignOut(ctx *fiber.Ctx) error {
 	}
 
 	return response.New(response.CODE_SUCCESS).
-		SetMessage("로그아웃 되었습니다.").
 		Ok(ctx)
 }
 
@@ -143,21 +124,15 @@ func (a authHttpApi) RefreshToken(ctx *fiber.Ctx) error {
 
 	refreshTk, err := a.jwtClient.Parser.ExtractRefreshTokenMetadata(ctx)
 	if err != nil {
-		return response.New(response.CODE_INVALID_JWT).SetErrors(err).Error(ctx)
+		return response.New(response.CODE_INVALID_JWT).
+			SetErrors(err).
+			Error(ctx)
 	}
 
 	resp := a.authUseCase.RefreshToken(&auth.RefreshTokenRequest{
 		AccessToken:  accessTk,
 		RefreshToken: refreshTk,
 	})
-	if !resp.Success {
-		return response.New(response.CODE_FAIL_REFRESH_TOKEN).
-			SetMessage(resp.Message).
-			SetErrors(resp.Error).
-			Error(ctx)
-	}
 
-	return response.New(response.CODE_SUCCESS).
-		SetData(resp.Token).
-		Ok(ctx)
+	return ResolveResponse(resp, ctx)
 }

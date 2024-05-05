@@ -24,7 +24,7 @@ func GlobalErrorHandler(c *fiber.Ctx, err error) error {
 		msg = codeMessages[INTERNAL_SERVER_ERROR]
 	}
 
-	return response.New(code).
+	return response.NewWithCode(code).
 		SetMessage(msg).
 		SetErrors(err).
 		CustomResponse(c)
@@ -33,13 +33,13 @@ func GlobalErrorHandler(c *fiber.Ctx, err error) error {
 const (
 	NOTFOUND              = HTTP_ERROR_CODE(404)
 	BAD_REQUEST           = HTTP_ERROR_CODE(400)
-	UNAUTHRIZE            = HTTP_ERROR_CODE(401)
+	UNAUTHORIZED          = HTTP_ERROR_CODE(401)
 	INTERNAL_SERVER_ERROR = HTTP_ERROR_CODE(500)
 )
 
 var codeMessages = map[HTTP_ERROR_CODE]string{
 	NOTFOUND:              "존재하지 않는 엔드포인트입니다.",
 	BAD_REQUEST:           "올바른 요청이 아닙니다.",
-	UNAUTHRIZE:            "권한이 없습니다.",
+	UNAUTHORIZED:          "권한이 없습니다.",
 	INTERNAL_SERVER_ERROR: "오류가 발생하였습니다",
 }

@@ -80,11 +80,6 @@ func RefreshTokenExpires(v time.Time) predicate.Token {
 	return predicate.Token(sql.FieldEQ(FieldRefreshTokenExpires, v))
 }
 
-// AutoLogin applies equality check predicate on the "auto_login" field. It's identical to AutoLoginEQ.
-func AutoLogin(v bool) predicate.Token {
-	return predicate.Token(sql.FieldEQ(FieldAutoLogin, v))
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Token {
 	return predicate.Token(sql.FieldEQ(FieldCreatedAt, v))
@@ -343,16 +338,6 @@ func RefreshTokenExpiresLT(v time.Time) predicate.Token {
 // RefreshTokenExpiresLTE applies the LTE predicate on the "refresh_token_expires" field.
 func RefreshTokenExpiresLTE(v time.Time) predicate.Token {
 	return predicate.Token(sql.FieldLTE(FieldRefreshTokenExpires, v))
-}
-
-// AutoLoginEQ applies the EQ predicate on the "auto_login" field.
-func AutoLoginEQ(v bool) predicate.Token {
-	return predicate.Token(sql.FieldEQ(FieldAutoLogin, v))
-}
-
-// AutoLoginNEQ applies the NEQ predicate on the "auto_login" field.
-func AutoLoginNEQ(v bool) predicate.Token {
-	return predicate.Token(sql.FieldNEQ(FieldAutoLogin, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

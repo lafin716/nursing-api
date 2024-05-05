@@ -12,7 +12,6 @@ var Set = wire.NewSet(
 	NewUserHttpApi,
 	NewAuthHttpApi,
 	NewMedicineHttpApi,
-	NewErrorHttpApi,
 	NewPrescriptionApi,
 	NewTakeHistoryHttpApi,
 	NewPlanHttpApi,

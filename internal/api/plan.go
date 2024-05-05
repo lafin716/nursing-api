@@ -2,7 +2,6 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"nursing_api/internal/common/response"
 	"nursing_api/internal/domain/plan"
 	"nursing_api/pkg/jwt"
 )
@@ -57,11 +56,7 @@ func (p planHttpApi) Add(ctx *fiber.Ctx) error {
 	}
 	req.UserId = userId
 	resp := p.service.Add(req)
-	if !resp.Success {
-		return Fail(resp.Message, resp.Error, ctx)
-	}
-
-	return Ok(nil, ctx)
+	return ResolveResponse(resp, ctx)
 }
 
 // @summary 복약 계획 삭제
@@ -78,16 +73,7 @@ func (p planHttpApi) Delete(ctx *fiber.Ctx) error {
 	}
 
 	resp := p.service.Delete(req)
-	if !resp.Success {
-		return response.New(response.CODE_FAIL_DELETE_PLAN).
-			SetMessage(resp.Message).
-			SetErrors(resp.Error).
-			Error(ctx)
-	}
-
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		Ok(ctx)
+	return ResolveResponse(resp, ctx)
 }
 
 // @summary 날짜별 복약 계획
@@ -106,11 +92,7 @@ func (p planHttpApi) GetByDate(ctx *fiber.Ctx) error {
 
 	req.UserId = parser.GetUserId()
 	resp := p.service.GetByDate(req)
-	if !resp.Success {
-		return Fail(resp.Message, resp.Error, ctx)
-	}
-
-	return Ok(resp.Data, ctx)
+	return ResolveResponse(resp, ctx)
 }
 
 // 복용계획개요
@@ -134,11 +116,7 @@ func (p planHttpApi) Take(ctx *fiber.Ctx) error {
 
 	req.UserId = parser.GetUserId()
 	resp := p.service.Take(req)
-	if !resp.Success {
-		return Fail(resp.Message, resp.Error.Error(), ctx)
-	}
-
-	return OkWithMessage(resp.Message, nil, ctx)
+	return ResolveResponse(resp, ctx)
 }
 
 // @summary 개별 의약품 복용처리
@@ -156,11 +134,7 @@ func (p planHttpApi) PillToggle(ctx *fiber.Ctx) error {
 
 	req.UserId = parser.GetUserId()
 	resp := p.service.PillToggle(req)
-	if !resp.Success {
-		return Fail(resp.Message, resp.Error.Error(), ctx)
-	}
-
-	return OkWithMessage(resp.Message, nil, ctx)
+	return ResolveResponse(resp, ctx)
 }
 
 // @summary 메모 업데이트
@@ -178,9 +152,5 @@ func (p planHttpApi) UpdateMemo(ctx *fiber.Ctx) error {
 
 	req.UserId = parser.GetUserId()
 	resp := p.service.UpdateMemo(req)
-	if !resp.Success {
-		return Fail(resp.Message, resp.Error.Error(), ctx)
-	}
-
-	return OkWithMessage(resp.Message, nil, ctx)
+	return ResolveResponse(resp, ctx)
 }

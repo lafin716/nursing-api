@@ -41,14 +41,5 @@ func (u *medicineHttpApi) Search(ctx *fiber.Ctx) error {
 	}
 
 	result := u.usecase.Search(pillName)
-	if !result.Success {
-		return response.New(response.CODE_ERROR).
-			SetMessage(result.Message).
-			SetErrors(result.Error).
-			Error(ctx)
-	}
-
-	return response.New(response.CODE_SUCCESS).
-		SetData(result.Pills).
-		Ok(ctx)
+	return ResolveResponse(result, ctx)
 }

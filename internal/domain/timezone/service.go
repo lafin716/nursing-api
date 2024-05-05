@@ -2,14 +2,16 @@ package timezone
 
 import (
 	"github.com/google/uuid"
+	"nursing_api/internal/common/dto"
+	"nursing_api/internal/common/response"
 	"strings"
 )
 
 type UseCase interface {
-	GetList(userId uuid.UUID) ([]*TimeZone, error)
-	Create(req *CreateTimeZoneRequest) *CreateTimeZoneResponse
-	Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneResponse
-	Delete(req *DeleteTimeZoneRequest) *DeleteTimeZoneResponse
+	GetList(userId uuid.UUID) dto.BaseResponse[[]*TimeZone]
+	Create(req *CreateTimeZoneRequest) dto.BaseResponse[TimeZone]
+	Update(req *UpdateTimeZoneRequest) dto.BaseResponse[TimeZone]
+	Delete(req *DeleteTimeZoneRequest) dto.BaseResponse[bool]
 }
 
 type service struct {
@@ -24,16 +26,16 @@ func NewService(
 	}
 }
 
-func (t service) GetList(userId uuid.UUID) ([]*TimeZone, error) {
+func (t service) GetList(userId uuid.UUID) dto.BaseResponse[[]*TimeZone] {
 	timezones, err := t.repo.GetTimeZones(userId)
 	if err != nil {
-		return nil, err
+		return dto.Fail[[]*TimeZone](response.CODE_FAIL_GET_LIST_TAKE_TIMEZONE, err)
 	}
 
-	return timezones, nil
+	return dto.Ok[[]*TimeZone](response.CODE_SUCCESS, &timezones)
 }
 
-func (t service) Create(req *CreateTimeZoneRequest) *CreateTimeZoneResponse {
+func (t service) Create(req *CreateTimeZoneRequest) dto.BaseResponse[TimeZone] {
 	duplicate, _ := t.repo.GetDuplicate(
 		req.UserId,
 		req.Name,
@@ -43,13 +45,13 @@ func (t service) Create(req *CreateTimeZoneRequest) *CreateTimeZoneResponse {
 	)
 
 	if duplicate != nil {
-		duplMsg := "중복되는 시간대가 존재합니다."
+		errCode := response.CODE_ALREADY_EXIST_TIMEZONE_NAME
 		if duplicate.Name == req.Name {
-			duplMsg = "이미 존재하는 이름입니다."
+			errCode = response.CODE_ALREADY_EXIST_TIMEZONE_NAME
 		} else if duplicate.Hour == req.Hour && duplicate.Minute == req.Minute {
-			duplMsg = "이미 등록된 시간입니다."
+			errCode = response.CODE_ALREADY_EXIST_TIMEZONE_HOUR_MINUTE
 		}
-		return FailCreateTimeZone(duplMsg, nil)
+		return dto.Fail[TimeZone](errCode, nil)
 	}
 
 	newTimeZone := &TimeZone{
@@ -62,16 +64,16 @@ func (t service) Create(req *CreateTimeZoneRequest) *CreateTimeZoneResponse {
 
 	timezone, err := t.repo.CreateTimeZone(newTimeZone)
 	if err != nil {
-		return FailCreateTimeZone("시간대 생성 중 오류가 발생하였습니다.", err)
+		return dto.Fail[TimeZone](response.CODE_FAIL_DURING_CREATE_TIMEZONE, err)
 	}
 
-	return OkCreateTimeZone(timezone)
+	return dto.Ok[TimeZone](response.CODE_SUCCESS, timezone)
 }
 
-func (t service) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneResponse {
+func (t service) Update(req *UpdateTimeZoneRequest) dto.BaseResponse[TimeZone] {
 	timezone, err := t.repo.GetTimeZone(req.ID, req.UserId)
 	if err != nil {
-		return FailUpdateTimeZone("시간대 정보를 찾을 수 없습니다.", err)
+		return dto.Fail[TimeZone](response.CODE_NOT_FOUND_TIMEZONE, err)
 	}
 
 	duplicate, _ := t.repo.GetDuplicate(
@@ -83,13 +85,13 @@ func (t service) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneResponse {
 	)
 
 	if duplicate != nil && timezone.ID != duplicate.ID {
-		msg := "중복되는 시간대가 존재합니다."
+		errCode := response.CODE_ALREADY_EXIST_TIMEZONE_NAME
 		if duplicate.Name == req.Name {
-			msg = "이미 존재하는 이름입니다."
+			errCode = response.CODE_ALREADY_EXIST_TIMEZONE_NAME
 		} else if duplicate.Hour == req.Hour && duplicate.Minute == req.Minute {
-			msg = "이미 등록된 시간입니다."
+			errCode = response.CODE_ALREADY_EXIST_TIMEZONE_HOUR_MINUTE
 		}
-		return FailUpdateTimeZone(msg, nil)
+		return dto.Fail[TimeZone](errCode, nil)
 	}
 
 	// 값이 있는 경우에만 도메인 값을 변경한다.
@@ -109,22 +111,22 @@ func (t service) Update(req *UpdateTimeZoneRequest) *UpdateTimeZoneResponse {
 	// 업데이트 처리
 	updated, err := t.repo.UpdateTimeZone(timezone)
 	if !updated || err != nil {
-		return FailUpdateTimeZone("시간대 정보를 업데이트하는 중 오류가 발생하였습니다.", err)
+		return dto.Fail[TimeZone](response.CODE_FAIL_DURING_UPDATE_TIMEZONE, err)
 	}
 
-	return OkUpdateTimeZone(timezone)
+	return dto.Ok[TimeZone](response.CODE_SUCCESS, timezone)
 }
 
-func (t service) Delete(req *DeleteTimeZoneRequest) *DeleteTimeZoneResponse {
+func (t service) Delete(req *DeleteTimeZoneRequest) dto.BaseResponse[bool] {
 	_, err := t.repo.GetTimeZone(req.ID, req.UserId)
 	if err != nil {
-		return FailDeleteTimeZone("시간대 정보를 찾을 수 없습니다.", err)
+		return dto.Fail[bool](response.CODE_NOT_FOUND_TIMEZONE, err)
 	}
 
 	deleted, err := t.repo.DeleteTimeZone(req.ID, req.UserId)
-	if deleted || err != nil {
-		return FailDeleteTimeZone("시간대 삭제 중 오류가 발생하였습니다", err)
+	if err != nil {
+		return dto.Fail[bool](response.CODE_FAIL_DURING_DELETE_TIMEZONE, err)
 	}
 
-	return OkDeleteTimeZone()
+	return dto.Ok[bool](response.CODE_SUCCESS, &deleted)
 }

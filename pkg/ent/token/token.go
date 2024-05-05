@@ -23,8 +23,6 @@ const (
 	FieldAccessTokenExpires = "access_token_expires"
 	// FieldRefreshTokenExpires holds the string denoting the refresh_token_expires field in the database.
 	FieldRefreshTokenExpires = "refresh_token_expires"
-	// FieldAutoLogin holds the string denoting the auto_login field in the database.
-	FieldAutoLogin = "auto_login"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -41,7 +39,6 @@ var Columns = []string{
 	FieldRefreshToken,
 	FieldAccessTokenExpires,
 	FieldRefreshTokenExpires,
-	FieldAutoLogin,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -92,11 +89,6 @@ func ByAccessTokenExpires(opts ...sql.OrderTermOption) OrderOption {
 // ByRefreshTokenExpires orders the results by the refresh_token_expires field.
 func ByRefreshTokenExpires(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRefreshTokenExpires, opts...).ToFunc()
-}
-
-// ByAutoLogin orders the results by the auto_login field.
-func ByAutoLogin(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAutoLogin, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

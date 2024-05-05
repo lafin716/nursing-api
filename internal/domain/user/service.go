@@ -3,16 +3,18 @@ package user
 import (
 	"github.com/google/uuid"
 	"log"
+	"nursing_api/internal/common/dto"
+	"nursing_api/internal/common/response"
 	"nursing_api/internal/common/utils"
 	"strings"
 )
 
 type UseCase interface {
-	RegisterUser(req *RegisterRequest) *RegisterResponse
-	VerifyUser(req *LoginRequest) *LoginResponse
-	GetUser(userId uuid.UUID) *GetUserResponse
+	GetUser(userId uuid.UUID) dto.BaseResponse[User]
+	RegisterUser(req *RegisterRequest) dto.BaseResponse[User]
+	VerifyUser(req *LoginRequest) dto.BaseResponse[User]
 	Leave(userId uuid.UUID) (bool, error)
-	CheckDuplicatedEmail(req *CheckEmailRequest) *CheckEmailResponse
+	CheckDuplicatedEmail(req *CheckEmailRequest) dto.BaseResponse[any]
 }
 
 type service struct {
@@ -25,22 +27,22 @@ func NewService(userRepo Repository) UseCase {
 	}
 }
 
-func (u service) GetUser(userId uuid.UUID) *GetUserResponse {
+func (u service) GetUser(userId uuid.UUID) dto.BaseResponse[User] {
 	foundUser, err := u.userRepo.GetUserById(userId)
 	if err != nil {
-		return FailGetUserResponse("유저정보를 찾을 수 없습니다.", err)
+		return dto.Fail[User](response.CODE_USER_NOTFOUND, err)
 	}
 
-	return OkGetUserResponse(foundUser)
+	return dto.Ok[User](response.CODE_SUCCESS, foundUser)
 }
 
-func (u service) RegisterUser(req *RegisterRequest) *RegisterResponse {
+func (u service) RegisterUser(req *RegisterRequest) dto.BaseResponse[User] {
 	count, err := u.userRepo.CountUserByEmail(req.Email)
 	if err != nil {
-		return FailRegisterUser("회원 정보 조회 중 오류가 발생하였습니다", err)
+		return dto.Fail[User](response.CODE_OCCUR_ERROR_DURING_GET_USER, err)
 	}
 	if count > 0 {
-		return FailRegisterUser("이미 등록된 회원입니다.", nil)
+		return dto.Fail[User](response.CODE_DUPLICATE_EMAIL, err)
 	}
 
 	newUser := &User{
@@ -50,40 +52,40 @@ func (u service) RegisterUser(req *RegisterRequest) *RegisterResponse {
 	}
 	savedUser, err := u.userRepo.CreateUser(newUser)
 	if err != nil {
-		return FailRegisterUser("회원 정보 등록 중 오류가 발생하였습니다.", err)
+		return dto.Fail[User](response.CODE_OCCUR_ERROR_DURING_SAVE_USER, err)
 	}
 
-	return OkRegisterUser(savedUser)
+	return dto.Ok[User](response.CODE_SUCCESS, savedUser)
 }
 
-func (u service) VerifyUser(req *LoginRequest) *LoginResponse {
+func (u service) VerifyUser(req *LoginRequest) dto.BaseResponse[User] {
 	foundUser, err := u.userRepo.GetUserByEmail(req.Email)
 	if err != nil {
-		return FailLoginUser("일치하는 정보를 찾을 수 없습니다.", err)
+		return dto.Fail[User](response.CODE_USER_NOTFOUND, err)
 	}
 
 	if !utils.ComparePassword(foundUser.PasswordHash, req.Password) {
-		return FailLoginUser("일치하는 정보를 찾을 수 없습니다. 이메일 혹은 비밀번호를 다시 확인해주세요.", err)
+		return dto.Fail[User](response.CODE_NOT_MATCHING_SIGN_IN_INFORMATION, err)
 	}
 
 	foundUser.PasswordHash = ""
-	return OkLoginUser(foundUser)
+	return dto.Ok[User](response.CODE_SUCCESS, foundUser)
 }
 
 func (u service) Leave(userId uuid.UUID) (bool, error) {
 	return u.userRepo.Delete(userId)
 }
 
-func (u service) CheckDuplicatedEmail(req *CheckEmailRequest) *CheckEmailResponse {
+func (u service) CheckDuplicatedEmail(req *CheckEmailRequest) dto.BaseResponse[any] {
 	foundUser, err := u.userRepo.GetUserByEmail(req.Email)
 	if foundUser != nil {
-		return FailCheckEmail("이미 등록된 이메일입니다.", nil)
+		return dto.Fail[any](response.CODE_DUPLICATE_EMAIL, err)
 	}
 
 	if err != nil && !strings.Contains(err.Error(), "user not found") {
 		log.Printf("err : %v", err)
-		return FailCheckEmail("중복 확인 중 오류가 발생하였습니다.", err)
+		return dto.Fail[any](response.CODE_OCCUR_ERROR_DURING_CHECK_EMAIL, err)
 	}
 
-	return OkCheckEmail()
+	return dto.Ok[any](response.CODE_AVAILABLE_EMAIL, nil)
 }

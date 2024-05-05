@@ -3,6 +3,8 @@ package auth
 import (
 	"errors"
 	"github.com/google/uuid"
+	"nursing_api/internal/common/dto"
+	"nursing_api/internal/common/response"
 	"nursing_api/internal/domain/user"
 	"nursing_api/pkg/jwt"
 )
@@ -14,10 +16,10 @@ type authService struct {
 }
 
 type UseCase interface {
-	SignIn(req *SignInRequest) *SignInResponse
-	SignUp(req *SignUpRequest) *SignUpResponse
+	SignIn(req *SignInRequest) dto.BaseResponse[Token]
+	SignUp(req *SignUpRequest) dto.BaseResponse[Token]
 	SignOut(userId uuid.UUID) error
-	RefreshToken(req *RefreshTokenRequest) *RefreshTokenResponse
+	RefreshToken(req *RefreshTokenRequest) dto.BaseResponse[Token]
 }
 
 func NewService(
@@ -32,18 +34,18 @@ func NewService(
 	}
 }
 
-func (a authService) SignIn(req *SignInRequest) *SignInResponse {
+func (a authService) SignIn(req *SignInRequest) dto.BaseResponse[Token] {
 	loginDto := &user.LoginRequest{
 		Email:    req.Email,
 		Password: req.Password,
 	}
 
 	// 로그인 처리
-	response := a.userUseCase.VerifyUser(loginDto)
-	if !response.Success {
-		return FailSignIn(response.Message, response.Error)
+	resp := a.userUseCase.VerifyUser(loginDto)
+	if !resp.IsSuccess() {
+		return dto.Fail[Token](response.ResultCode(resp.GetCode()), *resp.GetError())
 	}
-	userId := response.User.ID
+	userId := resp.GetData().ID
 
 	// 토큰 생성
 	tokenRequest := &jwt.TokenRequest{
@@ -52,7 +54,7 @@ func (a authService) SignIn(req *SignInRequest) *SignInResponse {
 	}
 	jwtToken, err := a.jwtClient.Generator.GenerateNewTokens(tokenRequest)
 	if err != nil {
-		return FailSignIn("토큰 생성에 실패하였습니다.", err)
+		return dto.Fail[Token](response.CODE_FAIL_CREATE_TOKEN, err)
 	}
 
 	// 토큰 저장
@@ -61,42 +63,42 @@ func (a authService) SignIn(req *SignInRequest) *SignInResponse {
 		AccessTokenExpires:  jwtToken.AccessTokenExpires,
 		RefreshToken:        jwtToken.RefreshToken,
 		RefreshTokenExpires: jwtToken.RefreshTokenExpires,
-		AutoLogin:           req.AutoLogin,
 	}
 	a.authRepository.DeleteToken(userId)
 	savedToken, err := a.authRepository.SaveToken(userId, newToken)
 	if err != nil {
-		return FailSignIn("토큰 저장에 실패하였습니다.", err)
+		return dto.Fail[Token](response.CODE_FAIL_SAVE_TOKEN, err)
 	}
 
-	return OkSignIn(savedToken)
+	return dto.Ok[Token](response.CODE_SUCCESS, savedToken)
 }
 
-func (a authService) SignUp(req *SignUpRequest) *SignUpResponse {
+func (a authService) SignUp(req *SignUpRequest) dto.BaseResponse[Token] {
 	registerDto := &user.RegisterRequest{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: req.Password,
 	}
-	response := a.userUseCase.RegisterUser(registerDto)
-	if !response.Success {
-		return FailSignUp(response.Message, response.Error)
+	resp := a.userUseCase.RegisterUser(registerDto)
+	if !resp.IsSuccess() {
+		return dto.Fail[Token](response.ResultCode(resp.GetCode()), *resp.GetError())
 	}
 
+	foundUser := resp.GetData()
 	tokenRequest := &jwt.TokenRequest{
-		ID:          response.User.ID.String(),
+		ID:          foundUser.ID.String(),
 		Credentials: []string{},
 	}
 	jwtToken, err := a.jwtClient.Generator.GenerateNewTokens(tokenRequest)
 	if err != nil {
-		return FailSignUp("토큰 생성에 실패하였습니다.", err)
+		return dto.Fail[Token](response.CODE_FAIL_CREATE_TOKEN, err)
 	}
 
 	token := &Token{
 		AccessToken:  jwtToken.AccessToken,
 		RefreshToken: jwtToken.RefreshToken,
 	}
-	return OkSignUp(token)
+	return dto.Ok[Token](response.CODE_FAIL_SAVE_TOKEN, token)
 }
 
 func (a authService) SignOut(userId uuid.UUID) error {
@@ -112,7 +114,7 @@ func (a authService) SignOut(userId uuid.UUID) error {
 	return nil
 }
 
-func (a authService) RefreshToken(req *RefreshTokenRequest) *RefreshTokenResponse {
+func (a authService) RefreshToken(req *RefreshTokenRequest) dto.BaseResponse[Token] {
 	userId := req.AccessToken.UserID
 	// 토큰 생성
 	tokenRequest := &jwt.TokenRequest{
@@ -121,7 +123,7 @@ func (a authService) RefreshToken(req *RefreshTokenRequest) *RefreshTokenRespons
 	}
 	jwtToken, err := a.jwtClient.Generator.GenerateNewTokens(tokenRequest)
 	if err != nil {
-		return FailRefreshToken("토큰 생성에 실패하였습니다.", err)
+		return dto.Fail[Token](response.CODE_FAIL_CREATE_TOKEN, err)
 	}
 
 	// 토큰 저장
@@ -134,8 +136,8 @@ func (a authService) RefreshToken(req *RefreshTokenRequest) *RefreshTokenRespons
 	a.authRepository.DeleteToken(userId)
 	savedToken, err := a.authRepository.SaveToken(userId, newToken)
 	if err != nil {
-		return FailRefreshToken("토큰 저장에 실패하였습니다.", err)
+		return dto.Fail[Token](response.CODE_FAIL_SAVE_TOKEN, err)
 	}
 
-	return OkRefreshToken(savedToken)
+	return dto.Ok[Token](response.CODE_SUCCESS, savedToken)
 }

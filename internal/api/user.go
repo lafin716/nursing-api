@@ -44,16 +44,7 @@ func (a userHttpApi) Me(ctx *fiber.Ctx) error {
 
 	userId := claims.UserID
 	result := a.userUseCase.GetUser(userId)
-	if !result.Success {
-		return response.New(response.CODE_USER_NOTFOUND).
-			SetMessage(result.Message).
-			SetErrors(result.Error).
-			Error(ctx)
-	}
-
-	return response.New(response.CODE_SUCCESS).
-		SetData(result.User).
-		Ok(ctx)
+	return ResolveResponse(result, ctx)
 }
 
 // @summary 회원탈퇴
@@ -109,12 +100,5 @@ func (a userHttpApi) CheckEmail(ctx *fiber.Ctx) error {
 	}
 
 	resp := a.userUseCase.CheckDuplicatedEmail(req)
-	if !resp.Success {
-		return response.New(response.CODE_ERROR).
-			SetMessage(resp.Message).
-			SetErrors(resp.Error).
-			Error(ctx)
-	}
-
-	return response.New(response.CODE_SUCCESS).SetMessage(resp.Message).Ok(ctx)
+	return ResolveResponse(resp, ctx)
 }

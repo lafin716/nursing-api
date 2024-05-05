@@ -40,12 +40,8 @@ func (t timezoneApi) GetList(c *fiber.Ctx) error {
 		return err
 	}
 
-	list, err := t.service.GetList(userId)
-	if err != nil {
-		return response.New(response.CODE_ERROR).SetErrors(err).Error(c)
-	}
-
-	return response.New(response.CODE_SUCCESS).SetData(list).Ok(c)
+	resp := t.service.GetList(userId)
+	return ResolveResponse(resp, c)
 }
 
 // @summary 복용시간대 추가
@@ -74,17 +70,7 @@ func (t timezoneApi) Create(c *fiber.Ctx) error {
 	req.UserId = userId
 
 	resp := t.service.Create(req)
-	if !resp.Success {
-		return response.New(response.CODE_ERROR).
-			SetMessage(resp.Message).
-			SetErrors(resp.Error).
-			Error(c)
-	}
-
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		SetData(resp.Data).
-		Ok(c)
+	return ResolveResponse(resp, c)
 }
 
 // @summary 복용시간대 업데이트
@@ -107,17 +93,7 @@ func (t timezoneApi) Update(c *fiber.Ctx) error {
 	req.UserId = userId
 
 	resp := t.service.Update(req)
-	if !resp.Success {
-		return response.New(response.CODE_ERROR).
-			SetMessage(resp.Message).
-			SetErrors(resp.Error).
-			Error(c)
-	}
-
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		SetData(resp.Data).
-		Ok(c)
+	return ResolveResponse(resp, c)
 }
 
 // @summary 복용시간대 삭제
@@ -150,14 +126,5 @@ func (t timezoneApi) Delete(c *fiber.Ctx) error {
 	req.UserId = userId
 
 	resp := t.service.Delete(req)
-	if !resp.Success {
-		return response.New(response.CODE_FAIL_DELETEITEM_PRESCRIPTION).
-			SetMessage(resp.Message).
-			SetErrors(resp.Error).
-			Error(c)
-	}
-
-	return response.New(response.CODE_SUCCESS).
-		SetMessage(resp.Message).
-		Ok(c)
+	return ResolveResponse(resp, c)
 }
