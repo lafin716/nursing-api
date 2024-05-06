@@ -18,6 +18,7 @@ import (
 
 type Repository interface {
 	GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error)
+	GetPlansByMonth(userId uuid.UUID, year int, month int) (*Summary, error)
 }
 
 type repository struct {
@@ -187,6 +188,36 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 	}
 
 	return plans, nil
+}
+
+func (r repository) GetPlansByMonth(userId uuid.UUID, year int, month int) (*Summary, error) {
+	found, err := r.prescription.Query().
+		Where(
+			scPs.UserID(userId),
+			scPs.StartedAtGTE(time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)),
+			scPs.StartedAtLT(time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.UTC)),
+		).
+		All(r.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	summary := &Summary{
+		Year:  fmt.Sprintf("%d", year),
+		Month: fmt.Sprintf("%d", month),
+	}
+
+	for _, ps := range found {
+		summaryItem := &SummaryItem{
+			Name:       ps.PrescriptionName,
+			StartedAt:  r.mono.Date.Format(ps.StartedAt, "Y-m-d"),
+			FinishedAt: r.mono.Date.Format(ps.FinishedAt, "Y-m-d"),
+			TakeDays:   ps.TakeDays,
+		}
+		summary.Items = append(summary.Items, *summaryItem)
+	}
+
+	return summary, nil
 }
 
 func Convert[T any, O any](data []O, action func(O) T) []T {

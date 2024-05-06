@@ -10,6 +10,7 @@ type PlanHttpApi interface {
 	Add(ctx *fiber.Ctx) error
 	Delete(ctx *fiber.Ctx) error
 	GetByDate(ctx *fiber.Ctx) error
+	GetByMonth(ctx *fiber.Ctx) error
 	Summary(ctx *fiber.Ctx) error
 	Take(ctx *fiber.Ctx) error
 	PillToggle(ctx *fiber.Ctx) error
@@ -92,6 +93,25 @@ func (p planHttpApi) GetByDate(ctx *fiber.Ctx) error {
 
 	req.UserId = parser.GetUserId()
 	resp := p.service.GetByDate(req)
+	return ResolveResponse(resp, ctx)
+}
+
+// @summary 월별 복약 계획
+// @description 해당 월의 복약계획을 조회하는 엔드포인트, 복용상태 및 복용시간을 같이 응답한다.
+// @accept json
+// @produce json
+// @param date query string false "조회연도 (YYYY), 조회월 (mm) 미입력 시 현재날짜로 세팅되며, 월의 경우 zerofill 없이 입력해야함"
+// @router /plan/month [get]
+// @Security Bearer
+func (p planHttpApi) GetByMonth(ctx *fiber.Ctx) error {
+	req := new(plan.GetByMonthRequest)
+	parser := ParseRequest(req, QUERY, p.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
+	}
+
+	req.UserId = parser.GetUserId()
+	resp := p.service.GetByMonth(req)
 	return ResolveResponse(resp, ctx)
 }
 

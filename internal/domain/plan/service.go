@@ -11,13 +11,14 @@ import (
 	timezonelink "nursing_api/internal/domain/timezone_link"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/mono"
+	"strconv"
 	"time"
 )
 
 type UseCase interface {
 	Add(req *AddPlanRequest) dto.BaseResponse[any]
 	Delete(req *DeletePlanRequest) dto.BaseResponse[any]
-	GetByMonth(req *GetByMonthRequest) dto.BaseResponse[any]
+	GetByMonth(req *GetByMonthRequest) dto.BaseResponse[Summary]
 	GetByDate(req *GetByDateRequest) dto.BaseResponse[TakePlan]
 	Take(req *TakeToggleRequest) dto.BaseResponse[bool]
 	PillToggle(req *PillToggleRequest) dto.BaseResponse[bool]
@@ -316,9 +317,22 @@ func (p *planService) PillToggle(req *PillToggleRequest) dto.BaseResponse[bool] 
 	return dto.Ok[bool](response.CODE_SUCCESS, &isTaken)
 }
 
-func (p *planService) GetByMonth(req *GetByMonthRequest) dto.BaseResponse[any] {
-	// TODO 구현필요
-	panic("")
+func (p *planService) GetByMonth(req *GetByMonthRequest) dto.BaseResponse[Summary] {
+	yearNum, err := strconv.Atoi(req.Year)
+	if err != nil {
+		return dto.Fail[Summary](response.CODE_NOT_AVAILABLE_DATE, err)
+	}
+	monthNum, err := strconv.Atoi(req.Month)
+	if err != nil {
+		return dto.Fail[Summary](response.CODE_NOT_AVAILABLE_DATE, err)
+	}
+
+	items, err := p.plan.GetPlansByMonth(req.UserId, yearNum, monthNum)
+	if err != nil {
+		return dto.Fail[Summary](response.CODE_NO_RESULT_PLAN_BY_MONTH, err)
+	}
+
+	return dto.Ok[Summary](response.CODE_SUCCESS, items)
 }
 
 func (p *planService) GetByDate(req *GetByDateRequest) dto.BaseResponse[TakePlan] {

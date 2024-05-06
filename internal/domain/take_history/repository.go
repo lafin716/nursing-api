@@ -14,6 +14,7 @@ import (
 type Repository interface {
 	GetList(userId uuid.UUID) ([]*TakeHistory, error)
 	GetListByDate(userId uuid.UUID, today time.Time) ([]*TakeHistory, error)
+	GetListByMonth(userId uuid.UUID, year int, month int) ([]*TakeHistory, error)
 	GetById(id uuid.UUID) (*TakeHistory, error)
 	GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, date time.Time) (*TakeHistory, error)
 	GetItemById(userId uuid.UUID, takeHistoryItemId uuid.UUID) (*TakeHistoryItem, error)
@@ -114,6 +115,22 @@ func (t *repository) GetListByDate(userId uuid.UUID, date time.Time) ([]*TakeHis
 			schema.UserID(userId),
 			schema.TakeDateGTE(date),
 			schema.TakeDateLT(date.AddDate(0, 0, 1)),
+		).
+		All(t.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toModelList(found), nil
+}
+
+func (t *repository) GetListByMonth(userId uuid.UUID, year int, month int) ([]*TakeHistory, error) {
+	found, err := t.root.Debug().TakeHistory.
+		Query().
+		Where(
+			schema.UserID(userId),
+			schema.TakeDateGTE(time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)),
+			schema.TakeDateLT(time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.UTC)),
 		).
 		All(t.ctx)
 	if err != nil {

@@ -43,6 +43,9 @@ type Summary struct {
 }
 
 type SummaryItem struct {
-	Date     string `json:"date"`
-	IsExists bool   `json:"isExists"`
+	Name       string `json:"name"`
+	StartedAt  string `json:"started_at"`
+	FinishedAt string `json:"finished_at"`
+	TakeDays   int    `json:"take_days"`
+	IsExists   bool   `json:"isExists"`
 }
