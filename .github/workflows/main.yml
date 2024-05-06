@@ -23,6 +23,7 @@ jobs:
     - name: Clean temp directory
       run: |
         rm -rf *
+        echo "GITHUB_WORKSPACE : "$GITHUB_WORKSPACE
         cp -r $GITHUB_WORKSPACE . 
       
     - name: archive healthlink 
