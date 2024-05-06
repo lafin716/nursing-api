@@ -211,6 +211,7 @@ func (r repository) GetPlansByMonth(userId uuid.UUID, year int, month int) (*Sum
 
 	for _, ps := range found {
 		summaryItem := &SummaryItem{
+			ID:         ps.ID,
 			Name:       ps.PrescriptionName,
 			StartedAt:  r.mono.Date.Format(ps.StartedAt, "Y-m-d"),
 			FinishedAt: r.mono.Date.Format(ps.FinishedAt, "Y-m-d"),
