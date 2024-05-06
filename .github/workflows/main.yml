@@ -22,10 +22,9 @@ jobs:
     # Runs a single command using the runners shell 
     - name: Clean temp directory
       run: |
+        mkdir ../archive
+        cd ../archive
         rm -rf *
-        echo "GITHUB_WORKSPACE : "$GITHUB_WORKSPACE
-        CPATH=`pwd`
-        echo "CURRENT PATH : "$CPATH
         cp -r $GITHUB_WORKSPACE . 
       
     - name: archive healthlink 
