@@ -92,6 +92,48 @@ func (piu *PrescriptionItemUpdate) AddTakeAmount(f float64) *PrescriptionItemUpd
 	return piu
 }
 
+// SetRemainAmount sets the "remain_amount" field.
+func (piu *PrescriptionItemUpdate) SetRemainAmount(f float64) *PrescriptionItemUpdate {
+	piu.mutation.ResetRemainAmount()
+	piu.mutation.SetRemainAmount(f)
+	return piu
+}
+
+// SetNillableRemainAmount sets the "remain_amount" field if the given value is not nil.
+func (piu *PrescriptionItemUpdate) SetNillableRemainAmount(f *float64) *PrescriptionItemUpdate {
+	if f != nil {
+		piu.SetRemainAmount(*f)
+	}
+	return piu
+}
+
+// AddRemainAmount adds f to the "remain_amount" field.
+func (piu *PrescriptionItemUpdate) AddRemainAmount(f float64) *PrescriptionItemUpdate {
+	piu.mutation.AddRemainAmount(f)
+	return piu
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (piu *PrescriptionItemUpdate) SetTotalAmount(f float64) *PrescriptionItemUpdate {
+	piu.mutation.ResetTotalAmount()
+	piu.mutation.SetTotalAmount(f)
+	return piu
+}
+
+// SetNillableTotalAmount sets the "total_amount" field if the given value is not nil.
+func (piu *PrescriptionItemUpdate) SetNillableTotalAmount(f *float64) *PrescriptionItemUpdate {
+	if f != nil {
+		piu.SetTotalAmount(*f)
+	}
+	return piu
+}
+
+// AddTotalAmount adds f to the "total_amount" field.
+func (piu *PrescriptionItemUpdate) AddTotalAmount(f float64) *PrescriptionItemUpdate {
+	piu.mutation.AddTotalAmount(f)
+	return piu
+}
+
 // SetMedicineUnit sets the "medicine_unit" field.
 func (piu *PrescriptionItemUpdate) SetMedicineUnit(s string) *PrescriptionItemUpdate {
 	piu.mutation.SetMedicineUnit(s)
@@ -222,6 +264,18 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	if value, ok := piu.mutation.AddedTakeAmount(); ok {
 		_spec.AddField(prescriptionitem.FieldTakeAmount, field.TypeFloat64, value)
 	}
+	if value, ok := piu.mutation.RemainAmount(); ok {
+		_spec.SetField(prescriptionitem.FieldRemainAmount, field.TypeFloat64, value)
+	}
+	if value, ok := piu.mutation.AddedRemainAmount(); ok {
+		_spec.AddField(prescriptionitem.FieldRemainAmount, field.TypeFloat64, value)
+	}
+	if value, ok := piu.mutation.TotalAmount(); ok {
+		_spec.SetField(prescriptionitem.FieldTotalAmount, field.TypeFloat64, value)
+	}
+	if value, ok := piu.mutation.AddedTotalAmount(); ok {
+		_spec.AddField(prescriptionitem.FieldTotalAmount, field.TypeFloat64, value)
+	}
 	if value, ok := piu.mutation.MedicineUnit(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineUnit, field.TypeString, value)
 	}
@@ -323,6 +377,48 @@ func (piuo *PrescriptionItemUpdateOne) SetNillableTakeAmount(f *float64) *Prescr
 // AddTakeAmount adds f to the "take_amount" field.
 func (piuo *PrescriptionItemUpdateOne) AddTakeAmount(f float64) *PrescriptionItemUpdateOne {
 	piuo.mutation.AddTakeAmount(f)
+	return piuo
+}
+
+// SetRemainAmount sets the "remain_amount" field.
+func (piuo *PrescriptionItemUpdateOne) SetRemainAmount(f float64) *PrescriptionItemUpdateOne {
+	piuo.mutation.ResetRemainAmount()
+	piuo.mutation.SetRemainAmount(f)
+	return piuo
+}
+
+// SetNillableRemainAmount sets the "remain_amount" field if the given value is not nil.
+func (piuo *PrescriptionItemUpdateOne) SetNillableRemainAmount(f *float64) *PrescriptionItemUpdateOne {
+	if f != nil {
+		piuo.SetRemainAmount(*f)
+	}
+	return piuo
+}
+
+// AddRemainAmount adds f to the "remain_amount" field.
+func (piuo *PrescriptionItemUpdateOne) AddRemainAmount(f float64) *PrescriptionItemUpdateOne {
+	piuo.mutation.AddRemainAmount(f)
+	return piuo
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (piuo *PrescriptionItemUpdateOne) SetTotalAmount(f float64) *PrescriptionItemUpdateOne {
+	piuo.mutation.ResetTotalAmount()
+	piuo.mutation.SetTotalAmount(f)
+	return piuo
+}
+
+// SetNillableTotalAmount sets the "total_amount" field if the given value is not nil.
+func (piuo *PrescriptionItemUpdateOne) SetNillableTotalAmount(f *float64) *PrescriptionItemUpdateOne {
+	if f != nil {
+		piuo.SetTotalAmount(*f)
+	}
+	return piuo
+}
+
+// AddTotalAmount adds f to the "total_amount" field.
+func (piuo *PrescriptionItemUpdateOne) AddTotalAmount(f float64) *PrescriptionItemUpdateOne {
+	piuo.mutation.AddTotalAmount(f)
 	return piuo
 }
 
@@ -485,6 +581,18 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 	}
 	if value, ok := piuo.mutation.AddedTakeAmount(); ok {
 		_spec.AddField(prescriptionitem.FieldTakeAmount, field.TypeFloat64, value)
+	}
+	if value, ok := piuo.mutation.RemainAmount(); ok {
+		_spec.SetField(prescriptionitem.FieldRemainAmount, field.TypeFloat64, value)
+	}
+	if value, ok := piuo.mutation.AddedRemainAmount(); ok {
+		_spec.AddField(prescriptionitem.FieldRemainAmount, field.TypeFloat64, value)
+	}
+	if value, ok := piuo.mutation.TotalAmount(); ok {
+		_spec.SetField(prescriptionitem.FieldTotalAmount, field.TypeFloat64, value)
+	}
+	if value, ok := piuo.mutation.AddedTotalAmount(); ok {
+		_spec.AddField(prescriptionitem.FieldTotalAmount, field.TypeFloat64, value)
 	}
 	if value, ok := piuo.mutation.MedicineUnit(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineUnit, field.TypeString, value)

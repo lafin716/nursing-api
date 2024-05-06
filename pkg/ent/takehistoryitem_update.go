@@ -106,6 +106,48 @@ func (thiu *TakeHistoryItemUpdate) AddTakeAmount(f float64) *TakeHistoryItemUpda
 	return thiu
 }
 
+// SetRemainAmount sets the "remain_amount" field.
+func (thiu *TakeHistoryItemUpdate) SetRemainAmount(f float64) *TakeHistoryItemUpdate {
+	thiu.mutation.ResetRemainAmount()
+	thiu.mutation.SetRemainAmount(f)
+	return thiu
+}
+
+// SetNillableRemainAmount sets the "remain_amount" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableRemainAmount(f *float64) *TakeHistoryItemUpdate {
+	if f != nil {
+		thiu.SetRemainAmount(*f)
+	}
+	return thiu
+}
+
+// AddRemainAmount adds f to the "remain_amount" field.
+func (thiu *TakeHistoryItemUpdate) AddRemainAmount(f float64) *TakeHistoryItemUpdate {
+	thiu.mutation.AddRemainAmount(f)
+	return thiu
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (thiu *TakeHistoryItemUpdate) SetTotalAmount(f float64) *TakeHistoryItemUpdate {
+	thiu.mutation.ResetTotalAmount()
+	thiu.mutation.SetTotalAmount(f)
+	return thiu
+}
+
+// SetNillableTotalAmount sets the "total_amount" field if the given value is not nil.
+func (thiu *TakeHistoryItemUpdate) SetNillableTotalAmount(f *float64) *TakeHistoryItemUpdate {
+	if f != nil {
+		thiu.SetTotalAmount(*f)
+	}
+	return thiu
+}
+
+// AddTotalAmount adds f to the "total_amount" field.
+func (thiu *TakeHistoryItemUpdate) AddTotalAmount(f float64) *TakeHistoryItemUpdate {
+	thiu.mutation.AddTotalAmount(f)
+	return thiu
+}
+
 // SetTakeUnit sets the "take_unit" field.
 func (thiu *TakeHistoryItemUpdate) SetTakeUnit(s string) *TakeHistoryItemUpdate {
 	thiu.mutation.SetTakeUnit(s)
@@ -247,6 +289,18 @@ func (thiu *TakeHistoryItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	if value, ok := thiu.mutation.AddedTakeAmount(); ok {
 		_spec.AddField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
 	}
+	if value, ok := thiu.mutation.RemainAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldRemainAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiu.mutation.AddedRemainAmount(); ok {
+		_spec.AddField(takehistoryitem.FieldRemainAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiu.mutation.TotalAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldTotalAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiu.mutation.AddedTotalAmount(); ok {
+		_spec.AddField(takehistoryitem.FieldTotalAmount, field.TypeFloat64, value)
+	}
 	if value, ok := thiu.mutation.TakeUnit(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeUnit, field.TypeString, value)
 	}
@@ -362,6 +416,48 @@ func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeAmount(f *float64) *TakeHi
 // AddTakeAmount adds f to the "take_amount" field.
 func (thiuo *TakeHistoryItemUpdateOne) AddTakeAmount(f float64) *TakeHistoryItemUpdateOne {
 	thiuo.mutation.AddTakeAmount(f)
+	return thiuo
+}
+
+// SetRemainAmount sets the "remain_amount" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetRemainAmount(f float64) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ResetRemainAmount()
+	thiuo.mutation.SetRemainAmount(f)
+	return thiuo
+}
+
+// SetNillableRemainAmount sets the "remain_amount" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableRemainAmount(f *float64) *TakeHistoryItemUpdateOne {
+	if f != nil {
+		thiuo.SetRemainAmount(*f)
+	}
+	return thiuo
+}
+
+// AddRemainAmount adds f to the "remain_amount" field.
+func (thiuo *TakeHistoryItemUpdateOne) AddRemainAmount(f float64) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.AddRemainAmount(f)
+	return thiuo
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (thiuo *TakeHistoryItemUpdateOne) SetTotalAmount(f float64) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ResetTotalAmount()
+	thiuo.mutation.SetTotalAmount(f)
+	return thiuo
+}
+
+// SetNillableTotalAmount sets the "total_amount" field if the given value is not nil.
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableTotalAmount(f *float64) *TakeHistoryItemUpdateOne {
+	if f != nil {
+		thiuo.SetTotalAmount(*f)
+	}
+	return thiuo
+}
+
+// AddTotalAmount adds f to the "total_amount" field.
+func (thiuo *TakeHistoryItemUpdateOne) AddTotalAmount(f float64) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.AddTotalAmount(f)
 	return thiuo
 }
 
@@ -535,6 +631,18 @@ func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *Take
 	}
 	if value, ok := thiuo.mutation.AddedTakeAmount(); ok {
 		_spec.AddField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiuo.mutation.RemainAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldRemainAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiuo.mutation.AddedRemainAmount(); ok {
+		_spec.AddField(takehistoryitem.FieldRemainAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiuo.mutation.TotalAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldTotalAmount, field.TypeFloat64, value)
+	}
+	if value, ok := thiuo.mutation.AddedTotalAmount(); ok {
+		_spec.AddField(takehistoryitem.FieldTotalAmount, field.TypeFloat64, value)
 	}
 	if value, ok := thiuo.mutation.TakeUnit(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeUnit, field.TypeString, value)

@@ -60,12 +60,20 @@ func init() {
 	prescriptionitemDescTakeAmount := prescriptionitemFields[4].Descriptor()
 	// prescriptionitem.DefaultTakeAmount holds the default value on creation for the take_amount field.
 	prescriptionitem.DefaultTakeAmount = prescriptionitemDescTakeAmount.Default.(float64)
+	// prescriptionitemDescRemainAmount is the schema descriptor for remain_amount field.
+	prescriptionitemDescRemainAmount := prescriptionitemFields[5].Descriptor()
+	// prescriptionitem.DefaultRemainAmount holds the default value on creation for the remain_amount field.
+	prescriptionitem.DefaultRemainAmount = prescriptionitemDescRemainAmount.Default.(float64)
+	// prescriptionitemDescTotalAmount is the schema descriptor for total_amount field.
+	prescriptionitemDescTotalAmount := prescriptionitemFields[6].Descriptor()
+	// prescriptionitem.DefaultTotalAmount holds the default value on creation for the total_amount field.
+	prescriptionitem.DefaultTotalAmount = prescriptionitemDescTotalAmount.Default.(float64)
 	// prescriptionitemDescMedicineUnit is the schema descriptor for medicine_unit field.
-	prescriptionitemDescMedicineUnit := prescriptionitemFields[5].Descriptor()
+	prescriptionitemDescMedicineUnit := prescriptionitemFields[7].Descriptor()
 	// prescriptionitem.DefaultMedicineUnit holds the default value on creation for the medicine_unit field.
 	prescriptionitem.DefaultMedicineUnit = prescriptionitemDescMedicineUnit.Default.(string)
 	// prescriptionitemDescCreatedAt is the schema descriptor for created_at field.
-	prescriptionitemDescCreatedAt := prescriptionitemFields[7].Descriptor()
+	prescriptionitemDescCreatedAt := prescriptionitemFields[9].Descriptor()
 	// prescriptionitem.DefaultCreatedAt holds the default value on creation for the created_at field.
 	prescriptionitem.DefaultCreatedAt = prescriptionitemDescCreatedAt.Default.(func() time.Time)
 	// prescriptionitemDescID is the schema descriptor for id field.
@@ -96,8 +104,16 @@ func init() {
 	takehistoryitemDescTakeAmount := takehistoryitemFields[5].Descriptor()
 	// takehistoryitem.DefaultTakeAmount holds the default value on creation for the take_amount field.
 	takehistoryitem.DefaultTakeAmount = takehistoryitemDescTakeAmount.Default.(float64)
+	// takehistoryitemDescRemainAmount is the schema descriptor for remain_amount field.
+	takehistoryitemDescRemainAmount := takehistoryitemFields[6].Descriptor()
+	// takehistoryitem.DefaultRemainAmount holds the default value on creation for the remain_amount field.
+	takehistoryitem.DefaultRemainAmount = takehistoryitemDescRemainAmount.Default.(float64)
+	// takehistoryitemDescTotalAmount is the schema descriptor for total_amount field.
+	takehistoryitemDescTotalAmount := takehistoryitemFields[7].Descriptor()
+	// takehistoryitem.DefaultTotalAmount holds the default value on creation for the total_amount field.
+	takehistoryitem.DefaultTotalAmount = takehistoryitemDescTotalAmount.Default.(float64)
 	// takehistoryitemDescCreatedAt is the schema descriptor for created_at field.
-	takehistoryitemDescCreatedAt := takehistoryitemFields[9].Descriptor()
+	takehistoryitemDescCreatedAt := takehistoryitemFields[11].Descriptor()
 	// takehistoryitem.DefaultCreatedAt holds the default value on creation for the created_at field.
 	takehistoryitem.DefaultCreatedAt = takehistoryitemDescCreatedAt.Default.(func() time.Time)
 	// takehistoryitemDescID is the schema descriptor for id field.

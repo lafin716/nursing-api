@@ -29,6 +29,8 @@ type Pill struct {
 	MedicineId         uuid.UUID `json:"medicine_id"`
 	TakeUnit           string    `json:"take_unit"`
 	TakeAmount         float64   `json:"take_amount"`
+	RemainAmount       float64   `json:"remain_amount"`
+	TotalAmount        float64   `json:"total_amount"`
 
 	// 복용히스토리
 	TakeHistoryItemId uuid.UUID `json:"take_history_item_id,omitempty"`

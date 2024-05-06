@@ -25,6 +25,8 @@ type PrescriptionItem struct {
 	MedicineId     uuid.UUID `json:"medicine_id"`
 	MedicineName   string    `json:"medicine_name"`
 	TakeAmount     float64   `json:"take_amount"`
+	RemainAmount   float64   `json:"remain_amount"`
+	TotalAmount    float64   `json:"total_amount"`
 	MedicineUnit   string    `json:"medicine_unit"`
 	Memo           string    `json:"memo"`
 	CreatedAt      time.Time `json:"created_at"`

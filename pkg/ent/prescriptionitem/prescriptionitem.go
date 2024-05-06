@@ -22,6 +22,10 @@ const (
 	FieldMedicineName = "medicine_name"
 	// FieldTakeAmount holds the string denoting the take_amount field in the database.
 	FieldTakeAmount = "take_amount"
+	// FieldRemainAmount holds the string denoting the remain_amount field in the database.
+	FieldRemainAmount = "remain_amount"
+	// FieldTotalAmount holds the string denoting the total_amount field in the database.
+	FieldTotalAmount = "total_amount"
 	// FieldMedicineUnit holds the string denoting the medicine_unit field in the database.
 	FieldMedicineUnit = "medicine_unit"
 	// FieldMemo holds the string denoting the memo field in the database.
@@ -41,6 +45,8 @@ var Columns = []string{
 	FieldMedicineID,
 	FieldMedicineName,
 	FieldTakeAmount,
+	FieldRemainAmount,
+	FieldTotalAmount,
 	FieldMedicineUnit,
 	FieldMemo,
 	FieldCreatedAt,
@@ -60,6 +66,10 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultTakeAmount holds the default value on creation for the "take_amount" field.
 	DefaultTakeAmount float64
+	// DefaultRemainAmount holds the default value on creation for the "remain_amount" field.
+	DefaultRemainAmount float64
+	// DefaultTotalAmount holds the default value on creation for the "total_amount" field.
+	DefaultTotalAmount float64
 	// DefaultMedicineUnit holds the default value on creation for the "medicine_unit" field.
 	DefaultMedicineUnit string
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -94,6 +104,16 @@ func ByMedicineName(opts ...sql.OrderTermOption) OrderOption {
 // ByTakeAmount orders the results by the take_amount field.
 func ByTakeAmount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTakeAmount, opts...).ToFunc()
+}
+
+// ByRemainAmount orders the results by the remain_amount field.
+func ByRemainAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRemainAmount, opts...).ToFunc()
+}
+
+// ByTotalAmount orders the results by the total_amount field.
+func ByTotalAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTotalAmount, opts...).ToFunc()
 }
 
 // ByMedicineUnit orders the results by the medicine_unit field.

@@ -203,6 +203,32 @@
                 "responses": {}
             }
         },
+        "/plan/month": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "해당 월의 복약계획을 조회하는 엔드포인트, 복용상태 및 복용시간을 같이 응답한다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "월별 복약 계획",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "조회연도 (YYYY), 조회월 (mm) 미입력 시 현재날짜로 세팅되며, 월의 경우 zerofill 없이 입력해야함",
+                        "name": "date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/plan/take": {
             "post": {
                 "security": [

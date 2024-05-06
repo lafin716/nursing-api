@@ -67,6 +67,34 @@ func (thic *TakeHistoryItemCreate) SetNillableTakeAmount(f *float64) *TakeHistor
 	return thic
 }
 
+// SetRemainAmount sets the "remain_amount" field.
+func (thic *TakeHistoryItemCreate) SetRemainAmount(f float64) *TakeHistoryItemCreate {
+	thic.mutation.SetRemainAmount(f)
+	return thic
+}
+
+// SetNillableRemainAmount sets the "remain_amount" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillableRemainAmount(f *float64) *TakeHistoryItemCreate {
+	if f != nil {
+		thic.SetRemainAmount(*f)
+	}
+	return thic
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (thic *TakeHistoryItemCreate) SetTotalAmount(f float64) *TakeHistoryItemCreate {
+	thic.mutation.SetTotalAmount(f)
+	return thic
+}
+
+// SetNillableTotalAmount sets the "total_amount" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillableTotalAmount(f *float64) *TakeHistoryItemCreate {
+	if f != nil {
+		thic.SetTotalAmount(*f)
+	}
+	return thic
+}
+
 // SetTakeUnit sets the "take_unit" field.
 func (thic *TakeHistoryItemCreate) SetTakeUnit(s string) *TakeHistoryItemCreate {
 	thic.mutation.SetTakeUnit(s)
@@ -178,6 +206,14 @@ func (thic *TakeHistoryItemCreate) defaults() {
 		v := takehistoryitem.DefaultTakeAmount
 		thic.mutation.SetTakeAmount(v)
 	}
+	if _, ok := thic.mutation.RemainAmount(); !ok {
+		v := takehistoryitem.DefaultRemainAmount
+		thic.mutation.SetRemainAmount(v)
+	}
+	if _, ok := thic.mutation.TotalAmount(); !ok {
+		v := takehistoryitem.DefaultTotalAmount
+		thic.mutation.SetTotalAmount(v)
+	}
 	if _, ok := thic.mutation.CreatedAt(); !ok {
 		v := takehistoryitem.DefaultCreatedAt()
 		thic.mutation.SetCreatedAt(v)
@@ -204,6 +240,12 @@ func (thic *TakeHistoryItemCreate) check() error {
 	}
 	if _, ok := thic.mutation.TakeAmount(); !ok {
 		return &ValidationError{Name: "take_amount", err: errors.New(`ent: missing required field "TakeHistoryItem.take_amount"`)}
+	}
+	if _, ok := thic.mutation.RemainAmount(); !ok {
+		return &ValidationError{Name: "remain_amount", err: errors.New(`ent: missing required field "TakeHistoryItem.remain_amount"`)}
+	}
+	if _, ok := thic.mutation.TotalAmount(); !ok {
+		return &ValidationError{Name: "total_amount", err: errors.New(`ent: missing required field "TakeHistoryItem.total_amount"`)}
 	}
 	if _, ok := thic.mutation.TakeUnit(); !ok {
 		return &ValidationError{Name: "take_unit", err: errors.New(`ent: missing required field "TakeHistoryItem.take_unit"`)}
@@ -268,6 +310,14 @@ func (thic *TakeHistoryItemCreate) createSpec() (*TakeHistoryItem, *sqlgraph.Cre
 	if value, ok := thic.mutation.TakeAmount(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
 		_node.TakeAmount = value
+	}
+	if value, ok := thic.mutation.RemainAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldRemainAmount, field.TypeFloat64, value)
+		_node.RemainAmount = value
+	}
+	if value, ok := thic.mutation.TotalAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldTotalAmount, field.TypeFloat64, value)
+		_node.TotalAmount = value
 	}
 	if value, ok := thic.mutation.TakeUnit(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeUnit, field.TypeString, value)

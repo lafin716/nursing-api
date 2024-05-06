@@ -39,10 +39,11 @@ type prescriptionRepository struct {
 }
 
 type SearchCondition struct {
-	ID         uuid.UUID
-	UserId     uuid.UUID
-	TargetDate time.Time
-	Limit      int
+	ID             uuid.UUID
+	UserId         uuid.UUID
+	TargetDate     time.Time
+	TargetDateNext time.Time
+	Limit          int
 }
 
 func NewRepository(
@@ -114,8 +115,10 @@ func (p prescriptionRepository) GetListBySearch(search *SearchCondition) ([]*Pre
 		Where(
 			schema.And(
 				schema.UserID(search.UserId),
-				schema.StartedAtLTE(search.TargetDate),
-				schema.FinishedAtGTE(search.TargetDate),
+				schema.And(
+					schema.StartedAtLTE(search.TargetDate),
+					schema.FinishedAtGTE(search.TargetDate),
+				),
 			),
 		).
 		Limit(search.Limit).
@@ -250,6 +253,8 @@ func (p prescriptionRepository) AddItem(item *PrescriptionItem) (*PrescriptionIt
 		SetMedicineID(item.MedicineId).
 		SetMedicineName(item.MedicineName).
 		SetTakeAmount(item.TakeAmount).
+		SetRemainAmount(item.RemainAmount).
+		SetTotalAmount(item.TotalAmount).
 		SetMedicineUnit(item.MedicineUnit).
 		SetMemo(item.Memo).
 		SetCreatedAt(item.CreatedAt).
@@ -268,6 +273,8 @@ func (p prescriptionRepository) AddItemTx(item *PrescriptionItem, tx *ent.Tx) (*
 		SetMedicineID(item.MedicineId).
 		SetMedicineName(item.MedicineName).
 		SetTakeAmount(item.TakeAmount).
+		SetRemainAmount(item.RemainAmount).
+		SetTotalAmount(item.TotalAmount).
 		SetMedicineUnit(item.MedicineUnit).
 		SetMemo(item.Memo).
 		SetCreatedAt(item.CreatedAt).
@@ -284,6 +291,7 @@ func (p prescriptionRepository) UpdateItem(prescriptionItem *PrescriptionItem) (
 		Update().
 		SetMedicineID(prescriptionItem.MedicineId).
 		SetMedicineName(prescriptionItem.MedicineName).
+		SetRemainAmount(prescriptionItem.RemainAmount).
 		Exec(p.ctx)
 	if err != nil {
 		return 0, err

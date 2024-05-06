@@ -100,6 +100,8 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 				MedicineId:         pcsItem.MedicineID,
 				TakeUnit:           pcsItem.MedicineUnit,
 				TakeAmount:         pcsItem.TakeAmount,
+				RemainAmount:       pcsItem.RemainAmount,
+				TotalAmount:        pcsItem.TotalAmount,
 			})
 		}
 

@@ -37,14 +37,31 @@ func TestValidate(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	layout := MakeLayout("-", YEAR, MONTH, DATE)
+	//layout := MakeLayout("-", YEAR, MONTH, DATE)
+	layout := "Y-m-d"
 	newLayout := ReplaceLayout(layout)
 
 	t.Logf("layout : %s", layout)
 	t.Logf("newLayout : %s", newLayout)
 
 	parser := NewParser()
-	result, err := parser.Parse(newLayout, "2024-01-01")
+	result, err := parser.Parse(newLayout, "2024-05-25")
+	if err != nil {
+		t.Fatalf("parse error : %v", err)
+	}
+
+	t.Logf("result : %s", result)
+}
+
+func TestParseWithTime(t *testing.T) {
+	layout := "Y-m-d H:i:s"
+	newLayout := ReplaceLayout(layout)
+
+	t.Logf("layout : %s", layout)
+	t.Logf("newLayout : %s", newLayout)
+
+	parser := NewParser()
+	result, err := parser.ParseWithTime(newLayout, "2024-05-25")
 	if err != nil {
 		t.Fatalf("parse error : %v", err)
 	}

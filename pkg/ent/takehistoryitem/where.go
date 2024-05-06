@@ -80,6 +80,16 @@ func TakeAmount(v float64) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeAmount, v))
 }
 
+// RemainAmount applies equality check predicate on the "remain_amount" field. It's identical to RemainAmountEQ.
+func RemainAmount(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldRemainAmount, v))
+}
+
+// TotalAmount applies equality check predicate on the "total_amount" field. It's identical to TotalAmountEQ.
+func TotalAmount(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTotalAmount, v))
+}
+
 // TakeUnit applies equality check predicate on the "take_unit" field. It's identical to TakeUnitEQ.
 func TakeUnit(v string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeUnit, v))
@@ -328,6 +338,86 @@ func TakeAmountLT(v float64) predicate.TakeHistoryItem {
 // TakeAmountLTE applies the LTE predicate on the "take_amount" field.
 func TakeAmountLTE(v float64) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTakeAmount, v))
+}
+
+// RemainAmountEQ applies the EQ predicate on the "remain_amount" field.
+func RemainAmountEQ(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldRemainAmount, v))
+}
+
+// RemainAmountNEQ applies the NEQ predicate on the "remain_amount" field.
+func RemainAmountNEQ(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldRemainAmount, v))
+}
+
+// RemainAmountIn applies the In predicate on the "remain_amount" field.
+func RemainAmountIn(vs ...float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldRemainAmount, vs...))
+}
+
+// RemainAmountNotIn applies the NotIn predicate on the "remain_amount" field.
+func RemainAmountNotIn(vs ...float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldRemainAmount, vs...))
+}
+
+// RemainAmountGT applies the GT predicate on the "remain_amount" field.
+func RemainAmountGT(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldRemainAmount, v))
+}
+
+// RemainAmountGTE applies the GTE predicate on the "remain_amount" field.
+func RemainAmountGTE(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldRemainAmount, v))
+}
+
+// RemainAmountLT applies the LT predicate on the "remain_amount" field.
+func RemainAmountLT(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldRemainAmount, v))
+}
+
+// RemainAmountLTE applies the LTE predicate on the "remain_amount" field.
+func RemainAmountLTE(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldRemainAmount, v))
+}
+
+// TotalAmountEQ applies the EQ predicate on the "total_amount" field.
+func TotalAmountEQ(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTotalAmount, v))
+}
+
+// TotalAmountNEQ applies the NEQ predicate on the "total_amount" field.
+func TotalAmountNEQ(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldTotalAmount, v))
+}
+
+// TotalAmountIn applies the In predicate on the "total_amount" field.
+func TotalAmountIn(vs ...float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIn(FieldTotalAmount, vs...))
+}
+
+// TotalAmountNotIn applies the NotIn predicate on the "total_amount" field.
+func TotalAmountNotIn(vs ...float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldTotalAmount, vs...))
+}
+
+// TotalAmountGT applies the GT predicate on the "total_amount" field.
+func TotalAmountGT(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGT(FieldTotalAmount, v))
+}
+
+// TotalAmountGTE applies the GTE predicate on the "total_amount" field.
+func TotalAmountGTE(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldGTE(FieldTotalAmount, v))
+}
+
+// TotalAmountLT applies the LT predicate on the "total_amount" field.
+func TotalAmountLT(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLT(FieldTotalAmount, v))
+}
+
+// TotalAmountLTE applies the LTE predicate on the "total_amount" field.
+func TotalAmountLTE(v float64) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTotalAmount, v))
 }
 
 // TakeUnitEQ applies the EQ predicate on the "take_unit" field.

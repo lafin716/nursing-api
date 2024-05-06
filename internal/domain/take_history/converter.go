@@ -40,6 +40,8 @@ func toModelItem(entity *ent.TakeHistoryItem) *TakeHistoryItem {
 		PrescriptionItemId: entity.PrescriptionItemID,
 		TakeStatus:         TakePillStatus(entity.TakeStatus),
 		TakeAmount:         entity.TakeAmount,
+		RemainAmount:       entity.RemainAmount,
+		TotalAmount:        entity.TotalAmount,
 		TakeUnit:           entity.TakeUnit,
 		TakeDate:           entity.TakeDate,
 		Memo:               entity.Memo,

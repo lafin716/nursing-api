@@ -26,6 +26,10 @@ type PrescriptionItem struct {
 	MedicineName string `json:"medicine_name,omitempty"`
 	// TakeAmount holds the value of the "take_amount" field.
 	TakeAmount float64 `json:"take_amount,omitempty"`
+	// RemainAmount holds the value of the "remain_amount" field.
+	RemainAmount float64 `json:"remain_amount,omitempty"`
+	// TotalAmount holds the value of the "total_amount" field.
+	TotalAmount float64 `json:"total_amount,omitempty"`
 	// MedicineUnit holds the value of the "medicine_unit" field.
 	MedicineUnit string `json:"medicine_unit,omitempty"`
 	// Memo holds the value of the "memo" field.
@@ -42,7 +46,7 @@ func (*PrescriptionItem) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case prescriptionitem.FieldTakeAmount:
+		case prescriptionitem.FieldTakeAmount, prescriptionitem.FieldRemainAmount, prescriptionitem.FieldTotalAmount:
 			values[i] = new(sql.NullFloat64)
 		case prescriptionitem.FieldMedicineName, prescriptionitem.FieldMedicineUnit, prescriptionitem.FieldMemo:
 			values[i] = new(sql.NullString)
@@ -94,6 +98,18 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field take_amount", values[i])
 			} else if value.Valid {
 				pi.TakeAmount = value.Float64
+			}
+		case prescriptionitem.FieldRemainAmount:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field remain_amount", values[i])
+			} else if value.Valid {
+				pi.RemainAmount = value.Float64
+			}
+		case prescriptionitem.FieldTotalAmount:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field total_amount", values[i])
+			} else if value.Valid {
+				pi.TotalAmount = value.Float64
 			}
 		case prescriptionitem.FieldMedicineUnit:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -166,6 +182,12 @@ func (pi *PrescriptionItem) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("take_amount=")
 	builder.WriteString(fmt.Sprintf("%v", pi.TakeAmount))
+	builder.WriteString(", ")
+	builder.WriteString("remain_amount=")
+	builder.WriteString(fmt.Sprintf("%v", pi.RemainAmount))
+	builder.WriteString(", ")
+	builder.WriteString("total_amount=")
+	builder.WriteString(fmt.Sprintf("%v", pi.TotalAmount))
 	builder.WriteString(", ")
 	builder.WriteString("medicine_unit=")
 	builder.WriteString(pi.MedicineUnit)

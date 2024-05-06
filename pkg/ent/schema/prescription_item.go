@@ -18,6 +18,8 @@ func (PrescriptionItem) Fields() []ent.Field {
 		field.UUID("medicine_id", uuid.UUID{}),
 		field.String("medicine_name").SchemaType(varchar(50)),
 		field.Float("take_amount").Default(0.0),
+		field.Float("remain_amount").Default(0.0),
+		field.Float("total_amount").Default(0.0),
 		field.String("medicine_unit").Optional().Default("개").SchemaType(varchar(3)),
 		field.String("memo").Optional().SchemaType(text()),
 		field.Time("created_at").Default(time.Now),

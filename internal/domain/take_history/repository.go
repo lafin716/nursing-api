@@ -233,6 +233,8 @@ func (t *repository) AddItem(item *TakeHistoryItem) (bool, error) {
 		SetTakeHistoryID(item.TakeHistoryId).
 		SetPrescriptionItemID(item.PrescriptionItemId).
 		SetTakeAmount(item.TakeAmount).
+		SetRemainAmount(item.RemainAmount).
+		SetTotalAmount(item.TotalAmount).
 		SetTakeUnit(item.TakeUnit).
 		SetTakeDate(item.TakeDate).
 		SetTakeStatus(string(item.TakeStatus)).
@@ -252,6 +254,8 @@ func (t *repository) AddItemTx(item *TakeHistoryItem, tx *ent.Tx) (bool, error) 
 		SetTakeHistoryID(item.TakeHistoryId).
 		SetPrescriptionItemID(item.PrescriptionItemId).
 		SetTakeAmount(item.TakeAmount).
+		SetRemainAmount(item.RemainAmount).
+		SetTotalAmount(item.TotalAmount).
 		SetTakeUnit(item.TakeUnit).
 		SetTakeDate(item.TakeDate).
 		SetTakeStatus(string(item.TakeStatus)).
@@ -268,6 +272,7 @@ func (t *repository) UpdateItem(item *TakeHistoryItem) (bool, error) {
 	err := t.itemClient.
 		Update().
 		SetTakeStatus(string(item.TakeStatus)).
+		SetRemainAmount(item.RemainAmount).
 		SetMemo(item.Memo).
 		Where(
 			schemaItem.ID(item.ID),

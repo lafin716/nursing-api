@@ -1,12 +1,17 @@
 package date
 
-import "time"
+import (
+	"log"
+	"time"
+)
 
 type parser struct {
 }
 
 type Parser interface {
+	ParseToday(layout string) (time.Time, error)
 	Parse(layout string, value string) (time.Time, error)
+	ParseWithTime(layout string, value string) (time.Time, error)
 	ParseForce(layout string, value string) time.Time
 	ParseWithDefault(layout string, value string, zero time.Time) time.Time
 }
@@ -30,7 +35,21 @@ func (d parser) Parse(layout string, value string) (time.Time, error) {
 	replaced := ReplaceLayout(layout)
 	t, err := time.Parse(replaced, value)
 	if err != nil {
+		log.Println("날짜 파싱에 실패하였습니다. 기본값으로 오늘날짜를 반환합니다.", err)
 		return d.getToday(layout)
+	}
+
+	return t, nil
+}
+
+func (d parser) ParseWithTime(layout string, value string) (time.Time, error) {
+	// 현재일시에서 시간만 추출
+	nowTime := time.Now().Format("15:04:05")
+	log.Println("현재시간 : ", nowTime)
+	replaced := ReplaceLayout(layout)
+	t, err := time.Parse(replaced, value+" "+nowTime)
+	if err != nil {
+		return time.Time{}, err
 	}
 
 	return t, nil

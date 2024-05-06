@@ -25,6 +25,8 @@ type TakeHistoryItem struct {
 	PrescriptionItemId uuid.UUID      `json:"prescription_item_id"`
 	TakeStatus         TakePillStatus `json:"take_status"`
 	TakeAmount         float64        `json:"take_amount"`
+	RemainAmount       float64        `json:"remain_amount"`
+	TotalAmount        float64        `json:"total_amount"`
 	TakeUnit           string         `json:"take_unit"`
 	TakeDate           time.Time      `json:"take_date"`
 	Memo               string         `json:"memo"`

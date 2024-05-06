@@ -132,7 +132,7 @@ func (a *prescriptionApi) Update(ctx *fiber.Ctx) error {
 // @Security Bearer
 func (a *prescriptionApi) Delete(ctx *fiber.Ctx) error {
 	req := new(prescription.DeleteRequest)
-	parser := ParseRequest(req, BODY, a.jwtClient, ctx)
+	parser := ParseRequest(req, PARAM, a.jwtClient, ctx)
 	if parser.Error() != nil {
 		return parser.Error()
 	}

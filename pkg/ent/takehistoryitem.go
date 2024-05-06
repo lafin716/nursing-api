@@ -28,6 +28,10 @@ type TakeHistoryItem struct {
 	TakeStatus string `json:"take_status,omitempty"`
 	// TakeAmount holds the value of the "take_amount" field.
 	TakeAmount float64 `json:"take_amount,omitempty"`
+	// RemainAmount holds the value of the "remain_amount" field.
+	RemainAmount float64 `json:"remain_amount,omitempty"`
+	// TotalAmount holds the value of the "total_amount" field.
+	TotalAmount float64 `json:"total_amount,omitempty"`
 	// TakeUnit holds the value of the "take_unit" field.
 	TakeUnit string `json:"take_unit,omitempty"`
 	// Memo holds the value of the "memo" field.
@@ -46,7 +50,7 @@ func (*TakeHistoryItem) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case takehistoryitem.FieldTakeAmount:
+		case takehistoryitem.FieldTakeAmount, takehistoryitem.FieldRemainAmount, takehistoryitem.FieldTotalAmount:
 			values[i] = new(sql.NullFloat64)
 		case takehistoryitem.FieldTakeStatus, takehistoryitem.FieldTakeUnit, takehistoryitem.FieldMemo:
 			values[i] = new(sql.NullString)
@@ -104,6 +108,18 @@ func (thi *TakeHistoryItem) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field take_amount", values[i])
 			} else if value.Valid {
 				thi.TakeAmount = value.Float64
+			}
+		case takehistoryitem.FieldRemainAmount:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field remain_amount", values[i])
+			} else if value.Valid {
+				thi.RemainAmount = value.Float64
+			}
+		case takehistoryitem.FieldTotalAmount:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field total_amount", values[i])
+			} else if value.Valid {
+				thi.TotalAmount = value.Float64
 			}
 		case takehistoryitem.FieldTakeUnit:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -185,6 +201,12 @@ func (thi *TakeHistoryItem) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("take_amount=")
 	builder.WriteString(fmt.Sprintf("%v", thi.TakeAmount))
+	builder.WriteString(", ")
+	builder.WriteString("remain_amount=")
+	builder.WriteString(fmt.Sprintf("%v", thi.RemainAmount))
+	builder.WriteString(", ")
+	builder.WriteString("total_amount=")
+	builder.WriteString(fmt.Sprintf("%v", thi.TotalAmount))
 	builder.WriteString(", ")
 	builder.WriteString("take_unit=")
 	builder.WriteString(thi.TakeUnit)

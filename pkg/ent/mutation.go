@@ -2656,6 +2656,10 @@ type PrescriptionItemMutation struct {
 	medicine_name    *string
 	take_amount      *float64
 	addtake_amount   *float64
+	remain_amount    *float64
+	addremain_amount *float64
+	total_amount     *float64
+	addtotal_amount  *float64
 	medicine_unit    *string
 	memo             *string
 	created_at       *time.Time
@@ -2934,6 +2938,118 @@ func (m *PrescriptionItemMutation) ResetTakeAmount() {
 	m.addtake_amount = nil
 }
 
+// SetRemainAmount sets the "remain_amount" field.
+func (m *PrescriptionItemMutation) SetRemainAmount(f float64) {
+	m.remain_amount = &f
+	m.addremain_amount = nil
+}
+
+// RemainAmount returns the value of the "remain_amount" field in the mutation.
+func (m *PrescriptionItemMutation) RemainAmount() (r float64, exists bool) {
+	v := m.remain_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRemainAmount returns the old "remain_amount" field's value of the PrescriptionItem entity.
+// If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PrescriptionItemMutation) OldRemainAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRemainAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRemainAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRemainAmount: %w", err)
+	}
+	return oldValue.RemainAmount, nil
+}
+
+// AddRemainAmount adds f to the "remain_amount" field.
+func (m *PrescriptionItemMutation) AddRemainAmount(f float64) {
+	if m.addremain_amount != nil {
+		*m.addremain_amount += f
+	} else {
+		m.addremain_amount = &f
+	}
+}
+
+// AddedRemainAmount returns the value that was added to the "remain_amount" field in this mutation.
+func (m *PrescriptionItemMutation) AddedRemainAmount() (r float64, exists bool) {
+	v := m.addremain_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRemainAmount resets all changes to the "remain_amount" field.
+func (m *PrescriptionItemMutation) ResetRemainAmount() {
+	m.remain_amount = nil
+	m.addremain_amount = nil
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (m *PrescriptionItemMutation) SetTotalAmount(f float64) {
+	m.total_amount = &f
+	m.addtotal_amount = nil
+}
+
+// TotalAmount returns the value of the "total_amount" field in the mutation.
+func (m *PrescriptionItemMutation) TotalAmount() (r float64, exists bool) {
+	v := m.total_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalAmount returns the old "total_amount" field's value of the PrescriptionItem entity.
+// If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PrescriptionItemMutation) OldTotalAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalAmount: %w", err)
+	}
+	return oldValue.TotalAmount, nil
+}
+
+// AddTotalAmount adds f to the "total_amount" field.
+func (m *PrescriptionItemMutation) AddTotalAmount(f float64) {
+	if m.addtotal_amount != nil {
+		*m.addtotal_amount += f
+	} else {
+		m.addtotal_amount = &f
+	}
+}
+
+// AddedTotalAmount returns the value that was added to the "total_amount" field in this mutation.
+func (m *PrescriptionItemMutation) AddedTotalAmount() (r float64, exists bool) {
+	v := m.addtotal_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTotalAmount resets all changes to the "total_amount" field.
+func (m *PrescriptionItemMutation) ResetTotalAmount() {
+	m.total_amount = nil
+	m.addtotal_amount = nil
+}
+
 // SetMedicineUnit sets the "medicine_unit" field.
 func (m *PrescriptionItemMutation) SetMedicineUnit(s string) {
 	m.medicine_unit = &s
@@ -3151,7 +3267,7 @@ func (m *PrescriptionItemMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PrescriptionItemMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.timezone_link_id != nil {
 		fields = append(fields, prescriptionitem.FieldTimezoneLinkID)
 	}
@@ -3163,6 +3279,12 @@ func (m *PrescriptionItemMutation) Fields() []string {
 	}
 	if m.take_amount != nil {
 		fields = append(fields, prescriptionitem.FieldTakeAmount)
+	}
+	if m.remain_amount != nil {
+		fields = append(fields, prescriptionitem.FieldRemainAmount)
+	}
+	if m.total_amount != nil {
+		fields = append(fields, prescriptionitem.FieldTotalAmount)
 	}
 	if m.medicine_unit != nil {
 		fields = append(fields, prescriptionitem.FieldMedicineUnit)
@@ -3192,6 +3314,10 @@ func (m *PrescriptionItemMutation) Field(name string) (ent.Value, bool) {
 		return m.MedicineName()
 	case prescriptionitem.FieldTakeAmount:
 		return m.TakeAmount()
+	case prescriptionitem.FieldRemainAmount:
+		return m.RemainAmount()
+	case prescriptionitem.FieldTotalAmount:
+		return m.TotalAmount()
 	case prescriptionitem.FieldMedicineUnit:
 		return m.MedicineUnit()
 	case prescriptionitem.FieldMemo:
@@ -3217,6 +3343,10 @@ func (m *PrescriptionItemMutation) OldField(ctx context.Context, name string) (e
 		return m.OldMedicineName(ctx)
 	case prescriptionitem.FieldTakeAmount:
 		return m.OldTakeAmount(ctx)
+	case prescriptionitem.FieldRemainAmount:
+		return m.OldRemainAmount(ctx)
+	case prescriptionitem.FieldTotalAmount:
+		return m.OldTotalAmount(ctx)
 	case prescriptionitem.FieldMedicineUnit:
 		return m.OldMedicineUnit(ctx)
 	case prescriptionitem.FieldMemo:
@@ -3262,6 +3392,20 @@ func (m *PrescriptionItemMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetTakeAmount(v)
 		return nil
+	case prescriptionitem.FieldRemainAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRemainAmount(v)
+		return nil
+	case prescriptionitem.FieldTotalAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalAmount(v)
+		return nil
 	case prescriptionitem.FieldMedicineUnit:
 		v, ok := value.(string)
 		if !ok {
@@ -3301,6 +3445,12 @@ func (m *PrescriptionItemMutation) AddedFields() []string {
 	if m.addtake_amount != nil {
 		fields = append(fields, prescriptionitem.FieldTakeAmount)
 	}
+	if m.addremain_amount != nil {
+		fields = append(fields, prescriptionitem.FieldRemainAmount)
+	}
+	if m.addtotal_amount != nil {
+		fields = append(fields, prescriptionitem.FieldTotalAmount)
+	}
 	return fields
 }
 
@@ -3311,6 +3461,10 @@ func (m *PrescriptionItemMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case prescriptionitem.FieldTakeAmount:
 		return m.AddedTakeAmount()
+	case prescriptionitem.FieldRemainAmount:
+		return m.AddedRemainAmount()
+	case prescriptionitem.FieldTotalAmount:
+		return m.AddedTotalAmount()
 	}
 	return nil, false
 }
@@ -3326,6 +3480,20 @@ func (m *PrescriptionItemMutation) AddField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddTakeAmount(v)
+		return nil
+	case prescriptionitem.FieldRemainAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRemainAmount(v)
+		return nil
+	case prescriptionitem.FieldTotalAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalAmount(v)
 		return nil
 	}
 	return fmt.Errorf("unknown PrescriptionItem numeric field %s", name)
@@ -3386,6 +3554,12 @@ func (m *PrescriptionItemMutation) ResetField(name string) error {
 		return nil
 	case prescriptionitem.FieldTakeAmount:
 		m.ResetTakeAmount()
+		return nil
+	case prescriptionitem.FieldRemainAmount:
+		m.ResetRemainAmount()
+		return nil
+	case prescriptionitem.FieldTotalAmount:
+		m.ResetTotalAmount()
 		return nil
 	case prescriptionitem.FieldMedicineUnit:
 		m.ResetMedicineUnit()
@@ -4179,6 +4353,10 @@ type TakeHistoryItemMutation struct {
 	take_status          *string
 	take_amount          *float64
 	addtake_amount       *float64
+	remain_amount        *float64
+	addremain_amount     *float64
+	total_amount         *float64
+	addtotal_amount      *float64
 	take_unit            *string
 	memo                 *string
 	take_date            *time.Time
@@ -4494,6 +4672,118 @@ func (m *TakeHistoryItemMutation) ResetTakeAmount() {
 	m.addtake_amount = nil
 }
 
+// SetRemainAmount sets the "remain_amount" field.
+func (m *TakeHistoryItemMutation) SetRemainAmount(f float64) {
+	m.remain_amount = &f
+	m.addremain_amount = nil
+}
+
+// RemainAmount returns the value of the "remain_amount" field in the mutation.
+func (m *TakeHistoryItemMutation) RemainAmount() (r float64, exists bool) {
+	v := m.remain_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRemainAmount returns the old "remain_amount" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldRemainAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRemainAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRemainAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRemainAmount: %w", err)
+	}
+	return oldValue.RemainAmount, nil
+}
+
+// AddRemainAmount adds f to the "remain_amount" field.
+func (m *TakeHistoryItemMutation) AddRemainAmount(f float64) {
+	if m.addremain_amount != nil {
+		*m.addremain_amount += f
+	} else {
+		m.addremain_amount = &f
+	}
+}
+
+// AddedRemainAmount returns the value that was added to the "remain_amount" field in this mutation.
+func (m *TakeHistoryItemMutation) AddedRemainAmount() (r float64, exists bool) {
+	v := m.addremain_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRemainAmount resets all changes to the "remain_amount" field.
+func (m *TakeHistoryItemMutation) ResetRemainAmount() {
+	m.remain_amount = nil
+	m.addremain_amount = nil
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (m *TakeHistoryItemMutation) SetTotalAmount(f float64) {
+	m.total_amount = &f
+	m.addtotal_amount = nil
+}
+
+// TotalAmount returns the value of the "total_amount" field in the mutation.
+func (m *TakeHistoryItemMutation) TotalAmount() (r float64, exists bool) {
+	v := m.total_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalAmount returns the old "total_amount" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldTotalAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalAmount: %w", err)
+	}
+	return oldValue.TotalAmount, nil
+}
+
+// AddTotalAmount adds f to the "total_amount" field.
+func (m *TakeHistoryItemMutation) AddTotalAmount(f float64) {
+	if m.addtotal_amount != nil {
+		*m.addtotal_amount += f
+	} else {
+		m.addtotal_amount = &f
+	}
+}
+
+// AddedTotalAmount returns the value that was added to the "total_amount" field in this mutation.
+func (m *TakeHistoryItemMutation) AddedTotalAmount() (r float64, exists bool) {
+	v := m.addtotal_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTotalAmount resets all changes to the "total_amount" field.
+func (m *TakeHistoryItemMutation) ResetTotalAmount() {
+	m.total_amount = nil
+	m.addtotal_amount = nil
+}
+
 // SetTakeUnit sets the "take_unit" field.
 func (m *TakeHistoryItemMutation) SetTakeUnit(s string) {
 	m.take_unit = &s
@@ -4734,7 +5024,7 @@ func (m *TakeHistoryItemMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TakeHistoryItemMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 12)
 	if m.user_id != nil {
 		fields = append(fields, takehistoryitem.FieldUserID)
 	}
@@ -4749,6 +5039,12 @@ func (m *TakeHistoryItemMutation) Fields() []string {
 	}
 	if m.take_amount != nil {
 		fields = append(fields, takehistoryitem.FieldTakeAmount)
+	}
+	if m.remain_amount != nil {
+		fields = append(fields, takehistoryitem.FieldRemainAmount)
+	}
+	if m.total_amount != nil {
+		fields = append(fields, takehistoryitem.FieldTotalAmount)
 	}
 	if m.take_unit != nil {
 		fields = append(fields, takehistoryitem.FieldTakeUnit)
@@ -4783,6 +5079,10 @@ func (m *TakeHistoryItemMutation) Field(name string) (ent.Value, bool) {
 		return m.TakeStatus()
 	case takehistoryitem.FieldTakeAmount:
 		return m.TakeAmount()
+	case takehistoryitem.FieldRemainAmount:
+		return m.RemainAmount()
+	case takehistoryitem.FieldTotalAmount:
+		return m.TotalAmount()
 	case takehistoryitem.FieldTakeUnit:
 		return m.TakeUnit()
 	case takehistoryitem.FieldMemo:
@@ -4812,6 +5112,10 @@ func (m *TakeHistoryItemMutation) OldField(ctx context.Context, name string) (en
 		return m.OldTakeStatus(ctx)
 	case takehistoryitem.FieldTakeAmount:
 		return m.OldTakeAmount(ctx)
+	case takehistoryitem.FieldRemainAmount:
+		return m.OldRemainAmount(ctx)
+	case takehistoryitem.FieldTotalAmount:
+		return m.OldTotalAmount(ctx)
 	case takehistoryitem.FieldTakeUnit:
 		return m.OldTakeUnit(ctx)
 	case takehistoryitem.FieldMemo:
@@ -4866,6 +5170,20 @@ func (m *TakeHistoryItemMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTakeAmount(v)
 		return nil
+	case takehistoryitem.FieldRemainAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRemainAmount(v)
+		return nil
+	case takehistoryitem.FieldTotalAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalAmount(v)
+		return nil
 	case takehistoryitem.FieldTakeUnit:
 		v, ok := value.(string)
 		if !ok {
@@ -4912,6 +5230,12 @@ func (m *TakeHistoryItemMutation) AddedFields() []string {
 	if m.addtake_amount != nil {
 		fields = append(fields, takehistoryitem.FieldTakeAmount)
 	}
+	if m.addremain_amount != nil {
+		fields = append(fields, takehistoryitem.FieldRemainAmount)
+	}
+	if m.addtotal_amount != nil {
+		fields = append(fields, takehistoryitem.FieldTotalAmount)
+	}
 	return fields
 }
 
@@ -4922,6 +5246,10 @@ func (m *TakeHistoryItemMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case takehistoryitem.FieldTakeAmount:
 		return m.AddedTakeAmount()
+	case takehistoryitem.FieldRemainAmount:
+		return m.AddedRemainAmount()
+	case takehistoryitem.FieldTotalAmount:
+		return m.AddedTotalAmount()
 	}
 	return nil, false
 }
@@ -4937,6 +5265,20 @@ func (m *TakeHistoryItemMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddTakeAmount(v)
+		return nil
+	case takehistoryitem.FieldRemainAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRemainAmount(v)
+		return nil
+	case takehistoryitem.FieldTotalAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalAmount(v)
 		return nil
 	}
 	return fmt.Errorf("unknown TakeHistoryItem numeric field %s", name)
@@ -4994,6 +5336,12 @@ func (m *TakeHistoryItemMutation) ResetField(name string) error {
 		return nil
 	case takehistoryitem.FieldTakeAmount:
 		m.ResetTakeAmount()
+		return nil
+	case takehistoryitem.FieldRemainAmount:
+		m.ResetRemainAmount()
+		return nil
+	case takehistoryitem.FieldTotalAmount:
+		m.ResetTotalAmount()
 		return nil
 	case takehistoryitem.FieldTakeUnit:
 		m.ResetTakeUnit()

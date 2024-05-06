@@ -53,6 +53,34 @@ func (pic *PrescriptionItemCreate) SetNillableTakeAmount(f *float64) *Prescripti
 	return pic
 }
 
+// SetRemainAmount sets the "remain_amount" field.
+func (pic *PrescriptionItemCreate) SetRemainAmount(f float64) *PrescriptionItemCreate {
+	pic.mutation.SetRemainAmount(f)
+	return pic
+}
+
+// SetNillableRemainAmount sets the "remain_amount" field if the given value is not nil.
+func (pic *PrescriptionItemCreate) SetNillableRemainAmount(f *float64) *PrescriptionItemCreate {
+	if f != nil {
+		pic.SetRemainAmount(*f)
+	}
+	return pic
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (pic *PrescriptionItemCreate) SetTotalAmount(f float64) *PrescriptionItemCreate {
+	pic.mutation.SetTotalAmount(f)
+	return pic
+}
+
+// SetNillableTotalAmount sets the "total_amount" field if the given value is not nil.
+func (pic *PrescriptionItemCreate) SetNillableTotalAmount(f *float64) *PrescriptionItemCreate {
+	if f != nil {
+		pic.SetTotalAmount(*f)
+	}
+	return pic
+}
+
 // SetMedicineUnit sets the "medicine_unit" field.
 func (pic *PrescriptionItemCreate) SetMedicineUnit(s string) *PrescriptionItemCreate {
 	pic.mutation.SetMedicineUnit(s)
@@ -162,6 +190,14 @@ func (pic *PrescriptionItemCreate) defaults() {
 		v := prescriptionitem.DefaultTakeAmount
 		pic.mutation.SetTakeAmount(v)
 	}
+	if _, ok := pic.mutation.RemainAmount(); !ok {
+		v := prescriptionitem.DefaultRemainAmount
+		pic.mutation.SetRemainAmount(v)
+	}
+	if _, ok := pic.mutation.TotalAmount(); !ok {
+		v := prescriptionitem.DefaultTotalAmount
+		pic.mutation.SetTotalAmount(v)
+	}
 	if _, ok := pic.mutation.MedicineUnit(); !ok {
 		v := prescriptionitem.DefaultMedicineUnit
 		pic.mutation.SetMedicineUnit(v)
@@ -189,6 +225,12 @@ func (pic *PrescriptionItemCreate) check() error {
 	}
 	if _, ok := pic.mutation.TakeAmount(); !ok {
 		return &ValidationError{Name: "take_amount", err: errors.New(`ent: missing required field "PrescriptionItem.take_amount"`)}
+	}
+	if _, ok := pic.mutation.RemainAmount(); !ok {
+		return &ValidationError{Name: "remain_amount", err: errors.New(`ent: missing required field "PrescriptionItem.remain_amount"`)}
+	}
+	if _, ok := pic.mutation.TotalAmount(); !ok {
+		return &ValidationError{Name: "total_amount", err: errors.New(`ent: missing required field "PrescriptionItem.total_amount"`)}
 	}
 	if _, ok := pic.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PrescriptionItem.created_at"`)}
@@ -243,6 +285,14 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 	if value, ok := pic.mutation.TakeAmount(); ok {
 		_spec.SetField(prescriptionitem.FieldTakeAmount, field.TypeFloat64, value)
 		_node.TakeAmount = value
+	}
+	if value, ok := pic.mutation.RemainAmount(); ok {
+		_spec.SetField(prescriptionitem.FieldRemainAmount, field.TypeFloat64, value)
+		_node.RemainAmount = value
+	}
+	if value, ok := pic.mutation.TotalAmount(); ok {
+		_spec.SetField(prescriptionitem.FieldTotalAmount, field.TypeFloat64, value)
+		_node.TotalAmount = value
 	}
 	if value, ok := pic.mutation.MedicineUnit(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineUnit, field.TypeString, value)

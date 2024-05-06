@@ -60,14 +60,18 @@ func NewService(
 
 func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 	txErr := p.db.BeginTx()
-	tx := p.db.GetTx()
 	if txErr != nil {
 		return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
 	}
+	tx := p.db.GetTx()
 
 	// 처방전 등록
 	startedAt, err := p.mono.Date.Parse("Y-m-d", req.StartedAt)
-	if txErr != nil {
+	if err != nil {
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[any](response.CODE_NOT_AVAILABLE_DATE, err)
 	}
 	finishedAt := startedAt.AddDate(0, 0, req.TakeDays)
@@ -140,6 +144,8 @@ func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 				MedicineId:     mdc.MedicineId,
 				MedicineName:   foundMdc.Name,
 				TakeAmount:     mdc.TakeAmount,
+				RemainAmount:   mdc.TakeAmount * float64(req.TakeDays),
+				TotalAmount:    mdc.TakeAmount * float64(req.TakeDays),
 				MedicineUnit:   mdc.TakeUnit,
 				Memo:           mdc.Memo,
 				CreatedAt:      time.Now(),
@@ -172,6 +178,10 @@ func (p *planService) Delete(req *DeletePlanRequest) dto.BaseResponse[any] {
 	// 복용계획 조회
 	ps, err := p.prescriptionRepo.GetById(req.ID)
 	if err != nil {
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[any](response.CODE_NOT_FOUND_PLAN, err)
 	}
 
@@ -251,25 +261,37 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 	}
 	tx := p.db.GetTx()
 
-	dateTime, err := p.mono.Date.Parse("Y-m-d H:i:s", req.TargetDate)
+	dateTime, err := p.mono.Date.ParseWithTime("Y-m-d H:i:s", req.TargetDate)
 	if err != nil {
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[bool](response.CODE_NOT_AVAILABLE_DATE, err)
 	}
 
 	// 복용여부
 	var isTaken bool
 
+	// 쿼리 조건용 날짜 생성
+	truncatedDate := p.mono.Date.TruncateToDate(dateTime)
+	truncatedDateNext := p.mono.Date.TruncateToDateAddDay(dateTime, 1)
+
 	// 날짜기준 유효한 처방전 조회
 	psList, err := p.prescriptionRepo.GetListBySearch(&prescription.SearchCondition{
-		UserId:     req.UserId,
-		TargetDate: dateTime,
+		UserId:         req.UserId,
+		TargetDate:     truncatedDate,
+		TargetDateNext: truncatedDateNext,
 	})
-	if err != nil {
+	if err != nil || len(psList) == 0 {
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[bool](response.CODE_NO_RESULT_PLAN_BY_DATE, err)
 	}
 
 	// 복용내역 조회
-	truncatedDate := p.mono.Date.TruncateToDate(dateTime)
 	tz, err := p.takeHistoryRepo.GetByTimezoneId(req.UserId, req.TimezoneId, truncatedDate)
 
 	// 있는 경우 복용 취소 처리
@@ -296,6 +318,51 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 		if txErr != nil {
 			return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
 		}
+
+		// 처방전 고유번호 슬라이스 가공
+		var prescriptionIds []uuid.UUID
+		for _, ps := range psList {
+			prescriptionIds = append(prescriptionIds, ps.ID)
+		}
+
+		// 타임존링크 조회
+		tzlList, err := p.timezoneLinkRepo.GetByTimezoneIdAndPrescriptionIds(req.TimezoneId, prescriptionIds)
+		if err != nil {
+			txErr = p.db.RollbackAndEnd()
+			if txErr != nil {
+				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+			}
+			return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_TIMEZONE, err)
+		}
+
+		var tzlSerial []uuid.UUID
+		for _, tzl := range tzlList {
+			tzlSerial = append(tzlSerial, tzl.ID)
+		}
+
+		// 복용아이템 조회
+		items, err := p.prescriptionRepo.GetItemListByTimezoneLinkIds(tzlSerial)
+		if err != nil {
+			txErr = p.db.RollbackAndEnd()
+			if txErr != nil {
+				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+			}
+			return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_ITEM, err)
+		}
+
+		// 복용아이템 남은량 복구
+		for _, item := range items {
+			item.RemainAmount = item.RemainAmount + item.TakeAmount
+			result, err := p.prescriptionRepo.UpdateItem(item)
+			if result <= 0 || err != nil {
+				txErr = p.db.RollbackAndEnd()
+				if txErr != nil {
+					return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+				}
+				return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
+			}
+		}
+
 		return dto.Ok[bool](response.CODE_SUCCESS, &isTaken)
 	}
 
@@ -350,18 +417,31 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 
 	// 복용아이템 이력 추가
 	for _, item := range items {
+		// 복용아이템 남은량 차감
+		item.RemainAmount = item.RemainAmount - item.TakeAmount
+		result, err := p.prescriptionRepo.UpdateItem(item)
+		if result <= 0 || err != nil {
+			txErr = p.db.RollbackAndEnd()
+			if txErr != nil {
+				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+			}
+			return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
+		}
+
 		newItem := &takehistory.TakeHistoryItem{
 			UserId:             req.UserId,
 			TakeHistoryId:      saved.ID,
 			PrescriptionItemId: item.ID,
 			TakeStatus:         takehistory.Y,
 			TakeAmount:         item.TakeAmount,
+			RemainAmount:       item.RemainAmount,
+			TotalAmount:        item.TotalAmount,
 			TakeUnit:           item.MedicineUnit,
 			TakeDate:           dateTime,
 			CreatedAt:          item.CreatedAt,
 		}
-		result, err := p.takeHistoryRepo.AddItemTx(newItem, tx)
-		if !result || err != nil {
+		histResult, err := p.takeHistoryRepo.AddItemTx(newItem, tx)
+		if !histResult || err != nil {
 			txErr = p.db.RollbackAndEnd()
 			if txErr != nil {
 				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
@@ -386,8 +466,10 @@ func (p *planService) PillToggle(req *PillToggleRequest) dto.BaseResponse[bool] 
 	isTaken := takehistory.Y == item.TakeStatus
 	if isTaken {
 		item.TakeStatus = takehistory.N
+		item.RemainAmount = item.RemainAmount + item.TakeAmount
 	} else {
 		item.TakeStatus = takehistory.Y
+		item.RemainAmount = item.TotalAmount - item.TakeAmount
 	}
 
 	isTaken = !isTaken
