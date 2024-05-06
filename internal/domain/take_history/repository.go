@@ -20,12 +20,16 @@ type Repository interface {
 	GetItemById(userId uuid.UUID, takeHistoryItemId uuid.UUID) (*TakeHistoryItem, error)
 	GetItemsByHistoryId(userId uuid.UUID, historyId uuid.UUID, date time.Time) ([]*TakeHistoryItem, error)
 	Add(newData *TakeHistory) (*TakeHistory, error)
+	AddTx(newData *TakeHistory, tx *ent.Tx) (*TakeHistory, error)
 	Update(newData *TakeHistory) (bool, error)
 	Delete(takeHistoryId uuid.UUID) (bool, error)
+	DeleteTx(takeHistoryId uuid.UUID, tx *ent.Tx) (bool, error)
 	AddItem(item *TakeHistoryItem) (bool, error)
+	AddItemTx(item *TakeHistoryItem, tx *ent.Tx) (bool, error)
 	UpdateItem(item *TakeHistoryItem) (bool, error)
 	DeleteItem(takeHistoryItemId uuid.UUID) (bool, error)
 	DeleteItemByHistoryId(takeHistoryId uuid.UUID) (bool, error)
+	DeleteItemByHistoryIdTx(takeHistoryId uuid.UUID, tx *ent.Tx) (bool, error)
 }
 
 type repository struct {
@@ -169,6 +173,23 @@ func (t *repository) Add(newData *TakeHistory) (*TakeHistory, error) {
 	return toModel(saved), nil
 }
 
+func (t *repository) AddTx(newData *TakeHistory, tx *ent.Tx) (*TakeHistory, error) {
+	saved, err := tx.TakeHistory.
+		Create().
+		SetUserID(newData.UserId).
+		SetTimezoneID(newData.TimezoneId).
+		SetTakeDate(newData.TakeDate).
+		SetTakeStatus(string(newData.TakeStatus)).
+		SetMemo(newData.Memo).
+		SetCreatedAt(newData.CreatedAt).
+		Save(t.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return toModel(saved), nil
+}
+
 func (t *repository) Update(newData *TakeHistory) (bool, error) {
 	result, err := t.client.
 		Update().
@@ -196,8 +217,36 @@ func (t *repository) Delete(takeHistoryId uuid.UUID) (bool, error) {
 	return result > 0, nil
 }
 
+func (t *repository) DeleteTx(takeHistoryId uuid.UUID, tx *ent.Tx) (bool, error) {
+	result, err := tx.TakeHistory.Delete().Where(schema.ID(takeHistoryId)).Exec(t.ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return result > 0, nil
+}
+
 func (t *repository) AddItem(item *TakeHistoryItem) (bool, error) {
 	_, err := t.itemClient.
+		Create().
+		SetUserID(item.UserId).
+		SetTakeHistoryID(item.TakeHistoryId).
+		SetPrescriptionItemID(item.PrescriptionItemId).
+		SetTakeAmount(item.TakeAmount).
+		SetTakeUnit(item.TakeUnit).
+		SetTakeDate(item.TakeDate).
+		SetTakeStatus(string(item.TakeStatus)).
+		SetCreatedAt(time.Now()).
+		Save(t.ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (t *repository) AddItemTx(item *TakeHistoryItem, tx *ent.Tx) (bool, error) {
+	_, err := tx.TakeHistoryItem.
 		Create().
 		SetUserID(item.UserId).
 		SetTakeHistoryID(item.TakeHistoryId).
@@ -247,5 +296,13 @@ func (t *repository) DeleteItemByHistoryId(takeHistoryId uuid.UUID) (bool, error
 		return false, err
 	}
 
+	return result > 0, nil
+}
+
+func (t *repository) DeleteItemByHistoryIdTx(takeHistoryId uuid.UUID, tx *ent.Tx) (bool, error) {
+	result, err := tx.TakeHistoryItem.Delete().Where(schemaItem.TakeHistoryID(takeHistoryId)).Exec(t.ctx)
+	if err != nil {
+		return false, err
+	}
 	return result > 0, nil
 }

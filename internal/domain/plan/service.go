@@ -60,6 +60,7 @@ func NewService(
 
 func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 	txErr := p.db.BeginTx()
+	tx := p.db.GetTx()
 	if txErr != nil {
 		return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
 	}
@@ -79,8 +80,14 @@ func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 		FinishedAt:       finishedAt,
 		Memo:             req.Memo,
 	}
-	savedPs, err := p.prescriptionRepo.Add(psReq)
+
+	savedPs, err := p.prescriptionRepo.AddTx(psReq, tx)
 	if err != nil {
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+		}
+
 		return dto.Fail[any](response.CODE_FAIL_ADD_PRESCRIPTION, err)
 	}
 
@@ -89,7 +96,10 @@ func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 		// 타임존 조회
 		foundTz, err := p.timezoneRepo.GetTimeZone(tz.TimezoneId, req.UserId)
 		if err != nil {
-			p.db.RollbackAndEnd()
+			txErr = p.db.RollbackAndEnd()
+			if txErr != nil {
+				return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+			}
 			return dto.Fail[any](response.CODE_NOT_FOUND_PLAN_TIMEZONE, err)
 		}
 
@@ -104,9 +114,12 @@ func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 			Minute:         foundTz.Minute,
 			CreatedAt:      time.Now(),
 		}
-		savedTimezoneLink, err := p.timezoneLinkRepo.ConnectPrescription(tlReq)
+		savedTimezoneLink, err := p.timezoneLinkRepo.ConnectPrescriptionTx(tlReq, tx)
 		if err != nil {
-			p.db.RollbackAndEnd()
+			txErr = p.db.RollbackAndEnd()
+			if txErr != nil {
+				return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+			}
 			return dto.Fail[any](response.CODE_FAIL_CONNECT_TIMEZONE, err)
 		}
 
@@ -115,7 +128,10 @@ func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 			// 현재는 기본 의약품의 정보를 DB에서 읽어서 저장
 			foundMdc, err := p.medicineRepo.GetById(mdc.MedicineId)
 			if err != nil {
-				p.db.RollbackAndEnd()
+				txErr = p.db.RollbackAndEnd()
+				if txErr != nil {
+					return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+				}
 				return dto.Fail[any](response.CODE_NOT_FOUND_MEDICINE, err)
 			}
 
@@ -128,20 +144,30 @@ func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 				Memo:           mdc.Memo,
 				CreatedAt:      time.Now(),
 			}
-			_, err = p.prescriptionRepo.AddItem(psiReq)
+			_, err = p.prescriptionRepo.AddItemTx(psiReq, tx)
 			if err != nil {
-				p.db.RollbackAndEnd()
+				txErr = p.db.RollbackAndEnd()
+				if txErr != nil {
+					return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+				}
 				return dto.Fail[any](response.CODE_FAIL_ADD_ITEM_PLAN, err)
 			}
 		}
 	}
 
-	p.db.CommitAndEnd()
+	txErr = p.db.CommitAndEnd()
+	if txErr != nil {
+		return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+	}
 	return dto.Ok[any](response.CODE_SUCCESS, nil)
 }
 
 func (p *planService) Delete(req *DeletePlanRequest) dto.BaseResponse[any] {
-	p.db.BeginTx()
+	txErr := p.db.BeginTx()
+	if txErr != nil {
+		return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+	}
+	tx := p.db.GetTx()
 
 	// 복용계획 조회
 	ps, err := p.prescriptionRepo.GetById(req.ID)
@@ -150,9 +176,12 @@ func (p *planService) Delete(req *DeletePlanRequest) dto.BaseResponse[any] {
 	}
 
 	// 복용계획 삭제처리
-	result, err := p.prescriptionRepo.Delete(ps.ID)
+	result, err := p.prescriptionRepo.DeleteTx(ps.ID, tx)
 	if !result || err != nil {
-		p.db.RollbackAndEnd()
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[any](response.CODE_FAIL_DELETE_PLAN, err)
 	}
 
@@ -160,7 +189,10 @@ func (p *planService) Delete(req *DeletePlanRequest) dto.BaseResponse[any] {
 	tzls, err := p.timezoneLinkRepo.GetByPrescription(ps.ID)
 	// 없을 수도 있으므로 없는경우 정상 응답
 	if err == nil {
-		p.db.CommitAndEnd()
+		txErr = p.db.CommitAndEnd()
+		if txErr != nil {
+			return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Ok[any](response.CODE_SUCCESS, nil)
 	}
 
@@ -170,10 +202,13 @@ func (p *planService) Delete(req *DeletePlanRequest) dto.BaseResponse[any] {
 		tzlIds = append(tzlIds, tzl.ID)
 	}
 
-	// 시간대 삭제처리
-	result, err = p.timezoneLinkRepo.DeleteByIds(tzlIds)
+	// 시간대 링크 삭제처리
+	result, err = p.timezoneLinkRepo.DeleteByIdsTx(tzlIds, tx)
 	if !result || err != nil {
-		p.db.RollbackAndEnd()
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[any](response.CODE_FAIL_DELETE_PLAN_TIMEZONE, nil)
 	}
 
@@ -181,7 +216,10 @@ func (p *planService) Delete(req *DeletePlanRequest) dto.BaseResponse[any] {
 	psItems, err := p.prescriptionRepo.GetItemListByTimezoneLinkIds(tzlIds)
 	// 없을 수도 있으므로 없는 경우 정상응답
 	if err != nil {
-		p.db.CommitAndEnd()
+		txErr = p.db.CommitAndEnd()
+		if txErr != nil {
+			return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Ok[any](response.CODE_SUCCESS, nil)
 	}
 
@@ -190,18 +228,29 @@ func (p *planService) Delete(req *DeletePlanRequest) dto.BaseResponse[any] {
 	for _, psItem := range psItems {
 		psItemIds = append(psItemIds, psItem.ID)
 	}
-	result, err = p.prescriptionRepo.DeleteItemByIds(psItemIds)
+	result, err = p.prescriptionRepo.DeleteItemByIdsTx(psItemIds, tx)
 	if !result || err != nil {
-		p.db.RollbackAndEnd()
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[any](response.CODE_FAIL_DELETE_ITEM_PLAN, err)
 	}
 
-	p.db.CommitAndEnd()
+	txErr = p.db.CommitAndEnd()
+	if txErr != nil {
+		return dto.Fail[any](response.CODE_ERROR_TRANSACTION, txErr)
+	}
 	return dto.Ok[any](response.CODE_SUCCESS, nil)
 }
 
 func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
-	p.db.BeginTx()
+	txErr := p.db.BeginTx()
+	if txErr != nil {
+		return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+	}
+	tx := p.db.GetTx()
+
 	dateTime, err := p.mono.Date.Parse("Y-m-d H:i:s", req.TargetDate)
 	if err != nil {
 		return dto.Fail[bool](response.CODE_NOT_AVAILABLE_DATE, err)
@@ -226,9 +275,27 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 	// 있는 경우 복용 취소 처리
 	if tz != nil || err == nil {
 		isTaken = false
-		p.takeHistoryRepo.Delete(tz.ID)
-		p.takeHistoryRepo.DeleteItemByHistoryId(tz.ID)
-		p.db.CommitAndEnd()
+		_, err = p.takeHistoryRepo.DeleteTx(tz.ID, tx)
+		if err != nil {
+			txErr = p.db.RollbackAndEnd()
+			if txErr != nil {
+				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+			}
+			return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
+		}
+		_, err = p.takeHistoryRepo.DeleteItemByHistoryIdTx(tz.ID, tx)
+		if err != nil {
+			txErr = p.db.RollbackAndEnd()
+			if txErr != nil {
+				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+			}
+			return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
+		}
+
+		txErr = p.db.CommitAndEnd()
+		if txErr != nil {
+			return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Ok[bool](response.CODE_SUCCESS, &isTaken)
 	}
 
@@ -241,9 +308,12 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 		TakeStatus: takehistory.DONE,
 		CreatedAt:  time.Now(),
 	}
-	saved, err := p.takeHistoryRepo.Add(newHistory)
+	saved, err := p.takeHistoryRepo.AddTx(newHistory, tx)
 	if saved == nil || err != nil {
-		p.db.RollbackAndEnd()
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
 	}
 
@@ -256,7 +326,10 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 	// 타임존링크 조회
 	tzlList, err := p.timezoneLinkRepo.GetByTimezoneIdAndPrescriptionIds(req.TimezoneId, prescriptionIds)
 	if err != nil {
-		p.db.RollbackAndEnd()
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_TIMEZONE, err)
 	}
 
@@ -268,7 +341,10 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 	// 복용아이템 조회
 	items, err := p.prescriptionRepo.GetItemListByTimezoneLinkIds(tzlSerial)
 	if err != nil {
-		p.db.RollbackAndEnd()
+		txErr = p.db.RollbackAndEnd()
+		if txErr != nil {
+			return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+		}
 		return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_ITEM, err)
 	}
 
@@ -284,14 +360,20 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 			TakeDate:           dateTime,
 			CreatedAt:          item.CreatedAt,
 		}
-		result, err := p.takeHistoryRepo.AddItem(newItem)
+		result, err := p.takeHistoryRepo.AddItemTx(newItem, tx)
 		if !result || err != nil {
-			p.db.RollbackAndEnd()
+			txErr = p.db.RollbackAndEnd()
+			if txErr != nil {
+				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+			}
 			return dto.Fail[bool](response.CODE_FAIL_SAVE_PLAN_LOG, err)
 		}
 	}
 
-	p.db.CommitAndEnd()
+	txErr = p.db.CommitAndEnd()
+	if txErr != nil {
+		return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+	}
 	return dto.Ok[bool](response.CODE_SUCCESS, &isTaken)
 }
 

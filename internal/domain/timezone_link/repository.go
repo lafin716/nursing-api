@@ -16,8 +16,10 @@ type repository struct {
 
 type Repository interface {
 	ConnectPrescription(link *TimeZoneLink) (*TimeZoneLink, error)
+	ConnectPrescriptionTx(link *TimeZoneLink, tx *ent.Tx) (*TimeZoneLink, error)
 	GetByPrescription(prescriptionId uuid.UUID) ([]*TimeZoneLink, error)
 	DeleteByIds(ids []uuid.UUID) (bool, error)
+	DeleteByIdsTx(ids []uuid.UUID, tx *ent.Tx) (bool, error)
 	GetByTimezoneIdAndPrescriptionIds(timezoneId uuid.UUID, prescriptionIds []uuid.UUID) ([]*TimeZoneLink, error)
 }
 
@@ -68,6 +70,25 @@ func (r repository) ConnectPrescription(link *TimeZoneLink) (*TimeZoneLink, erro
 	return toDomain(saved), nil
 }
 
+func (r repository) ConnectPrescriptionTx(link *TimeZoneLink, tx *ent.Tx) (*TimeZoneLink, error) {
+	saved, err := tx.TimeZoneLink.
+		Create().
+		SetPrescriptionID(link.PrescriptionId).
+		SetTimezoneID(link.TimeZoneId).
+		SetTimezoneName(link.TimeZoneName).
+		SetUseAlert(link.UseAlert).
+		SetMidday(link.Midday).
+		SetHour(link.Hour).
+		SetMinute(link.Minute).
+		SetCreatedAt(link.CreatedAt).
+		Save(r.c)
+	if err != nil {
+		return nil, err
+	}
+
+	return toDomain(saved), nil
+}
+
 func (r repository) GetByPrescription(prescriptionId uuid.UUID) ([]*TimeZoneLink, error) {
 	founds, err := r.timezoneLink.
 		Query().
@@ -84,6 +105,15 @@ func (r repository) GetByPrescription(prescriptionId uuid.UUID) ([]*TimeZoneLink
 
 func (r repository) DeleteByIds(ids []uuid.UUID) (bool, error) {
 	result, err := r.timezoneLink.Delete().Where(schema.IDIn(ids...)).Exec(r.c)
+	if err != nil {
+		return false, err
+	}
+
+	return result > 0, nil
+}
+
+func (r repository) DeleteByIdsTx(ids []uuid.UUID, tx *ent.Tx) (bool, error) {
+	result, err := tx.TimeZoneLink.Delete().Where(schema.IDIn(ids...)).Exec(r.c)
 	if err != nil {
 		return false, err
 	}

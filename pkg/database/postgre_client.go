@@ -74,6 +74,10 @@ func (d *DatabaseClient) BeginTx() error {
 	return nil
 }
 
+func (d *DatabaseClient) GetTx() *ent.Tx {
+	return d.Tx
+}
+
 func (d *DatabaseClient) Commit() error {
 	if d.Tx == nil {
 		return errors.New("트랜잭션이 시작되지 않았습니다")
