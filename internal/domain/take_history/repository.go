@@ -71,8 +71,7 @@ func (t *repository) GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, dat
 			schema.And(
 				schema.UserID(userId),
 				schema.TimezoneID(timezoneId),
-				schema.TakeDateGTE(date),
-				schema.TakeDateLT(date.AddDate(0, 0, 1)),
+				schema.TakeDate(date),
 			),
 		).Only(t.ctx)
 	if err != nil {
@@ -193,12 +192,13 @@ func (t *repository) AddTx(newData *TakeHistory, tx *ent.Tx) (*TakeHistory, erro
 func (t *repository) Update(newData *TakeHistory) (bool, error) {
 	result, err := t.client.
 		Update().
-		SetTakeDate(newData.TakeDate).
 		SetTakeStatus(string(newData.TakeStatus)).
 		SetMemo(newData.Memo).
 		SetUpdatedAt(newData.UpdatedAt).
 		Where(
 			schema.UserID(newData.ID),
+			schema.TakeDate(newData.TakeDate),
+			schema.TimezoneID(newData.TimezoneId),
 		).
 		Save(t.ctx)
 	if err != nil {
