@@ -71,7 +71,8 @@ func (t *repository) GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, dat
 			schema.And(
 				schema.UserID(userId),
 				schema.TimezoneID(timezoneId),
-				schema.TakeDate(date),
+				schema.TakeDateGTE(date),
+				schema.TakeDateLT(date.AddDate(0, 0, 1)),
 			),
 		).Only(t.ctx)
 	if err != nil {
