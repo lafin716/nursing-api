@@ -11,6 +11,7 @@ type parser struct {
 type Parser interface {
 	ParseToday(layout string) (time.Time, error)
 	Parse(layout string, value string) (time.Time, error)
+	ParseWithoutTime(layout string, value string) (time.Time, error)
 	ParseWithTime(layout string, value string) (time.Time, error)
 	ParseForce(layout string, value string) time.Time
 	ParseWithDefault(layout string, value string, zero time.Time) time.Time
@@ -37,6 +38,16 @@ func (d parser) Parse(layout string, value string) (time.Time, error) {
 	if err != nil {
 		log.Println("날짜 파싱에 실패하였습니다. 기본값으로 오늘날짜를 반환합니다.", err)
 		return d.getToday(layout)
+	}
+
+	return t, nil
+}
+
+func (d parser) ParseWithoutTime(layout string, value string) (time.Time, error) {
+	replaced := ReplaceLayout(layout)
+	t, err := time.Parse(replaced, value)
+	if err != nil {
+		return time.Time{}, err
 	}
 
 	return t, nil

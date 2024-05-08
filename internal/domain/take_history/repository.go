@@ -116,9 +116,11 @@ func (t *repository) GetListByDate(userId uuid.UUID, date time.Time) ([]*TakeHis
 	found, err := t.client.
 		Query().
 		Where(
-			schema.UserID(userId),
-			schema.TakeDateGTE(date),
-			schema.TakeDateLT(date.AddDate(0, 0, 1)),
+			schema.And(
+				schema.UserID(userId),
+				schema.TakeDateGTE(date),
+				schema.TakeDateLT(date.AddDate(0, 0, 1)),
+			),
 		).
 		All(t.ctx)
 	if err != nil {
@@ -197,10 +199,9 @@ func (t *repository) Update(newData *TakeHistory) (bool, error) {
 		SetMemo(newData.Memo).
 		SetUpdatedAt(newData.UpdatedAt).
 		Where(
-			schema.UserID(newData.ID),
-			schema.TimezoneID(newData.TimezoneId),
-			schema.TakeDateGTE(newData.TakeDate),
-			schema.TakeDateLT(newData.TakeDate.AddDate(0, 0, 1)),
+			schema.And(
+				schema.ID(newData.ID),
+			),
 		).
 		Save(t.ctx)
 	if err != nil {

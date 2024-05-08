@@ -2,6 +2,7 @@ package plan
 
 import (
 	"github.com/google/uuid"
+	"log"
 	"nursing_api/internal/common/dto"
 	"nursing_api/internal/common/response"
 	"nursing_api/internal/domain/medicine"
@@ -535,7 +536,12 @@ func (p *planService) UpdateMemo(req *UpdateMemoRequest) dto.BaseResponse[any] {
 	}
 
 	tz.Memo = req.Memo
-	tz.UpdatedAt = time.Now()
+	tz.UpdatedAt = time.Now().UTC()
+	targetDate, err := p.mono.Date.Parse("Y-m-d", tz.TakeDate.Format("2006-01-02"))
+	tz.TakeDate = targetDate
+	log.Println("tz.UpdatedAt", tz.UpdatedAt)
+	log.Println("tz.TakeDate", tz.TakeDate)
+
 	result, err := p.takeHistoryRepo.Update(tz)
 	if !result || err != nil {
 		return dto.Fail[any](response.CODE_FAIL_UPDATE_MEMO, err)
