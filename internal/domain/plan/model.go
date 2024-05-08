@@ -12,6 +12,8 @@ type TakePlan struct {
 type Plan struct {
 	// 복용계획
 	TimezoneId uuid.UUID `json:"timezone_id"`
+	Hour       int       `json:"hour"`
+	Minute     int       `json:"minute"`
 	PlanName   string    `json:"plan_name"`
 	Timezone   string    `json:"time_zone"`
 	Pills      []Pill    `json:"pills"`

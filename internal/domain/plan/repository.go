@@ -13,6 +13,8 @@ import (
 	scThItem "nursing_api/pkg/ent/takehistoryitem"
 	scTzl "nursing_api/pkg/ent/timezonelink"
 	"nursing_api/pkg/mono"
+	"sort"
+	"strconv"
 	"time"
 )
 
@@ -76,6 +78,10 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 		Where(
 			scTzl.PrescriptionIDIn(pcsIds...),
 		).
+		Order(
+			ent.Asc(scTzl.FieldHour),
+			ent.Asc(scTzl.FieldMinute),
+		).
 		All(r.ctx)
 
 	// 타임존 고유번호 슬라이스
@@ -108,9 +114,19 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 		var plan *Plan
 		if tzMap[tzl.TimezoneID] == nil {
 			tzText := fmt.Sprintf("%s %s:%s", tzl.Midday, tzl.Hour, tzl.Minute)
+			h, err := strconv.Atoi(tzl.Hour)
+			if err != nil {
+				return []Plan{}, err
+			}
+			m, err := strconv.Atoi(tzl.Minute)
+			if err != nil {
+				return []Plan{}, err
+			}
 			plan = &Plan{
 				TimezoneId: tzl.TimezoneID,
 				PlanName:   tzl.TimezoneName,
+				Hour:       h,
+				Minute:     m,
 				Timezone:   tzText,
 			}
 		} else {
@@ -169,9 +185,21 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 		}
 	}
 
+	// 플랜 정렬
+	planKeys := make([]*Plan, 0, len(tzMap))
+	for _, v := range tzMap {
+		planKeys = append(planKeys, v)
+	}
+	sort.Slice(planKeys, func(i, j int) bool {
+		org := (planKeys[i].Hour * 100) + planKeys[i].Minute
+		dst := (planKeys[j].Hour * 100) + planKeys[j].Minute
+		return org < dst
+	})
+
 	// 타임존을 리스트로 변환
 	var plans []Plan
-	for _, v := range tzMap {
+	for _, v := range planKeys {
+
 		// 복용내역이 있는 경우 업데이트
 		if takeStatusMap[v.TimezoneId] != nil {
 			v.TakeStatus = takeStatusMap[v.TimezoneId].TakeStatus
