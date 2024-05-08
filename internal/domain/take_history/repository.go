@@ -191,7 +191,7 @@ func (t *repository) AddTx(newData *TakeHistory, tx *ent.Tx) (*TakeHistory, erro
 }
 
 func (t *repository) Update(newData *TakeHistory) (bool, error) {
-	result, err := t.client.
+	result, err := t.root.Debug().TakeHistory.
 		Update().
 		SetTakeStatus(string(newData.TakeStatus)).
 		SetMemo(newData.Memo).

@@ -527,6 +527,10 @@ func (p *planService) UpdateMemo(req *UpdateMemoRequest) dto.BaseResponse[any] {
 	}
 	tz, err := p.takeHistoryRepo.GetByTimezoneId(req.UserId, req.TimezoneId, dateTime)
 	if err != nil {
+		return dto.Fail[any](response.CODE_NOT_FOUND_TIMEZONE, err)
+	}
+
+	if tz.TakeStatus != takehistory.DONE {
 		return dto.Fail[any](response.CODE_CANNOT_UPDATE_MEMO_BEFORE_TAKING, err)
 	}
 
