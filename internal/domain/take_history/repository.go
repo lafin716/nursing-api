@@ -198,8 +198,9 @@ func (t *repository) Update(newData *TakeHistory) (bool, error) {
 		SetUpdatedAt(newData.UpdatedAt).
 		Where(
 			schema.UserID(newData.ID),
-			schema.TakeDate(newData.TakeDate),
 			schema.TimezoneID(newData.TimezoneId),
+			schema.TakeDateGTE(newData.TakeDate),
+			schema.TakeDateLT(newData.TakeDate.AddDate(0, 0, 1)),
 		).
 		Save(t.ctx)
 	if err != nil {

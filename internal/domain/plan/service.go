@@ -535,6 +535,7 @@ func (p *planService) UpdateMemo(req *UpdateMemoRequest) dto.BaseResponse[any] {
 	}
 
 	tz.Memo = req.Memo
+	tz.UpdatedAt = time.Now()
 	result, err := p.takeHistoryRepo.Update(tz)
 	if !result || err != nil {
 		return dto.Fail[any](response.CODE_FAIL_UPDATE_MEMO, err)
