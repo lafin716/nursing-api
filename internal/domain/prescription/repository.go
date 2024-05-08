@@ -238,7 +238,12 @@ func (p prescriptionRepository) DeleteTx(id uuid.UUID, tx *ent.Tx) (bool, error)
 }
 
 func (p prescriptionRepository) GetItemById(itemId uuid.UUID) (*PrescriptionItem, error) {
-	found, err := p.itemClient.Get(p.ctx, itemId)
+	found, err := p.itemClient.
+		Query().
+		Where(
+			prescriptionitem.ID(itemId),
+		).
+		Only(p.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -289,9 +294,13 @@ func (p prescriptionRepository) AddItemTx(item *PrescriptionItem, tx *ent.Tx) (*
 func (p prescriptionRepository) UpdateItem(prescriptionItem *PrescriptionItem) (int, error) {
 	err := p.itemClient.
 		Update().
-		SetMedicineID(prescriptionItem.MedicineId).
-		SetMedicineName(prescriptionItem.MedicineName).
+		SetTakeAmount(prescriptionItem.TakeAmount).
 		SetRemainAmount(prescriptionItem.RemainAmount).
+		SetMemo(prescriptionItem.Memo).
+		SetUpdatedAt(time.Now().UTC()).
+		Where(
+			prescriptionitem.ID(prescriptionItem.ID),
+		).
 		Exec(p.ctx)
 	if err != nil {
 		return 0, err

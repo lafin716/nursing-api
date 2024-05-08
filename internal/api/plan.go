@@ -15,6 +15,7 @@ type PlanHttpApi interface {
 	Take(ctx *fiber.Ctx) error
 	PillToggle(ctx *fiber.Ctx) error
 	UpdateMemo(ctx *fiber.Ctx) error
+	PillTakeAmountUpdate(ctx *fiber.Ctx) error
 }
 
 type planHttpApi struct {
@@ -172,5 +173,22 @@ func (p planHttpApi) UpdateMemo(ctx *fiber.Ctx) error {
 
 	req.UserId = parser.GetUserId()
 	resp := p.service.UpdateMemo(req)
+	return ResolveResponse(resp, ctx)
+}
+
+// @summary 복용아이템 섭취량 업데이트
+// @description 복용계획 내 아이템 복용량을 업데이트
+// @produce json
+// @param dto body plan.PillTakeAmountUpdateRequest true "복용아이템 섭취량정보"
+// @router /plan/item/takeamount [post]
+// @Security Bearer
+func (p planHttpApi) PillTakeAmountUpdate(ctx *fiber.Ctx) error {
+	req := new(plan.PillTakeAmountUpdateRequest)
+	parser := ParseRequest(req, BODY, p.jwtClient, ctx)
+	if parser.Error() != nil {
+		return parser.Error()
+	}
+
+	resp := p.service.PillTakeAmountUpdate(req)
 	return ResolveResponse(resp, ctx)
 }

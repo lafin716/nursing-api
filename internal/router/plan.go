@@ -11,5 +11,6 @@ func (c *container) RegisterPlanRoute() {
 		r.Post("/take", c.AuthMiddleware(c.handler.plan.Take)...)
 		r.Post("/take/pill", c.AuthMiddleware(c.handler.plan.PillToggle)...)
 		r.Post("/memo", c.AuthMiddleware(c.handler.plan.UpdateMemo)...)
+		r.Patch("/item/takeamount", c.AuthMiddleware(c.handler.plan.PillTakeAmountUpdate)...)
 	}
 }

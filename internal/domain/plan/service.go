@@ -24,6 +24,7 @@ type UseCase interface {
 	Take(req *TakeToggleRequest) dto.BaseResponse[bool]
 	PillToggle(req *PillToggleRequest) dto.BaseResponse[bool]
 	UpdateMemo(req *UpdateMemoRequest) dto.BaseResponse[any]
+	PillTakeAmountUpdate(req *PillTakeAmountUpdateRequest) dto.BaseResponse[bool]
 }
 
 type planService struct {
@@ -548,4 +549,19 @@ func (p *planService) UpdateMemo(req *UpdateMemoRequest) dto.BaseResponse[any] {
 	}
 
 	return dto.Ok[any](response.CODE_SUCCESS, nil)
+}
+
+func (p *planService) PillTakeAmountUpdate(req *PillTakeAmountUpdateRequest) dto.BaseResponse[bool] {
+	psItem, err := p.prescriptionRepo.GetItemById(req.PrescriptionItemId)
+	if err != nil {
+		return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_ITEM, err)
+	}
+
+	psItem.TakeAmount = req.TakeAmount
+	result, err := p.prescriptionRepo.UpdateItem(psItem)
+	if result <= 0 || err != nil {
+		return dto.Fail[bool](response.CODE_FAIL_UPDATEITEM_PRESCRIPTION, err)
+	}
+
+	return dto.Ok[bool](response.CODE_SUCCESS, nil)
 }
