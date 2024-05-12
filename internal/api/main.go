@@ -18,6 +18,6 @@ func NewMainHttpApi() MainHttpApi {
 
 func (m mainHttpApi) HelloWorld(ctx *fiber.Ctx) error {
 	return response.New(response.CODE_SUCCESS).
-		SetMessage("간병관리 API 서비스에 오신걸 환영합니다~!").
+		SetMessage("간병관리 API 서비스에 오신걸 환영합니다~! ㅋㅋ").
 		Ok(ctx)
 }
