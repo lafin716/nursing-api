@@ -13,14 +13,15 @@ func toModelList(entities []*ent.TakeHistory) []*TakeHistory {
 
 func toModel(entity *ent.TakeHistory) *TakeHistory {
 	return &TakeHistory{
-		ID:         entity.ID,
-		TimezoneId: entity.TimezoneID,
-		UserId:     entity.UserID,
-		TakeDate:   entity.TakeDate,
-		TakeStatus: TakeStatus(entity.TakeStatus),
-		Memo:       entity.Memo,
-		CreatedAt:  entity.CreatedAt,
-		UpdatedAt:  entity.UpdatedAt,
+		ID:           entity.ID,
+		TimezoneId:   entity.Edges.Timezone.ID,
+		TimezoneName: entity.Edges.Timezone.TimezoneName,
+		UserId:       entity.UserID,
+		TakeDate:     entity.TakeDate,
+		TakeStatus:   TakeStatus(entity.TakeStatus),
+		Memo:         entity.Memo,
+		CreatedAt:    entity.CreatedAt,
+		UpdatedAt:    entity.UpdatedAt,
 	}
 }
 
@@ -39,7 +40,8 @@ func toModelItem(entity *ent.TakeHistoryItem) *TakeHistoryItem {
 		UserId:             entity.UserID,
 		TakeHistoryId:      entity.TakeHistoryID,
 		PrescriptionItemId: entity.PrescriptionItemID,
-		TakeStatus:         TakePillStatus(entity.TakeStatus),
+		TakeStatus:         entity.TakeStatus,
+		PillName:           entity.Edges.PrescriptionItem.MedicineName,
 		TakeAmount:         entity.TakeAmount,
 		RemainAmount:       entity.RemainAmount,
 		TotalAmount:        entity.TotalAmount,

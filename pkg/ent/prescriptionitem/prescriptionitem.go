@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -34,8 +35,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeTakeHistoryItem holds the string denoting the take_history_item edge name in mutations.
+	EdgeTakeHistoryItem = "take_history_item"
 	// Table holds the table name of the prescriptionitem in the database.
 	Table = "prescription_items"
+	// TakeHistoryItemTable is the table that holds the take_history_item relation/edge.
+	TakeHistoryItemTable = "take_history_items"
+	// TakeHistoryItemInverseTable is the table name for the TakeHistoryItem entity.
+	// It exists in this package in order to avoid circular dependency with the "takehistoryitem" package.
+	TakeHistoryItemInverseTable = "take_history_items"
+	// TakeHistoryItemColumn is the table column denoting the take_history_item relation/edge.
+	TakeHistoryItemColumn = "prescription_item_id"
 )
 
 // Columns holds all SQL columns for prescriptionitem fields.
@@ -134,4 +144,25 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByTakeHistoryItemCount orders the results by take_history_item count.
+func ByTakeHistoryItemCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTakeHistoryItemStep(), opts...)
+	}
+}
+
+// ByTakeHistoryItem orders the results by take_history_item terms.
+func ByTakeHistoryItem(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTakeHistoryItemStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newTakeHistoryItemStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TakeHistoryItemInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TakeHistoryItemTable, TakeHistoryItemColumn),
+	)
 }

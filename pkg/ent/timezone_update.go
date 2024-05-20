@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/predicate"
+	"nursing_api/pkg/ent/takehistory"
 	"nursing_api/pkg/ent/timezone"
 	"time"
 
@@ -153,9 +154,45 @@ func (tzu *TimeZoneUpdate) ClearUpdatedAt() *TimeZoneUpdate {
 	return tzu
 }
 
+// AddTakeHistoryIDs adds the "take_history" edge to the TakeHistory entity by IDs.
+func (tzu *TimeZoneUpdate) AddTakeHistoryIDs(ids ...uuid.UUID) *TimeZoneUpdate {
+	tzu.mutation.AddTakeHistoryIDs(ids...)
+	return tzu
+}
+
+// AddTakeHistory adds the "take_history" edges to the TakeHistory entity.
+func (tzu *TimeZoneUpdate) AddTakeHistory(t ...*TakeHistory) *TimeZoneUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tzu.AddTakeHistoryIDs(ids...)
+}
+
 // Mutation returns the TimeZoneMutation object of the builder.
 func (tzu *TimeZoneUpdate) Mutation() *TimeZoneMutation {
 	return tzu.mutation
+}
+
+// ClearTakeHistory clears all "take_history" edges to the TakeHistory entity.
+func (tzu *TimeZoneUpdate) ClearTakeHistory() *TimeZoneUpdate {
+	tzu.mutation.ClearTakeHistory()
+	return tzu
+}
+
+// RemoveTakeHistoryIDs removes the "take_history" edge to TakeHistory entities by IDs.
+func (tzu *TimeZoneUpdate) RemoveTakeHistoryIDs(ids ...uuid.UUID) *TimeZoneUpdate {
+	tzu.mutation.RemoveTakeHistoryIDs(ids...)
+	return tzu
+}
+
+// RemoveTakeHistory removes "take_history" edges to TakeHistory entities.
+func (tzu *TimeZoneUpdate) RemoveTakeHistory(t ...*TakeHistory) *TimeZoneUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tzu.RemoveTakeHistoryIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -223,6 +260,51 @@ func (tzu *TimeZoneUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if tzu.mutation.UpdatedAtCleared() {
 		_spec.ClearField(timezone.FieldUpdatedAt, field.TypeTime)
+	}
+	if tzu.mutation.TakeHistoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   timezone.TakeHistoryTable,
+			Columns: []string{timezone.TakeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tzu.mutation.RemovedTakeHistoryIDs(); len(nodes) > 0 && !tzu.mutation.TakeHistoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   timezone.TakeHistoryTable,
+			Columns: []string{timezone.TakeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tzu.mutation.TakeHistoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   timezone.TakeHistoryTable,
+			Columns: []string{timezone.TakeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tzu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -368,9 +450,45 @@ func (tzuo *TimeZoneUpdateOne) ClearUpdatedAt() *TimeZoneUpdateOne {
 	return tzuo
 }
 
+// AddTakeHistoryIDs adds the "take_history" edge to the TakeHistory entity by IDs.
+func (tzuo *TimeZoneUpdateOne) AddTakeHistoryIDs(ids ...uuid.UUID) *TimeZoneUpdateOne {
+	tzuo.mutation.AddTakeHistoryIDs(ids...)
+	return tzuo
+}
+
+// AddTakeHistory adds the "take_history" edges to the TakeHistory entity.
+func (tzuo *TimeZoneUpdateOne) AddTakeHistory(t ...*TakeHistory) *TimeZoneUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tzuo.AddTakeHistoryIDs(ids...)
+}
+
 // Mutation returns the TimeZoneMutation object of the builder.
 func (tzuo *TimeZoneUpdateOne) Mutation() *TimeZoneMutation {
 	return tzuo.mutation
+}
+
+// ClearTakeHistory clears all "take_history" edges to the TakeHistory entity.
+func (tzuo *TimeZoneUpdateOne) ClearTakeHistory() *TimeZoneUpdateOne {
+	tzuo.mutation.ClearTakeHistory()
+	return tzuo
+}
+
+// RemoveTakeHistoryIDs removes the "take_history" edge to TakeHistory entities by IDs.
+func (tzuo *TimeZoneUpdateOne) RemoveTakeHistoryIDs(ids ...uuid.UUID) *TimeZoneUpdateOne {
+	tzuo.mutation.RemoveTakeHistoryIDs(ids...)
+	return tzuo
+}
+
+// RemoveTakeHistory removes "take_history" edges to TakeHistory entities.
+func (tzuo *TimeZoneUpdateOne) RemoveTakeHistory(t ...*TakeHistory) *TimeZoneUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tzuo.RemoveTakeHistoryIDs(ids...)
 }
 
 // Where appends a list predicates to the TimeZoneUpdate builder.
@@ -468,6 +586,51 @@ func (tzuo *TimeZoneUpdateOne) sqlSave(ctx context.Context) (_node *TimeZone, er
 	}
 	if tzuo.mutation.UpdatedAtCleared() {
 		_spec.ClearField(timezone.FieldUpdatedAt, field.TypeTime)
+	}
+	if tzuo.mutation.TakeHistoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   timezone.TakeHistoryTable,
+			Columns: []string{timezone.TakeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tzuo.mutation.RemovedTakeHistoryIDs(); len(nodes) > 0 && !tzuo.mutation.TakeHistoryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   timezone.TakeHistoryTable,
+			Columns: []string{timezone.TakeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tzuo.mutation.TakeHistoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   timezone.TakeHistoryTable,
+			Columns: []string{timezone.TakeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &TimeZone{config: tzuo.config}
 	_spec.Assign = _node.assignValues

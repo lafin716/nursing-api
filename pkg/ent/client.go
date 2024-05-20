@@ -24,6 +24,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -646,6 +647,22 @@ func (c *PrescriptionItemClient) GetX(ctx context.Context, id uuid.UUID) *Prescr
 	return obj
 }
 
+// QueryTakeHistoryItem queries the take_history_item edge of a PrescriptionItem.
+func (c *PrescriptionItemClient) QueryTakeHistoryItem(pi *PrescriptionItem) *TakeHistoryItemQuery {
+	query := (&TakeHistoryItemClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pi.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(prescriptionitem.Table, prescriptionitem.FieldID, id),
+			sqlgraph.To(takehistoryitem.Table, takehistoryitem.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, prescriptionitem.TakeHistoryItemTable, prescriptionitem.TakeHistoryItemColumn),
+		)
+		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PrescriptionItemClient) Hooks() []Hook {
 	return c.hooks.PrescriptionItem
@@ -777,6 +794,22 @@ func (c *TakeHistoryClient) GetX(ctx context.Context, id uuid.UUID) *TakeHistory
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTimezone queries the timezone edge of a TakeHistory.
+func (c *TakeHistoryClient) QueryTimezone(th *TakeHistory) *TimeZoneQuery {
+	query := (&TimeZoneClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := th.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(takehistory.Table, takehistory.FieldID, id),
+			sqlgraph.To(timezone.Table, timezone.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, takehistory.TimezoneTable, takehistory.TimezoneColumn),
+		)
+		fromV = sqlgraph.Neighbors(th.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -912,6 +945,22 @@ func (c *TakeHistoryItemClient) GetX(ctx context.Context, id uuid.UUID) *TakeHis
 	return obj
 }
 
+// QueryPrescriptionItem queries the prescription_item edge of a TakeHistoryItem.
+func (c *TakeHistoryItemClient) QueryPrescriptionItem(thi *TakeHistoryItem) *PrescriptionItemQuery {
+	query := (&PrescriptionItemClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := thi.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(takehistoryitem.Table, takehistoryitem.FieldID, id),
+			sqlgraph.To(prescriptionitem.Table, prescriptionitem.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, takehistoryitem.PrescriptionItemTable, takehistoryitem.PrescriptionItemColumn),
+		)
+		fromV = sqlgraph.Neighbors(thi.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *TakeHistoryItemClient) Hooks() []Hook {
 	return c.hooks.TakeHistoryItem
@@ -1043,6 +1092,22 @@ func (c *TimeZoneClient) GetX(ctx context.Context, id uuid.UUID) *TimeZone {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTakeHistory queries the take_history edge of a TimeZone.
+func (c *TimeZoneClient) QueryTakeHistory(tz *TimeZone) *TakeHistoryQuery {
+	query := (&TakeHistoryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := tz.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(timezone.Table, timezone.FieldID, id),
+			sqlgraph.To(takehistory.Table, takehistory.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, timezone.TakeHistoryTable, timezone.TakeHistoryColumn),
+		)
+		fromV = sqlgraph.Neighbors(tz.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

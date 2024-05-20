@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"nursing_api/pkg/ent/predicate"
+	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/takehistoryitem"
 
 	"entgo.io/ent/dialect/sql"
@@ -18,10 +19,11 @@ import (
 // TakeHistoryItemQuery is the builder for querying TakeHistoryItem entities.
 type TakeHistoryItemQuery struct {
 	config
-	ctx        *QueryContext
-	order      []takehistoryitem.OrderOption
-	inters     []Interceptor
-	predicates []predicate.TakeHistoryItem
+	ctx                  *QueryContext
+	order                []takehistoryitem.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.TakeHistoryItem
+	withPrescriptionItem *PrescriptionItemQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,6 +58,28 @@ func (thiq *TakeHistoryItemQuery) Unique(unique bool) *TakeHistoryItemQuery {
 func (thiq *TakeHistoryItemQuery) Order(o ...takehistoryitem.OrderOption) *TakeHistoryItemQuery {
 	thiq.order = append(thiq.order, o...)
 	return thiq
+}
+
+// QueryPrescriptionItem chains the current query on the "prescription_item" edge.
+func (thiq *TakeHistoryItemQuery) QueryPrescriptionItem() *PrescriptionItemQuery {
+	query := (&PrescriptionItemClient{config: thiq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := thiq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := thiq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(takehistoryitem.Table, takehistoryitem.FieldID, selector),
+			sqlgraph.To(prescriptionitem.Table, prescriptionitem.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, takehistoryitem.PrescriptionItemTable, takehistoryitem.PrescriptionItemColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(thiq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first TakeHistoryItem entity from the query.
@@ -245,15 +269,27 @@ func (thiq *TakeHistoryItemQuery) Clone() *TakeHistoryItemQuery {
 		return nil
 	}
 	return &TakeHistoryItemQuery{
-		config:     thiq.config,
-		ctx:        thiq.ctx.Clone(),
-		order:      append([]takehistoryitem.OrderOption{}, thiq.order...),
-		inters:     append([]Interceptor{}, thiq.inters...),
-		predicates: append([]predicate.TakeHistoryItem{}, thiq.predicates...),
+		config:               thiq.config,
+		ctx:                  thiq.ctx.Clone(),
+		order:                append([]takehistoryitem.OrderOption{}, thiq.order...),
+		inters:               append([]Interceptor{}, thiq.inters...),
+		predicates:           append([]predicate.TakeHistoryItem{}, thiq.predicates...),
+		withPrescriptionItem: thiq.withPrescriptionItem.Clone(),
 		// clone intermediate query.
 		sql:  thiq.sql.Clone(),
 		path: thiq.path,
 	}
+}
+
+// WithPrescriptionItem tells the query-builder to eager-load the nodes that are connected to
+// the "prescription_item" edge. The optional arguments are used to configure the query builder of the edge.
+func (thiq *TakeHistoryItemQuery) WithPrescriptionItem(opts ...func(*PrescriptionItemQuery)) *TakeHistoryItemQuery {
+	query := (&PrescriptionItemClient{config: thiq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	thiq.withPrescriptionItem = query
+	return thiq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -332,8 +368,11 @@ func (thiq *TakeHistoryItemQuery) prepareQuery(ctx context.Context) error {
 
 func (thiq *TakeHistoryItemQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*TakeHistoryItem, error) {
 	var (
-		nodes = []*TakeHistoryItem{}
-		_spec = thiq.querySpec()
+		nodes       = []*TakeHistoryItem{}
+		_spec       = thiq.querySpec()
+		loadedTypes = [1]bool{
+			thiq.withPrescriptionItem != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*TakeHistoryItem).scanValues(nil, columns)
@@ -341,6 +380,7 @@ func (thiq *TakeHistoryItemQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &TakeHistoryItem{config: thiq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -352,7 +392,43 @@ func (thiq *TakeHistoryItemQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := thiq.withPrescriptionItem; query != nil {
+		if err := thiq.loadPrescriptionItem(ctx, query, nodes, nil,
+			func(n *TakeHistoryItem, e *PrescriptionItem) { n.Edges.PrescriptionItem = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (thiq *TakeHistoryItemQuery) loadPrescriptionItem(ctx context.Context, query *PrescriptionItemQuery, nodes []*TakeHistoryItem, init func(*TakeHistoryItem), assign func(*TakeHistoryItem, *PrescriptionItem)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*TakeHistoryItem)
+	for i := range nodes {
+		fk := nodes[i].PrescriptionItemID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(prescriptionitem.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "prescription_item_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (thiq *TakeHistoryItemQuery) sqlCount(ctx context.Context) (int, error) {
@@ -379,6 +455,9 @@ func (thiq *TakeHistoryItemQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != takehistoryitem.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if thiq.withPrescriptionItem != nil {
+			_spec.Node.AddColumnOnce(takehistoryitem.FieldPrescriptionItemID)
 		}
 	}
 	if ps := thiq.predicates; len(ps) > 0 {

@@ -2648,26 +2648,29 @@ func (m *PrescriptionMutation) ResetEdge(name string) error {
 // PrescriptionItemMutation represents an operation that mutates the PrescriptionItem nodes in the graph.
 type PrescriptionItemMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	timezone_link_id *uuid.UUID
-	medicine_id      *uuid.UUID
-	medicine_name    *string
-	take_amount      *float64
-	addtake_amount   *float64
-	remain_amount    *float64
-	addremain_amount *float64
-	total_amount     *float64
-	addtotal_amount  *float64
-	medicine_unit    *string
-	memo             *string
-	created_at       *time.Time
-	updated_at       *time.Time
-	clearedFields    map[string]struct{}
-	done             bool
-	oldValue         func(context.Context) (*PrescriptionItem, error)
-	predicates       []predicate.PrescriptionItem
+	op                       Op
+	typ                      string
+	id                       *uuid.UUID
+	timezone_link_id         *uuid.UUID
+	medicine_id              *uuid.UUID
+	medicine_name            *string
+	take_amount              *float64
+	addtake_amount           *float64
+	remain_amount            *float64
+	addremain_amount         *float64
+	total_amount             *float64
+	addtotal_amount          *float64
+	medicine_unit            *string
+	memo                     *string
+	created_at               *time.Time
+	updated_at               *time.Time
+	clearedFields            map[string]struct{}
+	take_history_item        map[uuid.UUID]struct{}
+	removedtake_history_item map[uuid.UUID]struct{}
+	clearedtake_history_item bool
+	done                     bool
+	oldValue                 func(context.Context) (*PrescriptionItem, error)
+	predicates               []predicate.PrescriptionItem
 }
 
 var _ ent.Mutation = (*PrescriptionItemMutation)(nil)
@@ -3233,6 +3236,60 @@ func (m *PrescriptionItemMutation) ResetUpdatedAt() {
 	delete(m.clearedFields, prescriptionitem.FieldUpdatedAt)
 }
 
+// AddTakeHistoryItemIDs adds the "take_history_item" edge to the TakeHistoryItem entity by ids.
+func (m *PrescriptionItemMutation) AddTakeHistoryItemIDs(ids ...uuid.UUID) {
+	if m.take_history_item == nil {
+		m.take_history_item = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.take_history_item[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTakeHistoryItem clears the "take_history_item" edge to the TakeHistoryItem entity.
+func (m *PrescriptionItemMutation) ClearTakeHistoryItem() {
+	m.clearedtake_history_item = true
+}
+
+// TakeHistoryItemCleared reports if the "take_history_item" edge to the TakeHistoryItem entity was cleared.
+func (m *PrescriptionItemMutation) TakeHistoryItemCleared() bool {
+	return m.clearedtake_history_item
+}
+
+// RemoveTakeHistoryItemIDs removes the "take_history_item" edge to the TakeHistoryItem entity by IDs.
+func (m *PrescriptionItemMutation) RemoveTakeHistoryItemIDs(ids ...uuid.UUID) {
+	if m.removedtake_history_item == nil {
+		m.removedtake_history_item = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.take_history_item, ids[i])
+		m.removedtake_history_item[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTakeHistoryItem returns the removed IDs of the "take_history_item" edge to the TakeHistoryItem entity.
+func (m *PrescriptionItemMutation) RemovedTakeHistoryItemIDs() (ids []uuid.UUID) {
+	for id := range m.removedtake_history_item {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TakeHistoryItemIDs returns the "take_history_item" edge IDs in the mutation.
+func (m *PrescriptionItemMutation) TakeHistoryItemIDs() (ids []uuid.UUID) {
+	for id := range m.take_history_item {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTakeHistoryItem resets all changes to the "take_history_item" edge.
+func (m *PrescriptionItemMutation) ResetTakeHistoryItem() {
+	m.take_history_item = nil
+	m.clearedtake_history_item = false
+	m.removedtake_history_item = nil
+}
+
 // Where appends a list predicates to the PrescriptionItemMutation builder.
 func (m *PrescriptionItemMutation) Where(ps ...predicate.PrescriptionItem) {
 	m.predicates = append(m.predicates, ps...)
@@ -3579,69 +3636,106 @@ func (m *PrescriptionItemMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PrescriptionItemMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.take_history_item != nil {
+		edges = append(edges, prescriptionitem.EdgeTakeHistoryItem)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *PrescriptionItemMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case prescriptionitem.EdgeTakeHistoryItem:
+		ids := make([]ent.Value, 0, len(m.take_history_item))
+		for id := range m.take_history_item {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PrescriptionItemMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedtake_history_item != nil {
+		edges = append(edges, prescriptionitem.EdgeTakeHistoryItem)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *PrescriptionItemMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case prescriptionitem.EdgeTakeHistoryItem:
+		ids := make([]ent.Value, 0, len(m.removedtake_history_item))
+		for id := range m.removedtake_history_item {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PrescriptionItemMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedtake_history_item {
+		edges = append(edges, prescriptionitem.EdgeTakeHistoryItem)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *PrescriptionItemMutation) EdgeCleared(name string) bool {
+	switch name {
+	case prescriptionitem.EdgeTakeHistoryItem:
+		return m.clearedtake_history_item
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *PrescriptionItemMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown PrescriptionItem unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *PrescriptionItemMutation) ResetEdge(name string) error {
+	switch name {
+	case prescriptionitem.EdgeTakeHistoryItem:
+		m.ResetTakeHistoryItem()
+		return nil
+	}
 	return fmt.Errorf("unknown PrescriptionItem edge %s", name)
 }
 
 // TakeHistoryMutation represents an operation that mutates the TakeHistory nodes in the graph.
 type TakeHistoryMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	user_id       *uuid.UUID
-	timezone_id   *uuid.UUID
-	take_date     *time.Time
-	take_status   *string
-	memo          *string
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*TakeHistory, error)
-	predicates    []predicate.TakeHistory
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	user_id         *uuid.UUID
+	take_date       *time.Time
+	take_status     *string
+	memo            *string
+	created_at      *time.Time
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	timezone        *uuid.UUID
+	clearedtimezone bool
+	done            bool
+	oldValue        func(context.Context) (*TakeHistory, error)
+	predicates      []predicate.TakeHistory
 }
 
 var _ ent.Mutation = (*TakeHistoryMutation)(nil)
@@ -3786,12 +3880,12 @@ func (m *TakeHistoryMutation) ResetUserID() {
 
 // SetTimezoneID sets the "timezone_id" field.
 func (m *TakeHistoryMutation) SetTimezoneID(u uuid.UUID) {
-	m.timezone_id = &u
+	m.timezone = &u
 }
 
 // TimezoneID returns the value of the "timezone_id" field in the mutation.
 func (m *TakeHistoryMutation) TimezoneID() (r uuid.UUID, exists bool) {
-	v := m.timezone_id
+	v := m.timezone
 	if v == nil {
 		return
 	}
@@ -3815,9 +3909,22 @@ func (m *TakeHistoryMutation) OldTimezoneID(ctx context.Context) (v uuid.UUID, e
 	return oldValue.TimezoneID, nil
 }
 
+// ClearTimezoneID clears the value of the "timezone_id" field.
+func (m *TakeHistoryMutation) ClearTimezoneID() {
+	m.timezone = nil
+	m.clearedFields[takehistory.FieldTimezoneID] = struct{}{}
+}
+
+// TimezoneIDCleared returns if the "timezone_id" field was cleared in this mutation.
+func (m *TakeHistoryMutation) TimezoneIDCleared() bool {
+	_, ok := m.clearedFields[takehistory.FieldTimezoneID]
+	return ok
+}
+
 // ResetTimezoneID resets all changes to the "timezone_id" field.
 func (m *TakeHistoryMutation) ResetTimezoneID() {
-	m.timezone_id = nil
+	m.timezone = nil
+	delete(m.clearedFields, takehistory.FieldTimezoneID)
 }
 
 // SetTakeDate sets the "take_date" field.
@@ -4039,6 +4146,33 @@ func (m *TakeHistoryMutation) ResetUpdatedAt() {
 	delete(m.clearedFields, takehistory.FieldUpdatedAt)
 }
 
+// ClearTimezone clears the "timezone" edge to the TimeZone entity.
+func (m *TakeHistoryMutation) ClearTimezone() {
+	m.clearedtimezone = true
+	m.clearedFields[takehistory.FieldTimezoneID] = struct{}{}
+}
+
+// TimezoneCleared reports if the "timezone" edge to the TimeZone entity was cleared.
+func (m *TakeHistoryMutation) TimezoneCleared() bool {
+	return m.TimezoneIDCleared() || m.clearedtimezone
+}
+
+// TimezoneIDs returns the "timezone" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TimezoneID instead. It exists only for internal usage by the builders.
+func (m *TakeHistoryMutation) TimezoneIDs() (ids []uuid.UUID) {
+	if id := m.timezone; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTimezone resets all changes to the "timezone" edge.
+func (m *TakeHistoryMutation) ResetTimezone() {
+	m.timezone = nil
+	m.clearedtimezone = false
+}
+
 // Where appends a list predicates to the TakeHistoryMutation builder.
 func (m *TakeHistoryMutation) Where(ps ...predicate.TakeHistory) {
 	m.predicates = append(m.predicates, ps...)
@@ -4077,7 +4211,7 @@ func (m *TakeHistoryMutation) Fields() []string {
 	if m.user_id != nil {
 		fields = append(fields, takehistory.FieldUserID)
 	}
-	if m.timezone_id != nil {
+	if m.timezone != nil {
 		fields = append(fields, takehistory.FieldTimezoneID)
 	}
 	if m.take_date != nil {
@@ -4228,6 +4362,9 @@ func (m *TakeHistoryMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TakeHistoryMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(takehistory.FieldTimezoneID) {
+		fields = append(fields, takehistory.FieldTimezoneID)
+	}
 	if m.FieldCleared(takehistory.FieldTakeStatus) {
 		fields = append(fields, takehistory.FieldTakeStatus)
 	}
@@ -4251,6 +4388,9 @@ func (m *TakeHistoryMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TakeHistoryMutation) ClearField(name string) error {
 	switch name {
+	case takehistory.FieldTimezoneID:
+		m.ClearTimezoneID()
+		return nil
 	case takehistory.FieldTakeStatus:
 		m.ClearTakeStatus()
 		return nil
@@ -4295,19 +4435,28 @@ func (m *TakeHistoryMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TakeHistoryMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.timezone != nil {
+		edges = append(edges, takehistory.EdgeTimezone)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TakeHistoryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case takehistory.EdgeTimezone:
+		if id := m.timezone; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TakeHistoryMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -4319,53 +4468,71 @@ func (m *TakeHistoryMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TakeHistoryMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedtimezone {
+		edges = append(edges, takehistory.EdgeTimezone)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TakeHistoryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case takehistory.EdgeTimezone:
+		return m.clearedtimezone
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TakeHistoryMutation) ClearEdge(name string) error {
+	switch name {
+	case takehistory.EdgeTimezone:
+		m.ClearTimezone()
+		return nil
+	}
 	return fmt.Errorf("unknown TakeHistory unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TakeHistoryMutation) ResetEdge(name string) error {
+	switch name {
+	case takehistory.EdgeTimezone:
+		m.ResetTimezone()
+		return nil
+	}
 	return fmt.Errorf("unknown TakeHistory edge %s", name)
 }
 
 // TakeHistoryItemMutation represents an operation that mutates the TakeHistoryItem nodes in the graph.
 type TakeHistoryItemMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	user_id              *uuid.UUID
-	take_history_id      *uuid.UUID
-	prescription_item_id *uuid.UUID
-	take_status          *string
-	take_amount          *float64
-	addtake_amount       *float64
-	remain_amount        *float64
-	addremain_amount     *float64
-	total_amount         *float64
-	addtotal_amount      *float64
-	take_unit            *string
-	memo                 *string
-	take_date            *time.Time
-	created_at           *time.Time
-	updated_at           *time.Time
-	clearedFields        map[string]struct{}
-	done                 bool
-	oldValue             func(context.Context) (*TakeHistoryItem, error)
-	predicates           []predicate.TakeHistoryItem
+	op                       Op
+	typ                      string
+	id                       *uuid.UUID
+	user_id                  *uuid.UUID
+	take_history_id          *uuid.UUID
+	take_status              *bool
+	take_amount              *float64
+	addtake_amount           *float64
+	remain_amount            *float64
+	addremain_amount         *float64
+	total_amount             *float64
+	addtotal_amount          *float64
+	take_unit                *string
+	memo                     *string
+	take_date                *time.Time
+	created_at               *time.Time
+	updated_at               *time.Time
+	clearedFields            map[string]struct{}
+	prescription_item        *uuid.UUID
+	clearedprescription_item bool
+	done                     bool
+	oldValue                 func(context.Context) (*TakeHistoryItem, error)
+	predicates               []predicate.TakeHistoryItem
 }
 
 var _ ent.Mutation = (*TakeHistoryItemMutation)(nil)
@@ -4546,12 +4713,12 @@ func (m *TakeHistoryItemMutation) ResetTakeHistoryID() {
 
 // SetPrescriptionItemID sets the "prescription_item_id" field.
 func (m *TakeHistoryItemMutation) SetPrescriptionItemID(u uuid.UUID) {
-	m.prescription_item_id = &u
+	m.prescription_item = &u
 }
 
 // PrescriptionItemID returns the value of the "prescription_item_id" field in the mutation.
 func (m *TakeHistoryItemMutation) PrescriptionItemID() (r uuid.UUID, exists bool) {
-	v := m.prescription_item_id
+	v := m.prescription_item
 	if v == nil {
 		return
 	}
@@ -4575,18 +4742,31 @@ func (m *TakeHistoryItemMutation) OldPrescriptionItemID(ctx context.Context) (v 
 	return oldValue.PrescriptionItemID, nil
 }
 
+// ClearPrescriptionItemID clears the value of the "prescription_item_id" field.
+func (m *TakeHistoryItemMutation) ClearPrescriptionItemID() {
+	m.prescription_item = nil
+	m.clearedFields[takehistoryitem.FieldPrescriptionItemID] = struct{}{}
+}
+
+// PrescriptionItemIDCleared returns if the "prescription_item_id" field was cleared in this mutation.
+func (m *TakeHistoryItemMutation) PrescriptionItemIDCleared() bool {
+	_, ok := m.clearedFields[takehistoryitem.FieldPrescriptionItemID]
+	return ok
+}
+
 // ResetPrescriptionItemID resets all changes to the "prescription_item_id" field.
 func (m *TakeHistoryItemMutation) ResetPrescriptionItemID() {
-	m.prescription_item_id = nil
+	m.prescription_item = nil
+	delete(m.clearedFields, takehistoryitem.FieldPrescriptionItemID)
 }
 
 // SetTakeStatus sets the "take_status" field.
-func (m *TakeHistoryItemMutation) SetTakeStatus(s string) {
-	m.take_status = &s
+func (m *TakeHistoryItemMutation) SetTakeStatus(b bool) {
+	m.take_status = &b
 }
 
 // TakeStatus returns the value of the "take_status" field in the mutation.
-func (m *TakeHistoryItemMutation) TakeStatus() (r string, exists bool) {
+func (m *TakeHistoryItemMutation) TakeStatus() (r bool, exists bool) {
 	v := m.take_status
 	if v == nil {
 		return
@@ -4597,7 +4777,7 @@ func (m *TakeHistoryItemMutation) TakeStatus() (r string, exists bool) {
 // OldTakeStatus returns the old "take_status" field's value of the TakeHistoryItem entity.
 // If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryItemMutation) OldTakeStatus(ctx context.Context) (v string, err error) {
+func (m *TakeHistoryItemMutation) OldTakeStatus(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTakeStatus is only allowed on UpdateOne operations")
 	}
@@ -4990,6 +5170,33 @@ func (m *TakeHistoryItemMutation) ResetUpdatedAt() {
 	delete(m.clearedFields, takehistoryitem.FieldUpdatedAt)
 }
 
+// ClearPrescriptionItem clears the "prescription_item" edge to the PrescriptionItem entity.
+func (m *TakeHistoryItemMutation) ClearPrescriptionItem() {
+	m.clearedprescription_item = true
+	m.clearedFields[takehistoryitem.FieldPrescriptionItemID] = struct{}{}
+}
+
+// PrescriptionItemCleared reports if the "prescription_item" edge to the PrescriptionItem entity was cleared.
+func (m *TakeHistoryItemMutation) PrescriptionItemCleared() bool {
+	return m.PrescriptionItemIDCleared() || m.clearedprescription_item
+}
+
+// PrescriptionItemIDs returns the "prescription_item" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PrescriptionItemID instead. It exists only for internal usage by the builders.
+func (m *TakeHistoryItemMutation) PrescriptionItemIDs() (ids []uuid.UUID) {
+	if id := m.prescription_item; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetPrescriptionItem resets all changes to the "prescription_item" edge.
+func (m *TakeHistoryItemMutation) ResetPrescriptionItem() {
+	m.prescription_item = nil
+	m.clearedprescription_item = false
+}
+
 // Where appends a list predicates to the TakeHistoryItemMutation builder.
 func (m *TakeHistoryItemMutation) Where(ps ...predicate.TakeHistoryItem) {
 	m.predicates = append(m.predicates, ps...)
@@ -5031,7 +5238,7 @@ func (m *TakeHistoryItemMutation) Fields() []string {
 	if m.take_history_id != nil {
 		fields = append(fields, takehistoryitem.FieldTakeHistoryID)
 	}
-	if m.prescription_item_id != nil {
+	if m.prescription_item != nil {
 		fields = append(fields, takehistoryitem.FieldPrescriptionItemID)
 	}
 	if m.take_status != nil {
@@ -5157,7 +5364,7 @@ func (m *TakeHistoryItemMutation) SetField(name string, value ent.Value) error {
 		m.SetPrescriptionItemID(v)
 		return nil
 	case takehistoryitem.FieldTakeStatus:
-		v, ok := value.(string)
+		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -5288,6 +5495,9 @@ func (m *TakeHistoryItemMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TakeHistoryItemMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(takehistoryitem.FieldPrescriptionItemID) {
+		fields = append(fields, takehistoryitem.FieldPrescriptionItemID)
+	}
 	if m.FieldCleared(takehistoryitem.FieldMemo) {
 		fields = append(fields, takehistoryitem.FieldMemo)
 	}
@@ -5308,6 +5518,9 @@ func (m *TakeHistoryItemMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TakeHistoryItemMutation) ClearField(name string) error {
 	switch name {
+	case takehistoryitem.FieldPrescriptionItemID:
+		m.ClearPrescriptionItemID()
+		return nil
 	case takehistoryitem.FieldMemo:
 		m.ClearMemo()
 		return nil
@@ -5364,19 +5577,28 @@ func (m *TakeHistoryItemMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TakeHistoryItemMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.prescription_item != nil {
+		edges = append(edges, takehistoryitem.EdgePrescriptionItem)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TakeHistoryItemMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case takehistoryitem.EdgePrescriptionItem:
+		if id := m.prescription_item; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TakeHistoryItemMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -5388,46 +5610,66 @@ func (m *TakeHistoryItemMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TakeHistoryItemMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedprescription_item {
+		edges = append(edges, takehistoryitem.EdgePrescriptionItem)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TakeHistoryItemMutation) EdgeCleared(name string) bool {
+	switch name {
+	case takehistoryitem.EdgePrescriptionItem:
+		return m.clearedprescription_item
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TakeHistoryItemMutation) ClearEdge(name string) error {
+	switch name {
+	case takehistoryitem.EdgePrescriptionItem:
+		m.ClearPrescriptionItem()
+		return nil
+	}
 	return fmt.Errorf("unknown TakeHistoryItem unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TakeHistoryItemMutation) ResetEdge(name string) error {
+	switch name {
+	case takehistoryitem.EdgePrescriptionItem:
+		m.ResetPrescriptionItem()
+		return nil
+	}
 	return fmt.Errorf("unknown TakeHistoryItem edge %s", name)
 }
 
 // TimeZoneMutation represents an operation that mutates the TimeZone nodes in the graph.
 type TimeZoneMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	user_id       *uuid.UUID
-	timezone_name *string
-	is_default    *bool
-	midday        *string
-	hour          *string
-	minute        *string
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*TimeZone, error)
-	predicates    []predicate.TimeZone
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	user_id             *uuid.UUID
+	timezone_name       *string
+	is_default          *bool
+	midday              *string
+	hour                *string
+	minute              *string
+	created_at          *time.Time
+	updated_at          *time.Time
+	clearedFields       map[string]struct{}
+	take_history        map[uuid.UUID]struct{}
+	removedtake_history map[uuid.UUID]struct{}
+	clearedtake_history bool
+	done                bool
+	oldValue            func(context.Context) (*TimeZone, error)
+	predicates          []predicate.TimeZone
 }
 
 var _ ent.Mutation = (*TimeZoneMutation)(nil)
@@ -5848,6 +6090,60 @@ func (m *TimeZoneMutation) ResetUpdatedAt() {
 	delete(m.clearedFields, timezone.FieldUpdatedAt)
 }
 
+// AddTakeHistoryIDs adds the "take_history" edge to the TakeHistory entity by ids.
+func (m *TimeZoneMutation) AddTakeHistoryIDs(ids ...uuid.UUID) {
+	if m.take_history == nil {
+		m.take_history = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.take_history[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTakeHistory clears the "take_history" edge to the TakeHistory entity.
+func (m *TimeZoneMutation) ClearTakeHistory() {
+	m.clearedtake_history = true
+}
+
+// TakeHistoryCleared reports if the "take_history" edge to the TakeHistory entity was cleared.
+func (m *TimeZoneMutation) TakeHistoryCleared() bool {
+	return m.clearedtake_history
+}
+
+// RemoveTakeHistoryIDs removes the "take_history" edge to the TakeHistory entity by IDs.
+func (m *TimeZoneMutation) RemoveTakeHistoryIDs(ids ...uuid.UUID) {
+	if m.removedtake_history == nil {
+		m.removedtake_history = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.take_history, ids[i])
+		m.removedtake_history[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTakeHistory returns the removed IDs of the "take_history" edge to the TakeHistory entity.
+func (m *TimeZoneMutation) RemovedTakeHistoryIDs() (ids []uuid.UUID) {
+	for id := range m.removedtake_history {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TakeHistoryIDs returns the "take_history" edge IDs in the mutation.
+func (m *TimeZoneMutation) TakeHistoryIDs() (ids []uuid.UUID) {
+	for id := range m.take_history {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTakeHistory resets all changes to the "take_history" edge.
+func (m *TimeZoneMutation) ResetTakeHistory() {
+	m.take_history = nil
+	m.clearedtake_history = false
+	m.removedtake_history = nil
+}
+
 // Where appends a list predicates to the TimeZoneMutation builder.
 func (m *TimeZoneMutation) Where(ps ...predicate.TimeZone) {
 	m.predicates = append(m.predicates, ps...)
@@ -6115,49 +6411,85 @@ func (m *TimeZoneMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TimeZoneMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.take_history != nil {
+		edges = append(edges, timezone.EdgeTakeHistory)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TimeZoneMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case timezone.EdgeTakeHistory:
+		ids := make([]ent.Value, 0, len(m.take_history))
+		for id := range m.take_history {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TimeZoneMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedtake_history != nil {
+		edges = append(edges, timezone.EdgeTakeHistory)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TimeZoneMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case timezone.EdgeTakeHistory:
+		ids := make([]ent.Value, 0, len(m.removedtake_history))
+		for id := range m.removedtake_history {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TimeZoneMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedtake_history {
+		edges = append(edges, timezone.EdgeTakeHistory)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TimeZoneMutation) EdgeCleared(name string) bool {
+	switch name {
+	case timezone.EdgeTakeHistory:
+		return m.clearedtake_history
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TimeZoneMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown TimeZone unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TimeZoneMutation) ResetEdge(name string) error {
+	switch name {
+	case timezone.EdgeTakeHistory:
+		m.ResetTakeHistory()
+		return nil
+	}
 	return fmt.Errorf("unknown TimeZone edge %s", name)
 }
 

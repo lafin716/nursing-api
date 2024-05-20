@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"nursing_api/pkg/ent/takehistory"
+	"nursing_api/pkg/ent/timezone"
 	"strings"
 	"time"
 
@@ -31,8 +32,33 @@ type TakeHistory struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the TakeHistoryQuery when eager-loading is set.
+	Edges        TakeHistoryEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// TakeHistoryEdges holds the relations/edges for other nodes in the graph.
+type TakeHistoryEdges struct {
+	// Timezone holds the value of the timezone edge.
+	Timezone *TimeZone `json:"timezone,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// TimezoneOrErr returns the Timezone value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TakeHistoryEdges) TimezoneOrErr() (*TimeZone, error) {
+	if e.loadedTypes[0] {
+		if e.Timezone == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: timezone.Label}
+		}
+		return e.Timezone, nil
+	}
+	return nil, &NotLoadedError{edge: "timezone"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -120,6 +146,11 @@ func (th *TakeHistory) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (th *TakeHistory) Value(name string) (ent.Value, error) {
 	return th.selectValues.Get(name)
+}
+
+// QueryTimezone queries the "timezone" edge of the TakeHistory entity.
+func (th *TakeHistory) QueryTimezone() *TimeZoneQuery {
+	return NewTakeHistoryClient(th.config).QueryTimezone(th)
 }
 
 // Update returns a builder for updating this TakeHistory.

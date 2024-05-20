@@ -180,7 +180,7 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 	for _, historyItem := range historyItems {
 		takePillStatusMap[historyItem.PrescriptionItemID] = &Pill{
 			TakeHistoryItemId: historyItem.ID,
-			TakeStatus:        takehistory.Y == takehistory.TakePillStatus(historyItem.TakeStatus),
+			TakeStatus:        historyItem.TakeStatus,
 			TakeDate:          r.mono.Date.Format(historyItem.TakeDate, "Y-m-d H:i:s"),
 		}
 	}

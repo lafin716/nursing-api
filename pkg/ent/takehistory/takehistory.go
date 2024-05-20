@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -28,8 +29,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeTimezone holds the string denoting the timezone edge name in mutations.
+	EdgeTimezone = "timezone"
 	// Table holds the table name of the takehistory in the database.
 	Table = "take_histories"
+	// TimezoneTable is the table that holds the timezone relation/edge.
+	TimezoneTable = "take_histories"
+	// TimezoneInverseTable is the table name for the TimeZone entity.
+	// It exists in this package in order to avoid circular dependency with the "timezone" package.
+	TimezoneInverseTable = "time_zones"
+	// TimezoneColumn is the table column denoting the timezone relation/edge.
+	TimezoneColumn = "timezone_id"
 )
 
 // Columns holds all SQL columns for takehistory fields.
@@ -104,4 +114,18 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByTimezoneField orders the results by timezone field.
+func ByTimezoneField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTimezoneStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newTimezoneStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TimezoneInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, TimezoneTable, TimezoneColumn),
+	)
 }

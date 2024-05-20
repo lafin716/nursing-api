@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/takehistoryitem"
 	"time"
 
@@ -39,16 +40,24 @@ func (thic *TakeHistoryItemCreate) SetPrescriptionItemID(u uuid.UUID) *TakeHisto
 	return thic
 }
 
+// SetNillablePrescriptionItemID sets the "prescription_item_id" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillablePrescriptionItemID(u *uuid.UUID) *TakeHistoryItemCreate {
+	if u != nil {
+		thic.SetPrescriptionItemID(*u)
+	}
+	return thic
+}
+
 // SetTakeStatus sets the "take_status" field.
-func (thic *TakeHistoryItemCreate) SetTakeStatus(s string) *TakeHistoryItemCreate {
-	thic.mutation.SetTakeStatus(s)
+func (thic *TakeHistoryItemCreate) SetTakeStatus(b bool) *TakeHistoryItemCreate {
+	thic.mutation.SetTakeStatus(b)
 	return thic
 }
 
 // SetNillableTakeStatus sets the "take_status" field if the given value is not nil.
-func (thic *TakeHistoryItemCreate) SetNillableTakeStatus(s *string) *TakeHistoryItemCreate {
-	if s != nil {
-		thic.SetTakeStatus(*s)
+func (thic *TakeHistoryItemCreate) SetNillableTakeStatus(b *bool) *TakeHistoryItemCreate {
+	if b != nil {
+		thic.SetTakeStatus(*b)
 	}
 	return thic
 }
@@ -163,6 +172,11 @@ func (thic *TakeHistoryItemCreate) SetNillableID(u *uuid.UUID) *TakeHistoryItemC
 	return thic
 }
 
+// SetPrescriptionItem sets the "prescription_item" edge to the PrescriptionItem entity.
+func (thic *TakeHistoryItemCreate) SetPrescriptionItem(p *PrescriptionItem) *TakeHistoryItemCreate {
+	return thic.SetPrescriptionItemID(p.ID)
+}
+
 // Mutation returns the TakeHistoryItemMutation object of the builder.
 func (thic *TakeHistoryItemCreate) Mutation() *TakeHistoryItemMutation {
 	return thic.mutation
@@ -232,9 +246,6 @@ func (thic *TakeHistoryItemCreate) check() error {
 	if _, ok := thic.mutation.TakeHistoryID(); !ok {
 		return &ValidationError{Name: "take_history_id", err: errors.New(`ent: missing required field "TakeHistoryItem.take_history_id"`)}
 	}
-	if _, ok := thic.mutation.PrescriptionItemID(); !ok {
-		return &ValidationError{Name: "prescription_item_id", err: errors.New(`ent: missing required field "TakeHistoryItem.prescription_item_id"`)}
-	}
 	if _, ok := thic.mutation.TakeStatus(); !ok {
 		return &ValidationError{Name: "take_status", err: errors.New(`ent: missing required field "TakeHistoryItem.take_status"`)}
 	}
@@ -299,12 +310,8 @@ func (thic *TakeHistoryItemCreate) createSpec() (*TakeHistoryItem, *sqlgraph.Cre
 		_spec.SetField(takehistoryitem.FieldTakeHistoryID, field.TypeUUID, value)
 		_node.TakeHistoryID = value
 	}
-	if value, ok := thic.mutation.PrescriptionItemID(); ok {
-		_spec.SetField(takehistoryitem.FieldPrescriptionItemID, field.TypeUUID, value)
-		_node.PrescriptionItemID = value
-	}
 	if value, ok := thic.mutation.TakeStatus(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeStatus, field.TypeString, value)
+		_spec.SetField(takehistoryitem.FieldTakeStatus, field.TypeBool, value)
 		_node.TakeStatus = value
 	}
 	if value, ok := thic.mutation.TakeAmount(); ok {
@@ -338,6 +345,23 @@ func (thic *TakeHistoryItemCreate) createSpec() (*TakeHistoryItem, *sqlgraph.Cre
 	if value, ok := thic.mutation.UpdatedAt(); ok {
 		_spec.SetField(takehistoryitem.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := thic.mutation.PrescriptionItemIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistoryitem.PrescriptionItemTable,
+			Columns: []string{takehistoryitem.PrescriptionItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.PrescriptionItemID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

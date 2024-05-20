@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/predicate"
+	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/takehistoryitem"
 	"time"
 
@@ -71,16 +72,22 @@ func (thiu *TakeHistoryItemUpdate) SetNillablePrescriptionItemID(u *uuid.UUID) *
 	return thiu
 }
 
+// ClearPrescriptionItemID clears the value of the "prescription_item_id" field.
+func (thiu *TakeHistoryItemUpdate) ClearPrescriptionItemID() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearPrescriptionItemID()
+	return thiu
+}
+
 // SetTakeStatus sets the "take_status" field.
-func (thiu *TakeHistoryItemUpdate) SetTakeStatus(s string) *TakeHistoryItemUpdate {
-	thiu.mutation.SetTakeStatus(s)
+func (thiu *TakeHistoryItemUpdate) SetTakeStatus(b bool) *TakeHistoryItemUpdate {
+	thiu.mutation.SetTakeStatus(b)
 	return thiu
 }
 
 // SetNillableTakeStatus sets the "take_status" field if the given value is not nil.
-func (thiu *TakeHistoryItemUpdate) SetNillableTakeStatus(s *string) *TakeHistoryItemUpdate {
-	if s != nil {
-		thiu.SetTakeStatus(*s)
+func (thiu *TakeHistoryItemUpdate) SetNillableTakeStatus(b *bool) *TakeHistoryItemUpdate {
+	if b != nil {
+		thiu.SetTakeStatus(*b)
 	}
 	return thiu
 }
@@ -230,9 +237,20 @@ func (thiu *TakeHistoryItemUpdate) ClearUpdatedAt() *TakeHistoryItemUpdate {
 	return thiu
 }
 
+// SetPrescriptionItem sets the "prescription_item" edge to the PrescriptionItem entity.
+func (thiu *TakeHistoryItemUpdate) SetPrescriptionItem(p *PrescriptionItem) *TakeHistoryItemUpdate {
+	return thiu.SetPrescriptionItemID(p.ID)
+}
+
 // Mutation returns the TakeHistoryItemMutation object of the builder.
 func (thiu *TakeHistoryItemUpdate) Mutation() *TakeHistoryItemMutation {
 	return thiu.mutation
+}
+
+// ClearPrescriptionItem clears the "prescription_item" edge to the PrescriptionItem entity.
+func (thiu *TakeHistoryItemUpdate) ClearPrescriptionItem() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearPrescriptionItem()
+	return thiu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -277,11 +295,8 @@ func (thiu *TakeHistoryItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	if value, ok := thiu.mutation.TakeHistoryID(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeHistoryID, field.TypeUUID, value)
 	}
-	if value, ok := thiu.mutation.PrescriptionItemID(); ok {
-		_spec.SetField(takehistoryitem.FieldPrescriptionItemID, field.TypeUUID, value)
-	}
 	if value, ok := thiu.mutation.TakeStatus(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeStatus, field.TypeString, value)
+		_spec.SetField(takehistoryitem.FieldTakeStatus, field.TypeBool, value)
 	}
 	if value, ok := thiu.mutation.TakeAmount(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
@@ -321,6 +336,35 @@ func (thiu *TakeHistoryItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if thiu.mutation.UpdatedAtCleared() {
 		_spec.ClearField(takehistoryitem.FieldUpdatedAt, field.TypeTime)
+	}
+	if thiu.mutation.PrescriptionItemCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistoryitem.PrescriptionItemTable,
+			Columns: []string{takehistoryitem.PrescriptionItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := thiu.mutation.PrescriptionItemIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistoryitem.PrescriptionItemTable,
+			Columns: []string{takehistoryitem.PrescriptionItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, thiu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -384,16 +428,22 @@ func (thiuo *TakeHistoryItemUpdateOne) SetNillablePrescriptionItemID(u *uuid.UUI
 	return thiuo
 }
 
+// ClearPrescriptionItemID clears the value of the "prescription_item_id" field.
+func (thiuo *TakeHistoryItemUpdateOne) ClearPrescriptionItemID() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearPrescriptionItemID()
+	return thiuo
+}
+
 // SetTakeStatus sets the "take_status" field.
-func (thiuo *TakeHistoryItemUpdateOne) SetTakeStatus(s string) *TakeHistoryItemUpdateOne {
-	thiuo.mutation.SetTakeStatus(s)
+func (thiuo *TakeHistoryItemUpdateOne) SetTakeStatus(b bool) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetTakeStatus(b)
 	return thiuo
 }
 
 // SetNillableTakeStatus sets the "take_status" field if the given value is not nil.
-func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeStatus(s *string) *TakeHistoryItemUpdateOne {
-	if s != nil {
-		thiuo.SetTakeStatus(*s)
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeStatus(b *bool) *TakeHistoryItemUpdateOne {
+	if b != nil {
+		thiuo.SetTakeStatus(*b)
 	}
 	return thiuo
 }
@@ -543,9 +593,20 @@ func (thiuo *TakeHistoryItemUpdateOne) ClearUpdatedAt() *TakeHistoryItemUpdateOn
 	return thiuo
 }
 
+// SetPrescriptionItem sets the "prescription_item" edge to the PrescriptionItem entity.
+func (thiuo *TakeHistoryItemUpdateOne) SetPrescriptionItem(p *PrescriptionItem) *TakeHistoryItemUpdateOne {
+	return thiuo.SetPrescriptionItemID(p.ID)
+}
+
 // Mutation returns the TakeHistoryItemMutation object of the builder.
 func (thiuo *TakeHistoryItemUpdateOne) Mutation() *TakeHistoryItemMutation {
 	return thiuo.mutation
+}
+
+// ClearPrescriptionItem clears the "prescription_item" edge to the PrescriptionItem entity.
+func (thiuo *TakeHistoryItemUpdateOne) ClearPrescriptionItem() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearPrescriptionItem()
+	return thiuo
 }
 
 // Where appends a list predicates to the TakeHistoryItemUpdate builder.
@@ -620,11 +681,8 @@ func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *Take
 	if value, ok := thiuo.mutation.TakeHistoryID(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeHistoryID, field.TypeUUID, value)
 	}
-	if value, ok := thiuo.mutation.PrescriptionItemID(); ok {
-		_spec.SetField(takehistoryitem.FieldPrescriptionItemID, field.TypeUUID, value)
-	}
 	if value, ok := thiuo.mutation.TakeStatus(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeStatus, field.TypeString, value)
+		_spec.SetField(takehistoryitem.FieldTakeStatus, field.TypeBool, value)
 	}
 	if value, ok := thiuo.mutation.TakeAmount(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
@@ -664,6 +722,35 @@ func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *Take
 	}
 	if thiuo.mutation.UpdatedAtCleared() {
 		_spec.ClearField(takehistoryitem.FieldUpdatedAt, field.TypeTime)
+	}
+	if thiuo.mutation.PrescriptionItemCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistoryitem.PrescriptionItemTable,
+			Columns: []string{takehistoryitem.PrescriptionItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := thiuo.mutation.PrescriptionItemIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistoryitem.PrescriptionItemTable,
+			Columns: []string{takehistoryitem.PrescriptionItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &TakeHistoryItem{config: thiuo.config}
 	_spec.Assign = _node.assignValues

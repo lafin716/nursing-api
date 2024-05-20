@@ -434,7 +434,7 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 			UserId:             req.UserId,
 			TakeHistoryId:      saved.ID,
 			PrescriptionItemId: item.ID,
-			TakeStatus:         takehistory.Y,
+			TakeStatus:         true,
 			TakeAmount:         item.TakeAmount,
 			RemainAmount:       item.RemainAmount,
 			TotalAmount:        item.TotalAmount,
@@ -465,22 +465,21 @@ func (p *planService) PillToggle(req *PillToggleRequest) dto.BaseResponse[bool] 
 		return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_ITEM, err)
 	}
 
-	isTaken := takehistory.Y == item.TakeStatus
-	if isTaken {
-		item.TakeStatus = takehistory.N
+	if item.TakeStatus {
+		item.TakeStatus = false
 		item.RemainAmount = item.RemainAmount + item.TakeAmount
 	} else {
-		item.TakeStatus = takehistory.Y
+		item.TakeStatus = true
 		item.RemainAmount = item.TotalAmount - item.TakeAmount
 	}
 
-	isTaken = !isTaken
+	item.TakeStatus = !item.TakeStatus
 	saved, err := p.takeHistoryRepo.UpdateItem(item)
 	if !saved || err != nil {
 		return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
 	}
 
-	return dto.Ok[bool](response.CODE_SUCCESS, &isTaken)
+	return dto.Ok[bool](response.CODE_SUCCESS, &item.TakeStatus)
 }
 
 func (p *planService) GetByMonth(req *GetByMonthRequest) dto.BaseResponse[Summary] {

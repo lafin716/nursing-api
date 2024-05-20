@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -150,24 +151,14 @@ func TimezoneIDNotIn(vs ...uuid.UUID) predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldNotIn(FieldTimezoneID, vs...))
 }
 
-// TimezoneIDGT applies the GT predicate on the "timezone_id" field.
-func TimezoneIDGT(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldGT(FieldTimezoneID, v))
+// TimezoneIDIsNil applies the IsNil predicate on the "timezone_id" field.
+func TimezoneIDIsNil() predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldIsNull(FieldTimezoneID))
 }
 
-// TimezoneIDGTE applies the GTE predicate on the "timezone_id" field.
-func TimezoneIDGTE(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldGTE(FieldTimezoneID, v))
-}
-
-// TimezoneIDLT applies the LT predicate on the "timezone_id" field.
-func TimezoneIDLT(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldLT(FieldTimezoneID, v))
-}
-
-// TimezoneIDLTE applies the LTE predicate on the "timezone_id" field.
-func TimezoneIDLTE(v uuid.UUID) predicate.TakeHistory {
-	return predicate.TakeHistory(sql.FieldLTE(FieldTimezoneID, v))
+// TimezoneIDNotNil applies the NotNil predicate on the "timezone_id" field.
+func TimezoneIDNotNil() predicate.TakeHistory {
+	return predicate.TakeHistory(sql.FieldNotNull(FieldTimezoneID))
 }
 
 // TakeDateEQ applies the EQ predicate on the "take_date" field.
@@ -448,6 +439,29 @@ func UpdatedAtIsNil() predicate.TakeHistory {
 // UpdatedAtNotNil applies the NotNil predicate on the "updated_at" field.
 func UpdatedAtNotNil() predicate.TakeHistory {
 	return predicate.TakeHistory(sql.FieldNotNull(FieldUpdatedAt))
+}
+
+// HasTimezone applies the HasEdge predicate on the "timezone" edge.
+func HasTimezone() predicate.TakeHistory {
+	return predicate.TakeHistory(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, TimezoneTable, TimezoneColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTimezoneWith applies the HasEdge predicate on the "timezone" edge with a given conditions (other predicates).
+func HasTimezoneWith(preds ...predicate.TimeZone) predicate.TakeHistory {
+	return predicate.TakeHistory(func(s *sql.Selector) {
+		step := newTimezoneStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

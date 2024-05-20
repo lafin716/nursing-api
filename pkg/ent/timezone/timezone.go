@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -30,8 +31,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeTakeHistory holds the string denoting the take_history edge name in mutations.
+	EdgeTakeHistory = "take_history"
 	// Table holds the table name of the timezone in the database.
 	Table = "time_zones"
+	// TakeHistoryTable is the table that holds the take_history relation/edge.
+	TakeHistoryTable = "take_histories"
+	// TakeHistoryInverseTable is the table name for the TakeHistory entity.
+	// It exists in this package in order to avoid circular dependency with the "takehistory" package.
+	TakeHistoryInverseTable = "take_histories"
+	// TakeHistoryColumn is the table column denoting the take_history relation/edge.
+	TakeHistoryColumn = "timezone_id"
 )
 
 // Columns holds all SQL columns for timezone fields.
@@ -112,4 +122,25 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByTakeHistoryCount orders the results by take_history count.
+func ByTakeHistoryCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTakeHistoryStep(), opts...)
+	}
+}
+
+// ByTakeHistory orders the results by take_history terms.
+func ByTakeHistory(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTakeHistoryStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newTakeHistoryStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TakeHistoryInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TakeHistoryTable, TakeHistoryColumn),
+	)
 }

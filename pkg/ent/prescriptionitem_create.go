@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/prescriptionitem"
+	"nursing_api/pkg/ent/takehistoryitem"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -149,6 +150,21 @@ func (pic *PrescriptionItemCreate) SetNillableID(u *uuid.UUID) *PrescriptionItem
 		pic.SetID(*u)
 	}
 	return pic
+}
+
+// AddTakeHistoryItemIDs adds the "take_history_item" edge to the TakeHistoryItem entity by IDs.
+func (pic *PrescriptionItemCreate) AddTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemCreate {
+	pic.mutation.AddTakeHistoryItemIDs(ids...)
+	return pic
+}
+
+// AddTakeHistoryItem adds the "take_history_item" edges to the TakeHistoryItem entity.
+func (pic *PrescriptionItemCreate) AddTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemCreate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pic.AddTakeHistoryItemIDs(ids...)
 }
 
 // Mutation returns the PrescriptionItemMutation object of the builder.
@@ -309,6 +325,22 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 	if value, ok := pic.mutation.UpdatedAt(); ok {
 		_spec.SetField(prescriptionitem.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := pic.mutation.TakeHistoryItemIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescriptionitem.TakeHistoryItemTable,
+			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

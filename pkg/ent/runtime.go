@@ -99,7 +99,7 @@ func init() {
 	// takehistoryitemDescTakeStatus is the schema descriptor for take_status field.
 	takehistoryitemDescTakeStatus := takehistoryitemFields[4].Descriptor()
 	// takehistoryitem.DefaultTakeStatus holds the default value on creation for the take_status field.
-	takehistoryitem.DefaultTakeStatus = takehistoryitemDescTakeStatus.Default.(string)
+	takehistoryitem.DefaultTakeStatus = takehistoryitemDescTakeStatus.Default.(bool)
 	// takehistoryitemDescTakeAmount is the schema descriptor for take_amount field.
 	takehistoryitemDescTakeAmount := takehistoryitemFields[5].Descriptor()
 	// takehistoryitem.DefaultTakeAmount holds the default value on creation for the take_amount field.

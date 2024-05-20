@@ -37,8 +37,29 @@ type PrescriptionItem struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the PrescriptionItemQuery when eager-loading is set.
+	Edges        PrescriptionItemEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// PrescriptionItemEdges holds the relations/edges for other nodes in the graph.
+type PrescriptionItemEdges struct {
+	// TakeHistoryItem holds the value of the take_history_item edge.
+	TakeHistoryItem []*TakeHistoryItem `json:"take_history_item,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// TakeHistoryItemOrErr returns the TakeHistoryItem value or an error if the edge
+// was not loaded in eager-loading.
+func (e PrescriptionItemEdges) TakeHistoryItemOrErr() ([]*TakeHistoryItem, error) {
+	if e.loadedTypes[0] {
+		return e.TakeHistoryItem, nil
+	}
+	return nil, &NotLoadedError{edge: "take_history_item"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -146,6 +167,11 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (pi *PrescriptionItem) Value(name string) (ent.Value, error) {
 	return pi.selectValues.Get(name)
+}
+
+// QueryTakeHistoryItem queries the "take_history_item" edge of the PrescriptionItem entity.
+func (pi *PrescriptionItem) QueryTakeHistoryItem() *TakeHistoryItemQuery {
+	return NewPrescriptionItemClient(pi.config).QueryTakeHistoryItem(pi)
 }
 
 // Update returns a builder for updating this PrescriptionItem.

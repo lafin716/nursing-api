@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"nursing_api/pkg/ent/predicate"
 	"nursing_api/pkg/ent/takehistory"
+	"nursing_api/pkg/ent/timezone"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -54,6 +55,12 @@ func (thu *TakeHistoryUpdate) SetNillableTimezoneID(u *uuid.UUID) *TakeHistoryUp
 	if u != nil {
 		thu.SetTimezoneID(*u)
 	}
+	return thu
+}
+
+// ClearTimezoneID clears the value of the "timezone_id" field.
+func (thu *TakeHistoryUpdate) ClearTimezoneID() *TakeHistoryUpdate {
+	thu.mutation.ClearTimezoneID()
 	return thu
 }
 
@@ -145,9 +152,20 @@ func (thu *TakeHistoryUpdate) ClearUpdatedAt() *TakeHistoryUpdate {
 	return thu
 }
 
+// SetTimezone sets the "timezone" edge to the TimeZone entity.
+func (thu *TakeHistoryUpdate) SetTimezone(t *TimeZone) *TakeHistoryUpdate {
+	return thu.SetTimezoneID(t.ID)
+}
+
 // Mutation returns the TakeHistoryMutation object of the builder.
 func (thu *TakeHistoryUpdate) Mutation() *TakeHistoryMutation {
 	return thu.mutation
+}
+
+// ClearTimezone clears the "timezone" edge to the TimeZone entity.
+func (thu *TakeHistoryUpdate) ClearTimezone() *TakeHistoryUpdate {
+	thu.mutation.ClearTimezone()
+	return thu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -189,9 +207,6 @@ func (thu *TakeHistoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := thu.mutation.UserID(); ok {
 		_spec.SetField(takehistory.FieldUserID, field.TypeUUID, value)
 	}
-	if value, ok := thu.mutation.TimezoneID(); ok {
-		_spec.SetField(takehistory.FieldTimezoneID, field.TypeUUID, value)
-	}
 	if value, ok := thu.mutation.TakeDate(); ok {
 		_spec.SetField(takehistory.FieldTakeDate, field.TypeTime, value)
 	}
@@ -215,6 +230,35 @@ func (thu *TakeHistoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if thu.mutation.UpdatedAtCleared() {
 		_spec.ClearField(takehistory.FieldUpdatedAt, field.TypeTime)
+	}
+	if thu.mutation.TimezoneCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistory.TimezoneTable,
+			Columns: []string{takehistory.TimezoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(timezone.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := thu.mutation.TimezoneIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistory.TimezoneTable,
+			Columns: []string{takehistory.TimezoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(timezone.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, thu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -261,6 +305,12 @@ func (thuo *TakeHistoryUpdateOne) SetNillableTimezoneID(u *uuid.UUID) *TakeHisto
 	if u != nil {
 		thuo.SetTimezoneID(*u)
 	}
+	return thuo
+}
+
+// ClearTimezoneID clears the value of the "timezone_id" field.
+func (thuo *TakeHistoryUpdateOne) ClearTimezoneID() *TakeHistoryUpdateOne {
+	thuo.mutation.ClearTimezoneID()
 	return thuo
 }
 
@@ -352,9 +402,20 @@ func (thuo *TakeHistoryUpdateOne) ClearUpdatedAt() *TakeHistoryUpdateOne {
 	return thuo
 }
 
+// SetTimezone sets the "timezone" edge to the TimeZone entity.
+func (thuo *TakeHistoryUpdateOne) SetTimezone(t *TimeZone) *TakeHistoryUpdateOne {
+	return thuo.SetTimezoneID(t.ID)
+}
+
 // Mutation returns the TakeHistoryMutation object of the builder.
 func (thuo *TakeHistoryUpdateOne) Mutation() *TakeHistoryMutation {
 	return thuo.mutation
+}
+
+// ClearTimezone clears the "timezone" edge to the TimeZone entity.
+func (thuo *TakeHistoryUpdateOne) ClearTimezone() *TakeHistoryUpdateOne {
+	thuo.mutation.ClearTimezone()
+	return thuo
 }
 
 // Where appends a list predicates to the TakeHistoryUpdate builder.
@@ -426,9 +487,6 @@ func (thuo *TakeHistoryUpdateOne) sqlSave(ctx context.Context) (_node *TakeHisto
 	if value, ok := thuo.mutation.UserID(); ok {
 		_spec.SetField(takehistory.FieldUserID, field.TypeUUID, value)
 	}
-	if value, ok := thuo.mutation.TimezoneID(); ok {
-		_spec.SetField(takehistory.FieldTimezoneID, field.TypeUUID, value)
-	}
 	if value, ok := thuo.mutation.TakeDate(); ok {
 		_spec.SetField(takehistory.FieldTakeDate, field.TypeTime, value)
 	}
@@ -452,6 +510,35 @@ func (thuo *TakeHistoryUpdateOne) sqlSave(ctx context.Context) (_node *TakeHisto
 	}
 	if thuo.mutation.UpdatedAtCleared() {
 		_spec.ClearField(takehistory.FieldUpdatedAt, field.TypeTime)
+	}
+	if thuo.mutation.TimezoneCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistory.TimezoneTable,
+			Columns: []string{takehistory.TimezoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(timezone.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := thuo.mutation.TimezoneIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistory.TimezoneTable,
+			Columns: []string{takehistory.TimezoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(timezone.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &TakeHistory{config: thuo.config}
 	_spec.Assign = _node.assignValues

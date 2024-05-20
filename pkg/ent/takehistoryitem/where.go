@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -71,7 +72,7 @@ func PrescriptionItemID(v uuid.UUID) predicate.TakeHistoryItem {
 }
 
 // TakeStatus applies equality check predicate on the "take_status" field. It's identical to TakeStatusEQ.
-func TakeStatus(v string) predicate.TakeHistoryItem {
+func TakeStatus(v bool) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeStatus, v))
 }
 
@@ -215,89 +216,24 @@ func PrescriptionItemIDNotIn(vs ...uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldPrescriptionItemID, vs...))
 }
 
-// PrescriptionItemIDGT applies the GT predicate on the "prescription_item_id" field.
-func PrescriptionItemIDGT(v uuid.UUID) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldGT(FieldPrescriptionItemID, v))
+// PrescriptionItemIDIsNil applies the IsNil predicate on the "prescription_item_id" field.
+func PrescriptionItemIDIsNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIsNull(FieldPrescriptionItemID))
 }
 
-// PrescriptionItemIDGTE applies the GTE predicate on the "prescription_item_id" field.
-func PrescriptionItemIDGTE(v uuid.UUID) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldGTE(FieldPrescriptionItemID, v))
-}
-
-// PrescriptionItemIDLT applies the LT predicate on the "prescription_item_id" field.
-func PrescriptionItemIDLT(v uuid.UUID) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldLT(FieldPrescriptionItemID, v))
-}
-
-// PrescriptionItemIDLTE applies the LTE predicate on the "prescription_item_id" field.
-func PrescriptionItemIDLTE(v uuid.UUID) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldLTE(FieldPrescriptionItemID, v))
+// PrescriptionItemIDNotNil applies the NotNil predicate on the "prescription_item_id" field.
+func PrescriptionItemIDNotNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldPrescriptionItemID))
 }
 
 // TakeStatusEQ applies the EQ predicate on the "take_status" field.
-func TakeStatusEQ(v string) predicate.TakeHistoryItem {
+func TakeStatusEQ(v bool) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeStatus, v))
 }
 
 // TakeStatusNEQ applies the NEQ predicate on the "take_status" field.
-func TakeStatusNEQ(v string) predicate.TakeHistoryItem {
+func TakeStatusNEQ(v bool) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldTakeStatus, v))
-}
-
-// TakeStatusIn applies the In predicate on the "take_status" field.
-func TakeStatusIn(vs ...string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldIn(FieldTakeStatus, vs...))
-}
-
-// TakeStatusNotIn applies the NotIn predicate on the "take_status" field.
-func TakeStatusNotIn(vs ...string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldTakeStatus, vs...))
-}
-
-// TakeStatusGT applies the GT predicate on the "take_status" field.
-func TakeStatusGT(v string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldGT(FieldTakeStatus, v))
-}
-
-// TakeStatusGTE applies the GTE predicate on the "take_status" field.
-func TakeStatusGTE(v string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldGTE(FieldTakeStatus, v))
-}
-
-// TakeStatusLT applies the LT predicate on the "take_status" field.
-func TakeStatusLT(v string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldLT(FieldTakeStatus, v))
-}
-
-// TakeStatusLTE applies the LTE predicate on the "take_status" field.
-func TakeStatusLTE(v string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTakeStatus, v))
-}
-
-// TakeStatusContains applies the Contains predicate on the "take_status" field.
-func TakeStatusContains(v string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldContains(FieldTakeStatus, v))
-}
-
-// TakeStatusHasPrefix applies the HasPrefix predicate on the "take_status" field.
-func TakeStatusHasPrefix(v string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldHasPrefix(FieldTakeStatus, v))
-}
-
-// TakeStatusHasSuffix applies the HasSuffix predicate on the "take_status" field.
-func TakeStatusHasSuffix(v string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldHasSuffix(FieldTakeStatus, v))
-}
-
-// TakeStatusEqualFold applies the EqualFold predicate on the "take_status" field.
-func TakeStatusEqualFold(v string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldEqualFold(FieldTakeStatus, v))
-}
-
-// TakeStatusContainsFold applies the ContainsFold predicate on the "take_status" field.
-func TakeStatusContainsFold(v string) predicate.TakeHistoryItem {
-	return predicate.TakeHistoryItem(sql.FieldContainsFold(FieldTakeStatus, v))
 }
 
 // TakeAmountEQ applies the EQ predicate on the "take_amount" field.
@@ -688,6 +624,29 @@ func UpdatedAtIsNil() predicate.TakeHistoryItem {
 // UpdatedAtNotNil applies the NotNil predicate on the "updated_at" field.
 func UpdatedAtNotNil() predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldUpdatedAt))
+}
+
+// HasPrescriptionItem applies the HasEdge predicate on the "prescription_item" edge.
+func HasPrescriptionItem() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, PrescriptionItemTable, PrescriptionItemColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPrescriptionItemWith applies the HasEdge predicate on the "prescription_item" edge with a given conditions (other predicates).
+func HasPrescriptionItemWith(preds ...predicate.PrescriptionItem) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(func(s *sql.Selector) {
+		step := newPrescriptionItemStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

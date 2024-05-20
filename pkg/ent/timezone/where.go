@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -503,6 +504,29 @@ func UpdatedAtIsNil() predicate.TimeZone {
 // UpdatedAtNotNil applies the NotNil predicate on the "updated_at" field.
 func UpdatedAtNotNil() predicate.TimeZone {
 	return predicate.TimeZone(sql.FieldNotNull(FieldUpdatedAt))
+}
+
+// HasTakeHistory applies the HasEdge predicate on the "take_history" edge.
+func HasTakeHistory() predicate.TimeZone {
+	return predicate.TimeZone(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TakeHistoryTable, TakeHistoryColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTakeHistoryWith applies the HasEdge predicate on the "take_history" edge with a given conditions (other predicates).
+func HasTakeHistoryWith(preds ...predicate.TakeHistory) predicate.TimeZone {
+	return predicate.TimeZone(func(s *sql.Selector) {
+		step := newTakeHistoryStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

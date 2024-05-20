@@ -184,6 +184,32 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/plan/item/takeamount": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "복용계획 내 아이템 복용량을 업데이트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복용아이템 섭취량 업데이트",
+                "parameters": [
+                    {
+                        "description": "복용아이템 섭취량정보",
+                        "name": "dto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/plan.PillTakeAmountUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/plan/memo": {
             "post": {
                 "security": [
@@ -823,6 +849,21 @@ const docTemplate = `{
                 },
                 "timezone_id": {
                     "type": "string"
+                }
+            }
+        },
+        "plan.PillTakeAmountUpdateRequest": {
+            "type": "object",
+            "required": [
+                "prescription_item_id",
+                "take_amount"
+            ],
+            "properties": {
+                "prescription_item_id": {
+                    "type": "string"
+                },
+                "take_amount": {
+                    "type": "number"
                 }
             }
         },

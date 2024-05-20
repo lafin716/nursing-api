@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"nursing_api/pkg/ent/predicate"
 	"nursing_api/pkg/ent/prescriptionitem"
+	"nursing_api/pkg/ent/takehistoryitem"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -208,9 +209,45 @@ func (piu *PrescriptionItemUpdate) ClearUpdatedAt() *PrescriptionItemUpdate {
 	return piu
 }
 
+// AddTakeHistoryItemIDs adds the "take_history_item" edge to the TakeHistoryItem entity by IDs.
+func (piu *PrescriptionItemUpdate) AddTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemUpdate {
+	piu.mutation.AddTakeHistoryItemIDs(ids...)
+	return piu
+}
+
+// AddTakeHistoryItem adds the "take_history_item" edges to the TakeHistoryItem entity.
+func (piu *PrescriptionItemUpdate) AddTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return piu.AddTakeHistoryItemIDs(ids...)
+}
+
 // Mutation returns the PrescriptionItemMutation object of the builder.
 func (piu *PrescriptionItemUpdate) Mutation() *PrescriptionItemMutation {
 	return piu.mutation
+}
+
+// ClearTakeHistoryItem clears all "take_history_item" edges to the TakeHistoryItem entity.
+func (piu *PrescriptionItemUpdate) ClearTakeHistoryItem() *PrescriptionItemUpdate {
+	piu.mutation.ClearTakeHistoryItem()
+	return piu
+}
+
+// RemoveTakeHistoryItemIDs removes the "take_history_item" edge to TakeHistoryItem entities by IDs.
+func (piu *PrescriptionItemUpdate) RemoveTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemUpdate {
+	piu.mutation.RemoveTakeHistoryItemIDs(ids...)
+	return piu
+}
+
+// RemoveTakeHistoryItem removes "take_history_item" edges to TakeHistoryItem entities.
+func (piu *PrescriptionItemUpdate) RemoveTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return piu.RemoveTakeHistoryItemIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -296,6 +333,51 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if piu.mutation.UpdatedAtCleared() {
 		_spec.ClearField(prescriptionitem.FieldUpdatedAt, field.TypeTime)
+	}
+	if piu.mutation.TakeHistoryItemCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescriptionitem.TakeHistoryItemTable,
+			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := piu.mutation.RemovedTakeHistoryItemIDs(); len(nodes) > 0 && !piu.mutation.TakeHistoryItemCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescriptionitem.TakeHistoryItemTable,
+			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := piu.mutation.TakeHistoryItemIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescriptionitem.TakeHistoryItemTable,
+			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, piu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -496,9 +578,45 @@ func (piuo *PrescriptionItemUpdateOne) ClearUpdatedAt() *PrescriptionItemUpdateO
 	return piuo
 }
 
+// AddTakeHistoryItemIDs adds the "take_history_item" edge to the TakeHistoryItem entity by IDs.
+func (piuo *PrescriptionItemUpdateOne) AddTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemUpdateOne {
+	piuo.mutation.AddTakeHistoryItemIDs(ids...)
+	return piuo
+}
+
+// AddTakeHistoryItem adds the "take_history_item" edges to the TakeHistoryItem entity.
+func (piuo *PrescriptionItemUpdateOne) AddTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return piuo.AddTakeHistoryItemIDs(ids...)
+}
+
 // Mutation returns the PrescriptionItemMutation object of the builder.
 func (piuo *PrescriptionItemUpdateOne) Mutation() *PrescriptionItemMutation {
 	return piuo.mutation
+}
+
+// ClearTakeHistoryItem clears all "take_history_item" edges to the TakeHistoryItem entity.
+func (piuo *PrescriptionItemUpdateOne) ClearTakeHistoryItem() *PrescriptionItemUpdateOne {
+	piuo.mutation.ClearTakeHistoryItem()
+	return piuo
+}
+
+// RemoveTakeHistoryItemIDs removes the "take_history_item" edge to TakeHistoryItem entities by IDs.
+func (piuo *PrescriptionItemUpdateOne) RemoveTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemUpdateOne {
+	piuo.mutation.RemoveTakeHistoryItemIDs(ids...)
+	return piuo
+}
+
+// RemoveTakeHistoryItem removes "take_history_item" edges to TakeHistoryItem entities.
+func (piuo *PrescriptionItemUpdateOne) RemoveTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return piuo.RemoveTakeHistoryItemIDs(ids...)
 }
 
 // Where appends a list predicates to the PrescriptionItemUpdate builder.
@@ -614,6 +732,51 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 	}
 	if piuo.mutation.UpdatedAtCleared() {
 		_spec.ClearField(prescriptionitem.FieldUpdatedAt, field.TypeTime)
+	}
+	if piuo.mutation.TakeHistoryItemCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescriptionitem.TakeHistoryItemTable,
+			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := piuo.mutation.RemovedTakeHistoryItemIDs(); len(nodes) > 0 && !piuo.mutation.TakeHistoryItemCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescriptionitem.TakeHistoryItemTable,
+			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := piuo.mutation.TakeHistoryItemIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescriptionitem.TakeHistoryItemTable,
+			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &PrescriptionItem{config: piuo.config}
 	_spec.Assign = _node.assignValues

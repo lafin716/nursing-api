@@ -4,6 +4,7 @@ package ent
 
 import (
 	"fmt"
+	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/takehistoryitem"
 	"strings"
 	"time"
@@ -25,7 +26,7 @@ type TakeHistoryItem struct {
 	// PrescriptionItemID holds the value of the "prescription_item_id" field.
 	PrescriptionItemID uuid.UUID `json:"prescription_item_id,omitempty"`
 	// TakeStatus holds the value of the "take_status" field.
-	TakeStatus string `json:"take_status,omitempty"`
+	TakeStatus bool `json:"take_status,omitempty"`
 	// TakeAmount holds the value of the "take_amount" field.
 	TakeAmount float64 `json:"take_amount,omitempty"`
 	// RemainAmount holds the value of the "remain_amount" field.
@@ -41,8 +42,33 @@ type TakeHistoryItem struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the TakeHistoryItemQuery when eager-loading is set.
+	Edges        TakeHistoryItemEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// TakeHistoryItemEdges holds the relations/edges for other nodes in the graph.
+type TakeHistoryItemEdges struct {
+	// PrescriptionItem holds the value of the prescription_item edge.
+	PrescriptionItem *PrescriptionItem `json:"prescription_item,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// PrescriptionItemOrErr returns the PrescriptionItem value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TakeHistoryItemEdges) PrescriptionItemOrErr() (*PrescriptionItem, error) {
+	if e.loadedTypes[0] {
+		if e.PrescriptionItem == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: prescriptionitem.Label}
+		}
+		return e.PrescriptionItem, nil
+	}
+	return nil, &NotLoadedError{edge: "prescription_item"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -50,9 +76,11 @@ func (*TakeHistoryItem) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case takehistoryitem.FieldTakeStatus:
+			values[i] = new(sql.NullBool)
 		case takehistoryitem.FieldTakeAmount, takehistoryitem.FieldRemainAmount, takehistoryitem.FieldTotalAmount:
 			values[i] = new(sql.NullFloat64)
-		case takehistoryitem.FieldTakeStatus, takehistoryitem.FieldTakeUnit, takehistoryitem.FieldMemo:
+		case takehistoryitem.FieldTakeUnit, takehistoryitem.FieldMemo:
 			values[i] = new(sql.NullString)
 		case takehistoryitem.FieldTakeDate, takehistoryitem.FieldCreatedAt, takehistoryitem.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -98,10 +126,10 @@ func (thi *TakeHistoryItem) assignValues(columns []string, values []any) error {
 				thi.PrescriptionItemID = *value
 			}
 		case takehistoryitem.FieldTakeStatus:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field take_status", values[i])
 			} else if value.Valid {
-				thi.TakeStatus = value.String
+				thi.TakeStatus = value.Bool
 			}
 		case takehistoryitem.FieldTakeAmount:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -164,6 +192,11 @@ func (thi *TakeHistoryItem) Value(name string) (ent.Value, error) {
 	return thi.selectValues.Get(name)
 }
 
+// QueryPrescriptionItem queries the "prescription_item" edge of the TakeHistoryItem entity.
+func (thi *TakeHistoryItem) QueryPrescriptionItem() *PrescriptionItemQuery {
+	return NewTakeHistoryItemClient(thi.config).QueryPrescriptionItem(thi)
+}
+
 // Update returns a builder for updating this TakeHistoryItem.
 // Note that you need to call TakeHistoryItem.Unwrap() before calling this method if this TakeHistoryItem
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -197,7 +230,7 @@ func (thi *TakeHistoryItem) String() string {
 	builder.WriteString(fmt.Sprintf("%v", thi.PrescriptionItemID))
 	builder.WriteString(", ")
 	builder.WriteString("take_status=")
-	builder.WriteString(thi.TakeStatus)
+	builder.WriteString(fmt.Sprintf("%v", thi.TakeStatus))
 	builder.WriteString(", ")
 	builder.WriteString("take_amount=")
 	builder.WriteString(fmt.Sprintf("%v", thi.TakeAmount))

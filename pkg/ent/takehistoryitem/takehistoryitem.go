@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -38,8 +39,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgePrescriptionItem holds the string denoting the prescription_item edge name in mutations.
+	EdgePrescriptionItem = "prescription_item"
 	// Table holds the table name of the takehistoryitem in the database.
 	Table = "take_history_items"
+	// PrescriptionItemTable is the table that holds the prescription_item relation/edge.
+	PrescriptionItemTable = "take_history_items"
+	// PrescriptionItemInverseTable is the table name for the PrescriptionItem entity.
+	// It exists in this package in order to avoid circular dependency with the "prescriptionitem" package.
+	PrescriptionItemInverseTable = "prescription_items"
+	// PrescriptionItemColumn is the table column denoting the prescription_item relation/edge.
+	PrescriptionItemColumn = "prescription_item_id"
 )
 
 // Columns holds all SQL columns for takehistoryitem fields.
@@ -71,7 +81,7 @@ func ValidColumn(column string) bool {
 
 var (
 	// DefaultTakeStatus holds the default value on creation for the "take_status" field.
-	DefaultTakeStatus string
+	DefaultTakeStatus bool
 	// DefaultTakeAmount holds the default value on creation for the "take_amount" field.
 	DefaultTakeAmount float64
 	// DefaultRemainAmount holds the default value on creation for the "remain_amount" field.
@@ -150,4 +160,18 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByPrescriptionItemField orders the results by prescription_item field.
+func ByPrescriptionItemField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPrescriptionItemStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newPrescriptionItemStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PrescriptionItemInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, PrescriptionItemTable, PrescriptionItemColumn),
+	)
 }

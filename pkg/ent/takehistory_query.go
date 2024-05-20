@@ -8,6 +8,7 @@ import (
 	"math"
 	"nursing_api/pkg/ent/predicate"
 	"nursing_api/pkg/ent/takehistory"
+	"nursing_api/pkg/ent/timezone"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -18,10 +19,11 @@ import (
 // TakeHistoryQuery is the builder for querying TakeHistory entities.
 type TakeHistoryQuery struct {
 	config
-	ctx        *QueryContext
-	order      []takehistory.OrderOption
-	inters     []Interceptor
-	predicates []predicate.TakeHistory
+	ctx          *QueryContext
+	order        []takehistory.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.TakeHistory
+	withTimezone *TimeZoneQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,6 +58,28 @@ func (thq *TakeHistoryQuery) Unique(unique bool) *TakeHistoryQuery {
 func (thq *TakeHistoryQuery) Order(o ...takehistory.OrderOption) *TakeHistoryQuery {
 	thq.order = append(thq.order, o...)
 	return thq
+}
+
+// QueryTimezone chains the current query on the "timezone" edge.
+func (thq *TakeHistoryQuery) QueryTimezone() *TimeZoneQuery {
+	query := (&TimeZoneClient{config: thq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := thq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := thq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(takehistory.Table, takehistory.FieldID, selector),
+			sqlgraph.To(timezone.Table, timezone.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, takehistory.TimezoneTable, takehistory.TimezoneColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(thq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first TakeHistory entity from the query.
@@ -245,15 +269,27 @@ func (thq *TakeHistoryQuery) Clone() *TakeHistoryQuery {
 		return nil
 	}
 	return &TakeHistoryQuery{
-		config:     thq.config,
-		ctx:        thq.ctx.Clone(),
-		order:      append([]takehistory.OrderOption{}, thq.order...),
-		inters:     append([]Interceptor{}, thq.inters...),
-		predicates: append([]predicate.TakeHistory{}, thq.predicates...),
+		config:       thq.config,
+		ctx:          thq.ctx.Clone(),
+		order:        append([]takehistory.OrderOption{}, thq.order...),
+		inters:       append([]Interceptor{}, thq.inters...),
+		predicates:   append([]predicate.TakeHistory{}, thq.predicates...),
+		withTimezone: thq.withTimezone.Clone(),
 		// clone intermediate query.
 		sql:  thq.sql.Clone(),
 		path: thq.path,
 	}
+}
+
+// WithTimezone tells the query-builder to eager-load the nodes that are connected to
+// the "timezone" edge. The optional arguments are used to configure the query builder of the edge.
+func (thq *TakeHistoryQuery) WithTimezone(opts ...func(*TimeZoneQuery)) *TakeHistoryQuery {
+	query := (&TimeZoneClient{config: thq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	thq.withTimezone = query
+	return thq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -332,8 +368,11 @@ func (thq *TakeHistoryQuery) prepareQuery(ctx context.Context) error {
 
 func (thq *TakeHistoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*TakeHistory, error) {
 	var (
-		nodes = []*TakeHistory{}
-		_spec = thq.querySpec()
+		nodes       = []*TakeHistory{}
+		_spec       = thq.querySpec()
+		loadedTypes = [1]bool{
+			thq.withTimezone != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*TakeHistory).scanValues(nil, columns)
@@ -341,6 +380,7 @@ func (thq *TakeHistoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &TakeHistory{config: thq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -352,7 +392,43 @@ func (thq *TakeHistoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := thq.withTimezone; query != nil {
+		if err := thq.loadTimezone(ctx, query, nodes, nil,
+			func(n *TakeHistory, e *TimeZone) { n.Edges.Timezone = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (thq *TakeHistoryQuery) loadTimezone(ctx context.Context, query *TimeZoneQuery, nodes []*TakeHistory, init func(*TakeHistory), assign func(*TakeHistory, *TimeZone)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*TakeHistory)
+	for i := range nodes {
+		fk := nodes[i].TimezoneID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(timezone.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "timezone_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (thq *TakeHistoryQuery) sqlCount(ctx context.Context) (int, error) {
@@ -379,6 +455,9 @@ func (thq *TakeHistoryQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != takehistory.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if thq.withTimezone != nil {
+			_spec.Node.AddColumnOnce(takehistory.FieldTimezoneID)
 		}
 	}
 	if ps := thq.predicates; len(ps) > 0 {

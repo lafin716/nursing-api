@@ -67,6 +67,7 @@ func (t *repository) GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, dat
 	log.Println("takehistory.GetByTimezoneId")
 	history, err := t.root.Debug().TakeHistory.
 		Query().
+		WithTimezone().
 		Where(
 			schema.And(
 				schema.UserID(userId),
@@ -97,14 +98,17 @@ func (t *repository) GetItemById(userId uuid.UUID, takeHistoryItemId uuid.UUID) 
 }
 
 func (t *repository) GetItemsByHistoryId(userId uuid.UUID, historyId uuid.UUID, date time.Time) ([]*TakeHistoryItem, error) {
-	historyItems, err := t.itemClient.Query().Where(
-		schemaItem.And(
-			schemaItem.UserID(userId),
-			schemaItem.TakeHistoryID(historyId),
-			schemaItem.TakeDateGTE(date),
-			schemaItem.TakeDateLT(date.AddDate(0, 0, 1)),
-		),
-	).All(t.ctx)
+	historyItems, err := t.itemClient.
+		Query().
+		WithPrescriptionItem().
+		Where(
+			schemaItem.And(
+				schemaItem.UserID(userId),
+				schemaItem.TakeHistoryID(historyId),
+				schemaItem.TakeDateGTE(date),
+				schemaItem.TakeDateLT(date.AddDate(0, 0, 1)),
+			),
+		).All(t.ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +119,7 @@ func (t *repository) GetItemsByHistoryId(userId uuid.UUID, historyId uuid.UUID, 
 func (t *repository) GetListByDate(userId uuid.UUID, date time.Time) ([]*TakeHistory, error) {
 	found, err := t.client.
 		Query().
+		WithTimezone().
 		Where(
 			schema.And(
 				schema.UserID(userId),
@@ -240,7 +245,7 @@ func (t *repository) AddItem(item *TakeHistoryItem) (bool, error) {
 		SetTotalAmount(item.TotalAmount).
 		SetTakeUnit(item.TakeUnit).
 		SetTakeDate(item.TakeDate).
-		SetTakeStatus(string(item.TakeStatus)).
+		SetTakeStatus(item.TakeStatus).
 		SetCreatedAt(time.Now()).
 		Save(t.ctx)
 	if err != nil {
@@ -261,7 +266,7 @@ func (t *repository) AddItemTx(item *TakeHistoryItem, tx *ent.Tx) (bool, error) 
 		SetTotalAmount(item.TotalAmount).
 		SetTakeUnit(item.TakeUnit).
 		SetTakeDate(item.TakeDate).
-		SetTakeStatus(string(item.TakeStatus)).
+		SetTakeStatus(item.TakeStatus).
 		SetCreatedAt(time.Now()).
 		Save(t.ctx)
 	if err != nil {
@@ -274,7 +279,7 @@ func (t *repository) AddItemTx(item *TakeHistoryItem, tx *ent.Tx) (bool, error) 
 func (t *repository) UpdateItem(item *TakeHistoryItem) (bool, error) {
 	err := t.itemClient.
 		Update().
-		SetTakeStatus(string(item.TakeStatus)).
+		SetTakeStatus(item.TakeStatus).
 		SetRemainAmount(item.RemainAmount).
 		SetMemo(item.Memo).
 		Where(

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/takehistory"
+	"nursing_api/pkg/ent/timezone"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -30,6 +31,14 @@ func (thc *TakeHistoryCreate) SetUserID(u uuid.UUID) *TakeHistoryCreate {
 // SetTimezoneID sets the "timezone_id" field.
 func (thc *TakeHistoryCreate) SetTimezoneID(u uuid.UUID) *TakeHistoryCreate {
 	thc.mutation.SetTimezoneID(u)
+	return thc
+}
+
+// SetNillableTimezoneID sets the "timezone_id" field if the given value is not nil.
+func (thc *TakeHistoryCreate) SetNillableTimezoneID(u *uuid.UUID) *TakeHistoryCreate {
+	if u != nil {
+		thc.SetTimezoneID(*u)
+	}
 	return thc
 }
 
@@ -109,6 +118,11 @@ func (thc *TakeHistoryCreate) SetNillableID(u *uuid.UUID) *TakeHistoryCreate {
 	return thc
 }
 
+// SetTimezone sets the "timezone" edge to the TimeZone entity.
+func (thc *TakeHistoryCreate) SetTimezone(t *TimeZone) *TakeHistoryCreate {
+	return thc.SetTimezoneID(t.ID)
+}
+
 // Mutation returns the TakeHistoryMutation object of the builder.
 func (thc *TakeHistoryCreate) Mutation() *TakeHistoryMutation {
 	return thc.mutation
@@ -163,9 +177,6 @@ func (thc *TakeHistoryCreate) check() error {
 	if _, ok := thc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "TakeHistory.user_id"`)}
 	}
-	if _, ok := thc.mutation.TimezoneID(); !ok {
-		return &ValidationError{Name: "timezone_id", err: errors.New(`ent: missing required field "TakeHistory.timezone_id"`)}
-	}
 	if _, ok := thc.mutation.TakeDate(); !ok {
 		return &ValidationError{Name: "take_date", err: errors.New(`ent: missing required field "TakeHistory.take_date"`)}
 	}
@@ -211,10 +222,6 @@ func (thc *TakeHistoryCreate) createSpec() (*TakeHistory, *sqlgraph.CreateSpec) 
 		_spec.SetField(takehistory.FieldUserID, field.TypeUUID, value)
 		_node.UserID = value
 	}
-	if value, ok := thc.mutation.TimezoneID(); ok {
-		_spec.SetField(takehistory.FieldTimezoneID, field.TypeUUID, value)
-		_node.TimezoneID = value
-	}
 	if value, ok := thc.mutation.TakeDate(); ok {
 		_spec.SetField(takehistory.FieldTakeDate, field.TypeTime, value)
 		_node.TakeDate = value
@@ -234,6 +241,23 @@ func (thc *TakeHistoryCreate) createSpec() (*TakeHistory, *sqlgraph.CreateSpec) 
 	if value, ok := thc.mutation.UpdatedAt(); ok {
 		_spec.SetField(takehistory.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := thc.mutation.TimezoneIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   takehistory.TimezoneTable,
+			Columns: []string{takehistory.TimezoneColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(timezone.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TimezoneID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -77,6 +77,16 @@ definitions:
     required:
     - timezone_id
     type: object
+  plan.PillTakeAmountUpdateRequest:
+    properties:
+      prescription_item_id:
+        type: string
+      take_amount:
+        type: number
+    required:
+    - prescription_item_id
+    - take_amount
+    type: object
   plan.PillToggleRequest:
     properties:
       pill_id:
@@ -349,6 +359,22 @@ paths:
       security:
       - Bearer: []
       summary: 복약 계획 삭제
+  /plan/item/takeamount:
+    post:
+      description: 복용계획 내 아이템 복용량을 업데이트
+      parameters:
+      - description: 복용아이템 섭취량정보
+        in: body
+        name: dto
+        required: true
+        schema:
+          $ref: '#/definitions/plan.PillTakeAmountUpdateRequest'
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: 복용아이템 섭취량 업데이트
   /plan/memo:
     post:
       description: 날짜별 복용계획 시간대의 메모를 업데이트

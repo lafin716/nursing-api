@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nursing_api/pkg/ent/takehistory"
 	"nursing_api/pkg/ent/timezone"
 	"time"
 
@@ -113,6 +114,21 @@ func (tzc *TimeZoneCreate) SetNillableID(u *uuid.UUID) *TimeZoneCreate {
 		tzc.SetID(*u)
 	}
 	return tzc
+}
+
+// AddTakeHistoryIDs adds the "take_history" edge to the TakeHistory entity by IDs.
+func (tzc *TimeZoneCreate) AddTakeHistoryIDs(ids ...uuid.UUID) *TimeZoneCreate {
+	tzc.mutation.AddTakeHistoryIDs(ids...)
+	return tzc
+}
+
+// AddTakeHistory adds the "take_history" edges to the TakeHistory entity.
+func (tzc *TimeZoneCreate) AddTakeHistory(t ...*TakeHistory) *TimeZoneCreate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tzc.AddTakeHistoryIDs(ids...)
 }
 
 // Mutation returns the TimeZoneMutation object of the builder.
@@ -250,6 +266,22 @@ func (tzc *TimeZoneCreate) createSpec() (*TimeZone, *sqlgraph.CreateSpec) {
 	if value, ok := tzc.mutation.UpdatedAt(); ok {
 		_spec.SetField(timezone.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := tzc.mutation.TakeHistoryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   timezone.TakeHistoryTable,
+			Columns: []string{timezone.TakeHistoryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistory.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
