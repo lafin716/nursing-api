@@ -421,6 +421,17 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 	for _, item := range items {
 		// 복용아이템 남은량 차감
 		item.RemainAmount = item.RemainAmount - item.TakeAmount
+
+		// 남은량이 0보다 작은 경우 실패처리
+		if item.RemainAmount < 0 {
+			txErr = p.db.RollbackAndEnd()
+			if txErr != nil {
+				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
+			}
+			return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
+		}
+
+		// 복용아이템 업데이트
 		result, err := p.prescriptionRepo.UpdateItem(item)
 		if result <= 0 || err != nil {
 			txErr = p.db.RollbackAndEnd()
@@ -554,6 +565,10 @@ func (p *planService) PillTakeAmountUpdate(req *PillTakeAmountUpdateRequest) dto
 	psItem, err := p.prescriptionRepo.GetItemById(req.PrescriptionItemId)
 	if err != nil {
 		return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_ITEM, err)
+	}
+
+	if req.TakeAmount > psItem.RemainAmount {
+		return dto.Fail[bool](response.CODE_TOO_MUCH_TAKE_AMOUNT, nil)
 	}
 
 	psItem.TakeAmount = req.TakeAmount

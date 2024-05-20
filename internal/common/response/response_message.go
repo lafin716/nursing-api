@@ -64,6 +64,7 @@ const (
 	CODE_FAIL_DELETE_ITEM_PLAN            = ResultCode(5060)
 	CODE_NO_RESULT_PLAN_BY_DATE           = ResultCode(5070)
 	CODE_FAIL_TAKE_PLAN                   = ResultCode(5080)
+	CODE_TOO_MUCH_TAKE_AMOUNT             = ResultCode(5081)
 	CODE_FAIL_SAVE_PLAN_LOG               = ResultCode(5090)
 	CODE_CANNOT_UPDATE_MEMO_BEFORE_TAKING = ResultCode(5100)
 	CODE_FAIL_UPDATE_MEMO                 = ResultCode(5110)
@@ -136,6 +137,7 @@ var codeMessages = map[ResultCode]string{
 	CODE_FAIL_DELETE_ITEM_PLAN:            "복용계획 항목 삭제 중 오류가 발생하였습니다.",
 	CODE_NO_RESULT_PLAN_BY_DATE:           "해당날짜에 복용계획이 없습니다.",
 	CODE_FAIL_TAKE_PLAN:                   "복용처리 중 오류가 발생하였습니다.",
+	CODE_TOO_MUCH_TAKE_AMOUNT:             "복용량이 초과되었습니다.",
 	CODE_FAIL_SAVE_PLAN_LOG:               "복용이력 저장 중 오류가 발생하였습니다.",
 	CODE_CANNOT_UPDATE_MEMO_BEFORE_TAKING: "복용처리 전에는 메모를 수정할 수 없습니다.",
 	CODE_FAIL_UPDATE_MEMO:                 "메모 수정 중 오류가 발생하였습니다.",
