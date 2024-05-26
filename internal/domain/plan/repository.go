@@ -158,6 +158,7 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 		takeStatusMap[history.TimezoneID] = &Plan{
 			TakeStatus: takehistory.DONE == takehistory.TakeStatus(history.TakeStatus),
 			TakeDate:   r.mono.Date.Format(history.TakeDate, "Y-m-d H:i:s"),
+			Memo:       history.Memo,
 		}
 	}
 
@@ -204,6 +205,7 @@ func (r repository) GetPlans(userId uuid.UUID, date time.Time) ([]Plan, error) {
 		if takeStatusMap[v.TimezoneId] != nil {
 			v.TakeStatus = takeStatusMap[v.TimezoneId].TakeStatus
 			v.TakeDate = takeStatusMap[v.TimezoneId].TakeDate
+			v.Memo = takeStatusMap[v.TimezoneId].Memo
 		}
 
 		// 의약품 복용내역이 있는 경우 업데이트
