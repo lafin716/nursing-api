@@ -78,6 +78,9 @@ func (t *repository) GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, dat
 			),
 		).Only(t.ctx)
 	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -161,7 +164,7 @@ func (t *repository) GetById(id uuid.UUID) (*TakeHistory, error) {
 		return nil, err
 	}
 
-	return toModel(found), nil
+	return toSingleModel(found), nil
 }
 
 func (t *repository) Add(newData *TakeHistory) (*TakeHistory, error) {
@@ -178,7 +181,7 @@ func (t *repository) Add(newData *TakeHistory) (*TakeHistory, error) {
 		return nil, err
 	}
 
-	return toModel(saved), nil
+	return toSingleModel(saved), nil
 }
 
 func (t *repository) AddTx(newData *TakeHistory, tx *ent.Tx) (*TakeHistory, error) {
@@ -195,7 +198,7 @@ func (t *repository) AddTx(newData *TakeHistory, tx *ent.Tx) (*TakeHistory, erro
 		return nil, err
 	}
 
-	return toModel(saved), nil
+	return toSingleModel(saved), nil
 }
 
 func (t *repository) Update(newData *TakeHistory) (bool, error) {

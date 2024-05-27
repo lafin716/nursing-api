@@ -98,7 +98,7 @@ func (a authService) SignUp(req *SignUpRequest) dto.BaseResponse[Token] {
 		AccessToken:  jwtToken.AccessToken,
 		RefreshToken: jwtToken.RefreshToken,
 	}
-	return dto.Ok[Token](response.CODE_FAIL_SAVE_TOKEN, token)
+	return dto.Ok[Token](response.CODE_SUCCESS, token)
 }
 
 func (a authService) SignOut(userId uuid.UUID) error {

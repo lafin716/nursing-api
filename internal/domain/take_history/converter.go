@@ -5,7 +5,7 @@ import "nursing_api/pkg/ent"
 func toModelList(entities []*ent.TakeHistory) []*TakeHistory {
 	var models []*TakeHistory
 	for _, entity := range entities {
-		models = append(models, toModel(entity))
+		models = append(models, toSingleModel(entity))
 	}
 
 	return models
@@ -13,10 +13,6 @@ func toModelList(entities []*ent.TakeHistory) []*TakeHistory {
 
 func toModel(entity *ent.TakeHistory) *TakeHistory {
 	if entity == nil {
-		return nil
-	}
-
-	if entity.Edges.Timezone == nil {
 		return nil
 	}
 
@@ -30,6 +26,23 @@ func toModel(entity *ent.TakeHistory) *TakeHistory {
 		Memo:         entity.Memo,
 		CreatedAt:    entity.CreatedAt,
 		UpdatedAt:    entity.UpdatedAt,
+	}
+}
+
+func toSingleModel(entity *ent.TakeHistory) *TakeHistory {
+	if entity == nil {
+		return nil
+	}
+
+	return &TakeHistory{
+		ID:         entity.ID,
+		TimezoneId: entity.TimezoneID,
+		UserId:     entity.UserID,
+		TakeDate:   entity.TakeDate,
+		TakeStatus: TakeStatus(entity.TakeStatus),
+		Memo:       entity.Memo,
+		CreatedAt:  entity.CreatedAt,
+		UpdatedAt:  entity.UpdatedAt,
 	}
 }
 

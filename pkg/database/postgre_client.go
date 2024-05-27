@@ -62,6 +62,7 @@ func NewPostgresClient(config *Config) *DatabaseClient {
 
 func (d *DatabaseClient) BeginTx() error {
 	if d.Tx != nil {
+		d.EndTx()
 		return errors.New("이미 실행중인 트랜잭션이 있습니다")
 	}
 
