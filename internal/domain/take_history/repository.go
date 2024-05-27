@@ -65,6 +65,7 @@ func (t *repository) GetList(userId uuid.UUID) ([]*TakeHistory, error) {
 
 func (t *repository) GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, date time.Time) (*TakeHistory, error) {
 	log.Println("takehistory.GetByTimezoneId")
+	log.Printf("userId: %v, timezoneId: %v, date: %v", userId, timezoneId, date)
 	history, err := t.root.Debug().TakeHistory.
 		Query().
 		WithTimezone().

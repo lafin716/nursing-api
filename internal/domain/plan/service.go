@@ -295,6 +295,9 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 
 	// 복용내역 조회
 	tz, err := p.takeHistoryRepo.GetByTimezoneId(req.UserId, req.TimezoneId, truncatedDate)
+	if err != nil {
+		return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_TIMEZONE, err)
+	}
 
 	// 있는 경우 복용 취소 처리
 	if tz != nil || err == nil {
