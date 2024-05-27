@@ -69,6 +69,7 @@ const (
 	CODE_CANNOT_UPDATE_MEMO_BEFORE_TAKING = ResultCode(5100)
 	CODE_FAIL_UPDATE_MEMO                 = ResultCode(5110)
 	CODE_NO_RESULT_PLAN_BY_MONTH          = ResultCode(5120)
+	CODE_FAIL_UPDATE_RECOVER_TAKE_AMOUNT  = ResultCode(5130)
 
 	// 복용내역
 	CODE_FAIL_GET_LIST_TAKE_HISTORY      = ResultCode(6000)
@@ -142,6 +143,7 @@ var codeMessages = map[ResultCode]string{
 	CODE_CANNOT_UPDATE_MEMO_BEFORE_TAKING: "복용처리 전에는 메모를 수정할 수 없습니다.",
 	CODE_FAIL_UPDATE_MEMO:                 "메모 수정 중 오류가 발생하였습니다.",
 	CODE_NO_RESULT_PLAN_BY_MONTH:          "해당월에 복용계획이 없습니다.",
+	CODE_FAIL_UPDATE_RECOVER_TAKE_AMOUNT:  "복용량 복구 중 오류가 발생하였습니다.",
 
 	// 처방전
 	CODE_FAIL_ADD_PRESCRIPTION:        "처방전 등록 중 오류가 발생하였습니다.",

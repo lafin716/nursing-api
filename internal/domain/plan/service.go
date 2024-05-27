@@ -309,6 +309,7 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 			if txErr != nil {
 				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
 			}
+			log.Println("있는 경우 복용내역 삭제 오류")
 			return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
 		}
 		_, err = p.takeHistoryRepo.DeleteItemByHistoryIdTx(tz.ID, tx)
@@ -317,6 +318,7 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 			if txErr != nil {
 				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
 			}
+			log.Println("있는 경우 복용내역아이템 삭제 오류")
 			return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
 		}
 
@@ -365,7 +367,8 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 				if txErr != nil {
 					return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
 				}
-				return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
+				log.Println("복용아이템 남은량 복구 중 오류")
+				return dto.Fail[bool](response.CODE_FAIL_UPDATE_RECOVER_TAKE_AMOUNT, err)
 			}
 		}
 
@@ -432,7 +435,7 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 			if txErr != nil {
 				return dto.Fail[bool](response.CODE_ERROR_TRANSACTION, txErr)
 			}
-			return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
+			return dto.Fail[bool](response.CODE_TOO_MUCH_TAKE_AMOUNT, err)
 		}
 
 		// 복용아이템 업데이트
