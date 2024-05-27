@@ -12,6 +12,14 @@ func toModelList(entities []*ent.TakeHistory) []*TakeHistory {
 }
 
 func toModel(entity *ent.TakeHistory) *TakeHistory {
+	if entity == nil {
+		return nil
+	}
+
+	if entity.Edges.Timezone == nil {
+		return nil
+	}
+
 	return &TakeHistory{
 		ID:           entity.ID,
 		TimezoneId:   entity.Edges.Timezone.ID,

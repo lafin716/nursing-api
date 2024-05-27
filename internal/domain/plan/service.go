@@ -295,7 +295,7 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 
 	// 복용내역 조회
 	tz, err := p.takeHistoryRepo.GetByTimezoneId(req.UserId, req.TimezoneId, truncatedDate)
-	if err != nil {
+	if err != nil || tz == nil {
 		return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_TIMEZONE, err)
 	}
 
@@ -541,7 +541,7 @@ func (p *planService) UpdateMemo(req *UpdateMemoRequest) dto.BaseResponse[any] {
 		return dto.Fail[any](response.CODE_NOT_AVAILABLE_DATE, err)
 	}
 	tz, err := p.takeHistoryRepo.GetByTimezoneId(req.UserId, req.TimezoneId, dateTime)
-	if err != nil {
+	if err != nil || tz == nil {
 		return dto.Fail[any](response.CODE_NOT_FOUND_TIMEZONE, err)
 	}
 
