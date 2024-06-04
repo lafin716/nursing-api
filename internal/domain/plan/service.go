@@ -479,7 +479,7 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 
 func (p *planService) PillToggle(req *PillToggleRequest) dto.BaseResponse[bool] {
 	item, err := p.takeHistoryRepo.GetItemById(req.UserId, req.PillId)
-	if err != nil {
+	if err != nil || item == nil {
 		return dto.Fail[bool](response.CODE_NOT_FOUND_PLAN_ITEM, err)
 	}
 
