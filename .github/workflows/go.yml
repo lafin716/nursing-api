@@ -29,6 +29,44 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-go-
 
+    - name: Pre-Build
+      run: |
+        echo "APP_NAME=$APP_NAME" >> .env 
+        echo "PROFILE=$PROFILE" >> .env 
+        echo "PORT=$PORT" >> .env 
+        echo "JWT_SECRET_KEY=$JWT_SECRET_KEY" >> .env 
+        echo "ACCESS_TOKEN_EXPIRES=$ACCESS_TOKEN_EXPIRES" >> .env 
+        echo "REFRESH_SECRET_KEY=$REFRESH_SECRET_KEY" >> .env 
+        echo "REFRESH_TOKEN_EXPIRES=$REFRESH_TOKEN_EXPIRES" >> .env 
+        echo "DB_HOST=$DB_HOST" >> .env 
+        echo "DB_PORT=$DB_PORT" >> .env 
+        echo "DB_NAME=$DB_NAME" >> .env 
+        echo "DB_USER=$DB_USER" >> .env 
+        echo "DB_PASSWORD=$DB_PASSWORD" >> .env 
+        echo "DB_SSL=$DB_SSL" >> .env 
+        echo "DB_DEBUG=$DB_DEBUG" >> .env 
+        echo "MEDICINE_SUMMARY_API_KEY=$MEDICINE_SUMMARY_API_KEY" >> .env 
+        echo "MEDICINE_APPEAR_API_KEY=$MEDICINE_APPEAR_API_KEY" >> .env 
+        echo "SWAGGER_HOST=$SWAGGER_HOST" >> .env 
+      env:
+        APP_NAME: ${{ secrets.APP_NAME }}
+        PROFILE: ${{ secrets.PROFILE }}
+        PORT: ${{ secrets.PORT }}
+        JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+        ACCESS_TOKEN_EXPIRES: ${{ secrets.ACCESS_TOKEN_EXPIRES }}
+        REFRESH_SECRET_KEY: ${{ secrets.REFRESH_SECRET_KEY }}
+        REFRESH_TOKEN_EXPIRES: ${{ secrets.REFRESH_TOKEN_EXPIRES }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_SSL: ${{ secrets.DB_SSL }}
+        DB_DEBUG: ${{ secrets.DB_DEBUG }}
+        MEDICINE_SUMMARY_API_KEY: ${{ secrets.MEDICINE_SUMMARY_API_KEY }}
+        MEDICINE_APPEAR_API_KEY: ${{ secrets.MEDICINE_APPEAR_API_KEY }}
+        SWAGGER_HOST: ${{ secrets.SWAGGER_HOST }}
+
     - name: Build
       run: go build ./cmd/main.go
 
