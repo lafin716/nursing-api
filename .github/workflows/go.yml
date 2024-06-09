@@ -23,3 +23,9 @@ jobs:
 
     - name: Build
       run: go build ./cmd/main.go
+
+    - name: Pre-Deploy
+      run: cp ./main ../../main
+
+    - name: Deploy
+      run: ../../restart_server.sh
