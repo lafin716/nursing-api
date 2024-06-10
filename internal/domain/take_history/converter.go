@@ -56,9 +56,10 @@ func toModelItemList(entities []*ent.TakeHistoryItem) []*TakeHistoryItem {
 }
 
 func toModelItem(entity *ent.TakeHistoryItem) *TakeHistoryItem {
-	if entity == nil {
+	if entity == nil || entity.Edges.PrescriptionItem == nil {
 		return nil
 	}
+
 	return &TakeHistoryItem{
 		ID:                 entity.ID,
 		UserId:             entity.UserID,
