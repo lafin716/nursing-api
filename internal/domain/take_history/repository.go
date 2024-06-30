@@ -88,10 +88,10 @@ func (t *repository) GetByTimezoneId(userId uuid.UUID, timezoneId uuid.UUID, dat
 }
 
 func (t *repository) GetItemById(userId uuid.UUID, takeHistoryItemId uuid.UUID) (*TakeHistoryItem, error) {
-	item, err := t.itemClient.
+	item, err := t.root.Debug().TakeHistoryItem.
 		Query().
+		WithPrescriptionItem().
 		Where(
-			schemaItem.UserID(userId),
 			schemaItem.ID(takeHistoryItemId),
 		).Only(t.ctx)
 	if err != nil {

@@ -491,7 +491,6 @@ func (p *planService) PillToggle(req *PillToggleRequest) dto.BaseResponse[bool] 
 		item.RemainAmount = item.TotalAmount - item.TakeAmount
 	}
 
-	item.TakeStatus = !item.TakeStatus
 	saved, err := p.takeHistoryRepo.UpdateItem(item)
 	if !saved || err != nil {
 		return dto.Fail[bool](response.CODE_FAIL_TAKE_PLAN, err)
