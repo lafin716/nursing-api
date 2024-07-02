@@ -1,26 +1,10 @@
-FROM golang:1.21.1-alpine
+FROM golang:1.21
 
+RUN mkdir /app
+ADD . /app/
 WORKDIR /app
-
-COPY ./go.mod ./
 RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux go build cmd/main.go 
 
-COPY . .
-RUN cp -f .env.docker .env
-RUN chmod 744 .env
-RUN go mod tidy
-RUN go install github.com/google/wire/cmd/wire@latest
-# RUN go install github.com/swaggo/swag/cmd/swag@latest
-RUN go generate ./pkg/ent
-RUN wire ./internal
-# RUN swag init -g cmd/main.go
-
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main ./cmd
-
-FROM alpine:latest
-
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=0 /app/main .
-EXPOSE 80
+EXPOSE 8080
 CMD ["./main"]
