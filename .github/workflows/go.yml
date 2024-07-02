@@ -67,11 +67,13 @@ jobs:
         MEDICINE_APPEAR_API_KEY: ${{ secrets.MEDICINE_APPEAR_API_KEY }}
         SWAGGER_HOST: ${{ secrets.SWAGGER_HOST }}
 
-    - name: Build
-      run: go build ./cmd/main.go
+    - name: Docker Build
+      run: docker buildx build -t healthlink-api .
 
-    - name: Pre-Deploy
-      run: cp ./main ../../main
+    - name: Pre Deploy
+      run: |
+        docker stop healthlink-api
+        docker rm healthlink-api
 
     - name: Deploy
-      run: ../../restart_server.sh
+      run: docker run -d -p 8080:8080 --network healthlink-nw --name healthlink-api healthlink-api:latest
