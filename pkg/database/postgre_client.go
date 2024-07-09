@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"nursing_api/pkg/ent"
@@ -19,10 +18,38 @@ type Config struct {
 	Debug     bool
 }
 
-type DatabaseClient struct {
-	Client *ent.Client
-	Ctx    context.Context
-	Tx     *ent.Tx
+type DatabaseClient interface {
+	GetClient() *ent.Client
+	GetCtx() context.Context
+	RegisterTx(tx Transactional) error
+	GetTxManager() TransactionManager
+	Migrate()
+}
+
+type databaseClient struct {
+	Client    *ent.Client
+	Ctx       context.Context
+	TxManager TransactionManager
+}
+
+func (d *databaseClient) GetClient() *ent.Client {
+	if d.TxManager.IsRunningTransaction() {
+		return d.TxManager.GetTx().Client()
+	}
+
+	return d.Client
+}
+
+func (d *databaseClient) GetCtx() context.Context {
+	return d.Ctx
+}
+
+func (d *databaseClient) RegisterTx(tx Transactional) error {
+	return d.TxManager.Register(tx)
+}
+
+func (d *databaseClient) GetTxManager() TransactionManager {
+	return d.TxManager
 }
 
 func (c *Config) Serialize() string {
@@ -41,7 +68,14 @@ func (c *Config) Serialize() string {
 	)
 }
 
-func NewPostgresClient(config *Config) *DatabaseClient {
+// 마이그레이션
+func (d *databaseClient) Migrate() {
+	if err := d.Client.Schema.WriteTo(d.Ctx, os.Stdout); err != nil {
+		log.Fatalf("마이그레이션 수행 중 오류 발생: %v", err)
+	}
+}
+
+func NewPostgresClient(config *Config) DatabaseClient {
 	log.Printf("데이터베이스 URL : %s", config.Serialize())
 	client, err := ent.Open("postgres", config.Serialize())
 	if err != nil {
@@ -53,88 +87,9 @@ func NewPostgresClient(config *Config) *DatabaseClient {
 		log.Printf("데이터베이스 컨텍스트 생성에 실패하였습니다: %v", err)
 	}
 
-	return &DatabaseClient{
-		Client: client,
-		Ctx:    ctx,
-		Tx:     nil,
-	}
-}
-
-func (d *DatabaseClient) BeginTx() error {
-	if d.Tx != nil {
-		d.EndTx()
-		return errors.New("이미 실행중인 트랜잭션이 있습니다")
-	}
-
-	tx, err := d.Client.Tx(d.Ctx)
-	if err != nil {
-		return err
-	}
-
-	d.Tx = tx
-	return nil
-}
-
-func (d *DatabaseClient) GetTx() *ent.Tx {
-	return d.Tx
-}
-
-func (d *DatabaseClient) Commit() error {
-	if d.Tx == nil {
-		return errors.New("트랜잭션이 시작되지 않았습니다")
-	}
-
-	err := d.Tx.Commit()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *DatabaseClient) CommitAndEnd() error {
-	err := d.Commit()
-	if err != nil {
-		return err
-	}
-	d.EndTx()
-	return nil
-}
-
-func (d *DatabaseClient) Rollback() error {
-	if d.Tx == nil {
-		return errors.New("트랜잭션이 시작되지 않았습니다")
-	}
-
-	err := d.Tx.Rollback()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *DatabaseClient) RollbackAndEnd() error {
-	err := d.Rollback()
-	if err != nil {
-		return err
-	}
-	d.EndTx()
-	return nil
-}
-
-func (d *DatabaseClient) EndTx() {
-	d.Tx = nil
-}
-
-func (d *DatabaseClient) Close() {
-	err := d.Client.Close()
-	if err != nil {
-		return
-	}
-}
-
-// 마이그레이션
-func (d *DatabaseClient) Migrate() {
-	if err := d.Client.Schema.WriteTo(d.Ctx, os.Stdout); err != nil {
-		log.Fatalf("마이그레이션 수행 중 오류 발생: %v", err)
+	return &databaseClient{
+		Client:    client,
+		Ctx:       ctx,
+		TxManager: NewTransactionManager(client, ctx),
 	}
 }

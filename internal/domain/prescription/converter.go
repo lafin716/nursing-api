@@ -12,7 +12,6 @@ func toEntity(domain *Prescription) *ent.Prescription {
 		TakeDays:         domain.TakeDays,
 		StartedAt:        domain.StartedAt,
 		FinishedAt:       domain.FinishedAt,
-		Memo:             domain.Memo,
 		CreatedAt:        domain.CreatedAt,
 		UpdatedAt:        domain.UpdatedAt,
 	}
@@ -31,7 +30,12 @@ func toEntityItems(domains []*PrescriptionItem) []*ent.PrescriptionItem {
 func toEntityItem(domain *PrescriptionItem) *ent.PrescriptionItem {
 	return &ent.PrescriptionItem{
 		ID:             domain.ID,
-		TimezoneLinkID: domain.TimeZoneLinkId,
+		PrescriptionID: domain.PrescriptionId,
+		TimezoneID:     domain.TimeZoneId,
+		TimezoneName:   domain.TimeZoneName,
+		Midday:         domain.Midday,
+		Hour:           domain.Hour,
+		Minute:         domain.Minute,
 		MedicineID:     domain.MedicineId,
 		MedicineName:   domain.MedicineName,
 		TakeAmount:     domain.TakeAmount,
@@ -61,7 +65,6 @@ func toDomain(entity *ent.Prescription) *Prescription {
 		TakeDays:         entity.TakeDays,
 		StartedAt:        entity.StartedAt,
 		FinishedAt:       entity.FinishedAt,
-		Memo:             entity.Memo,
 		CreatedAt:        entity.CreatedAt,
 		UpdatedAt:        entity.UpdatedAt,
 	}
@@ -79,7 +82,12 @@ func toDomainItems(entities []*ent.PrescriptionItem) []*PrescriptionItem {
 func toDomainItem(entity *ent.PrescriptionItem) *PrescriptionItem {
 	return &PrescriptionItem{
 		ID:             entity.ID,
-		TimeZoneLinkId: entity.TimezoneLinkID,
+		PrescriptionId: entity.PrescriptionID,
+		TimeZoneId:     entity.TimezoneID,
+		TimeZoneName:   entity.TimezoneName,
+		Midday:         entity.Midday,
+		Hour:           entity.Hour,
+		Minute:         entity.Minute,
 		MedicineId:     entity.MedicineID,
 		MedicineName:   entity.MedicineName,
 		TakeAmount:     entity.TakeAmount,

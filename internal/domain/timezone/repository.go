@@ -26,12 +26,12 @@ type timezoneRepository struct {
 }
 
 func NewRepository(
-	dbClient *database.DatabaseClient,
+	dbClient database.DatabaseClient,
 ) Repository {
 	return &timezoneRepository{
-		root:     dbClient.Client,
-		timezone: dbClient.Client.TimeZone,
-		c:        dbClient.Ctx,
+		root:     dbClient.GetClient(),
+		timezone: dbClient.GetClient().TimeZone,
+		c:        dbClient.GetCtx(),
 	}
 }
 

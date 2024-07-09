@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -26,14 +27,21 @@ const (
 	FieldStartedAt = "started_at"
 	// FieldFinishedAt holds the string denoting the finished_at field in the database.
 	FieldFinishedAt = "finished_at"
-	// FieldMemo holds the string denoting the memo field in the database.
-	FieldMemo = "memo"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgePrescriptionItems holds the string denoting the prescription_items edge name in mutations.
+	EdgePrescriptionItems = "prescription_items"
 	// Table holds the table name of the prescription in the database.
 	Table = "prescriptions"
+	// PrescriptionItemsTable is the table that holds the prescription_items relation/edge.
+	PrescriptionItemsTable = "prescription_items"
+	// PrescriptionItemsInverseTable is the table name for the PrescriptionItem entity.
+	// It exists in this package in order to avoid circular dependency with the "prescriptionitem" package.
+	PrescriptionItemsInverseTable = "prescription_items"
+	// PrescriptionItemsColumn is the table column denoting the prescription_items relation/edge.
+	PrescriptionItemsColumn = "prescription_id"
 )
 
 // Columns holds all SQL columns for prescription fields.
@@ -45,7 +53,6 @@ var Columns = []string{
 	FieldTakeDays,
 	FieldStartedAt,
 	FieldFinishedAt,
-	FieldMemo,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -111,11 +118,6 @@ func ByFinishedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFinishedAt, opts...).ToFunc()
 }
 
-// ByMemo orders the results by the memo field.
-func ByMemo(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldMemo, opts...).ToFunc()
-}
-
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
@@ -124,4 +126,25 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByPrescriptionItemsCount orders the results by prescription_items count.
+func ByPrescriptionItemsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPrescriptionItemsStep(), opts...)
+	}
+}
+
+// ByPrescriptionItems orders the results by prescription_items terms.
+func ByPrescriptionItems(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPrescriptionItemsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newPrescriptionItemsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PrescriptionItemsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, PrescriptionItemsTable, PrescriptionItemsColumn),
+	)
 }

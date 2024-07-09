@@ -8,6 +8,7 @@ type formatter struct {
 type Formatter interface {
 	Format(t time.Time, layout string) string
 	TruncateToDate(dateTime time.Time) time.Time
+	TruncateToMonth(dateTime time.Time) time.Time
 	TruncateToDateAddDay(dateTime time.Time, day int) time.Time
 }
 
@@ -25,6 +26,19 @@ func (f formatter) TruncateToDate(dateTime time.Time) time.Time {
 		dateTime.Year(),
 		dateTime.Month(),
 		dateTime.Day(),
+		0,
+		0,
+		0,
+		0,
+		dateTime.Location(),
+	)
+}
+
+func (f formatter) TruncateToMonth(dateTime time.Time) time.Time {
+	return time.Date(
+		dateTime.Year(),
+		dateTime.Month(),
+		1,
 		0,
 		0,
 		0,

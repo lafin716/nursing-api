@@ -25,7 +25,6 @@ type handlers struct {
 	user         api.UserHttpApi
 	medicine     api.MedicineHttpApi
 	prescription api.PrescriptionApi
-	takehistory  api.TakeHistoryHttpApi
 	plan         api.PlanHttpApi
 	timezone     api.TimeZoneApi
 }
@@ -45,7 +44,6 @@ func (c *container) Init(
 	c.RegisterAuthRoute()
 	c.RegisterMedicineRoute()
 	c.RegisterPrescriptionRoute()
-	c.RegisterTakeHistoryRoute()
 	c.RegisterPlanRoute()
 	c.RegisterTimeZoneRoute()
 }
@@ -57,7 +55,6 @@ func NewRouter(
 	user api.UserHttpApi,
 	medicine api.MedicineHttpApi,
 	prescription api.PrescriptionApi,
-	takehistory api.TakeHistoryHttpApi,
 	plan api.PlanHttpApi,
 	timezone api.TimeZoneApi,
 ) Routable {
@@ -71,7 +68,6 @@ func NewRouter(
 			user:         user,
 			medicine:     medicine,
 			prescription: prescription,
-			takehistory:  takehistory,
 			plan:         plan,
 			timezone:     timezone,
 		},

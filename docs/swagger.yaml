@@ -592,35 +592,6 @@ paths:
       security:
       - Bearer: []
       summary: 처방전 의약품 상세 조회
-  /takehistory:
-    get:
-      consumes:
-      - application/json
-      description: 복용내역을 조회하는 엔드포인트
-      parameters:
-      - in: query
-        name: targetDate
-        type: string
-      - in: query
-        name: userId
-        type: string
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - Bearer: []
-      summary: 복용내역 목록
-  /takehistory/:id:
-    get:
-      consumes:
-      - application/json
-      description: 복용내역 상세를 조회하는 엔드포인트
-      produces:
-      - application/json
-      responses: {}
-      security:
-      - Bearer: []
-      summary: 복용내역 상세
   /timezone:
     get:
       description: 복용시간대 목록을 조회하는 엔드포인트

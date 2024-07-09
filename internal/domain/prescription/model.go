@@ -13,7 +13,6 @@ type Prescription struct {
 	TakeDays          int                 `json:"take_days"`
 	StartedAt         time.Time           `json:"started_at"`
 	FinishedAt        time.Time           `json:"finished_at"`
-	Memo              string              `json:"memo"`
 	CreatedAt         time.Time           `json:"created_at"`
 	UpdatedAt         time.Time           `json:"updated_at"`
 	PrescriptionItems []*PrescriptionItem `json:"prescription_items"`
@@ -21,9 +20,14 @@ type Prescription struct {
 
 type PrescriptionItem struct {
 	ID             uuid.UUID `json:"id"`
-	TimeZoneLinkId uuid.UUID `json:"timezone_link_id"`
+	PrescriptionId uuid.UUID `json:"prescription_id"`
+	TimeZoneId     uuid.UUID `json:"timezone_id"`
 	MedicineId     uuid.UUID `json:"medicine_id"`
 	MedicineName   string    `json:"medicine_name"`
+	TimeZoneName   string    `json:"timezone_name"`
+	Midday         string    `json:"midday"`
+	Hour           string    `json:"hour"`
+	Minute         string    `json:"minute"`
 	TakeAmount     float64   `json:"take_amount"`
 	RemainAmount   float64   `json:"remain_amount"`
 	TotalAmount    float64   `json:"total_amount"`
@@ -48,9 +52,6 @@ func (p *Prescription) update(newModel *Prescription) {
 	}
 	if !newModel.FinishedAt.IsZero() {
 		p.FinishedAt = newModel.FinishedAt
-	}
-	if newModel.Memo != "" {
-		p.Memo = newModel.Memo
 	}
 	p.UpdatedAt = time.Now()
 }

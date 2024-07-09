@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"nursing_api/pkg/ent/prescription"
+	"nursing_api/pkg/ent/prescriptionitem"
 	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -97,20 +98,6 @@ func (pc *PrescriptionCreate) SetNillableFinishedAt(t *time.Time) *PrescriptionC
 	return pc
 }
 
-// SetMemo sets the "memo" field.
-func (pc *PrescriptionCreate) SetMemo(s string) *PrescriptionCreate {
-	pc.mutation.SetMemo(s)
-	return pc
-}
-
-// SetNillableMemo sets the "memo" field if the given value is not nil.
-func (pc *PrescriptionCreate) SetNillableMemo(s *string) *PrescriptionCreate {
-	if s != nil {
-		pc.SetMemo(*s)
-	}
-	return pc
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (pc *PrescriptionCreate) SetCreatedAt(t time.Time) *PrescriptionCreate {
 	pc.mutation.SetCreatedAt(t)
@@ -151,6 +138,21 @@ func (pc *PrescriptionCreate) SetNillableID(u *uuid.UUID) *PrescriptionCreate {
 		pc.SetID(*u)
 	}
 	return pc
+}
+
+// AddPrescriptionItemIDs adds the "prescription_items" edge to the PrescriptionItem entity by IDs.
+func (pc *PrescriptionCreate) AddPrescriptionItemIDs(ids ...uuid.UUID) *PrescriptionCreate {
+	pc.mutation.AddPrescriptionItemIDs(ids...)
+	return pc
+}
+
+// AddPrescriptionItems adds the "prescription_items" edges to the PrescriptionItem entity.
+func (pc *PrescriptionCreate) AddPrescriptionItems(p ...*PrescriptionItem) *PrescriptionCreate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pc.AddPrescriptionItemIDs(ids...)
 }
 
 // Mutation returns the PrescriptionMutation object of the builder.
@@ -280,10 +282,6 @@ func (pc *PrescriptionCreate) createSpec() (*Prescription, *sqlgraph.CreateSpec)
 		_spec.SetField(prescription.FieldFinishedAt, field.TypeTime, value)
 		_node.FinishedAt = value
 	}
-	if value, ok := pc.mutation.Memo(); ok {
-		_spec.SetField(prescription.FieldMemo, field.TypeString, value)
-		_node.Memo = value
-	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(prescription.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -291,6 +289,22 @@ func (pc *PrescriptionCreate) createSpec() (*Prescription, *sqlgraph.CreateSpec)
 	if value, ok := pc.mutation.UpdatedAt(); ok {
 		_spec.SetField(prescription.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := pc.mutation.PrescriptionItemsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescription.PrescriptionItemsTable,
+			Columns: []string{prescription.PrescriptionItemsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescriptionitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

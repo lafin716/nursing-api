@@ -1,6 +1,18 @@
 package response
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+	"time"
+)
+
+func Test_Time(t *testing.T) {
+	now := time.Now()
+	nowUtc := now.UTC()
+	fmt.Println(now.Format("2006-01-02 15:04:05"))
+	fmt.Println(nowUtc.Format("2006-01-02 15:04:05"))
+
+}
 
 func TestResponseMessages(t *testing.T) {
 

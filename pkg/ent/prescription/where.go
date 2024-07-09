@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -83,11 +84,6 @@ func StartedAt(v time.Time) predicate.Prescription {
 // FinishedAt applies equality check predicate on the "finished_at" field. It's identical to FinishedAtEQ.
 func FinishedAt(v time.Time) predicate.Prescription {
 	return predicate.Prescription(sql.FieldEQ(FieldFinishedAt, v))
-}
-
-// Memo applies equality check predicate on the "memo" field. It's identical to MemoEQ.
-func Memo(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldEQ(FieldMemo, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -430,81 +426,6 @@ func FinishedAtNotNil() predicate.Prescription {
 	return predicate.Prescription(sql.FieldNotNull(FieldFinishedAt))
 }
 
-// MemoEQ applies the EQ predicate on the "memo" field.
-func MemoEQ(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldEQ(FieldMemo, v))
-}
-
-// MemoNEQ applies the NEQ predicate on the "memo" field.
-func MemoNEQ(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldNEQ(FieldMemo, v))
-}
-
-// MemoIn applies the In predicate on the "memo" field.
-func MemoIn(vs ...string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldIn(FieldMemo, vs...))
-}
-
-// MemoNotIn applies the NotIn predicate on the "memo" field.
-func MemoNotIn(vs ...string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldNotIn(FieldMemo, vs...))
-}
-
-// MemoGT applies the GT predicate on the "memo" field.
-func MemoGT(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldGT(FieldMemo, v))
-}
-
-// MemoGTE applies the GTE predicate on the "memo" field.
-func MemoGTE(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldGTE(FieldMemo, v))
-}
-
-// MemoLT applies the LT predicate on the "memo" field.
-func MemoLT(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldLT(FieldMemo, v))
-}
-
-// MemoLTE applies the LTE predicate on the "memo" field.
-func MemoLTE(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldLTE(FieldMemo, v))
-}
-
-// MemoContains applies the Contains predicate on the "memo" field.
-func MemoContains(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldContains(FieldMemo, v))
-}
-
-// MemoHasPrefix applies the HasPrefix predicate on the "memo" field.
-func MemoHasPrefix(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldHasPrefix(FieldMemo, v))
-}
-
-// MemoHasSuffix applies the HasSuffix predicate on the "memo" field.
-func MemoHasSuffix(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldHasSuffix(FieldMemo, v))
-}
-
-// MemoIsNil applies the IsNil predicate on the "memo" field.
-func MemoIsNil() predicate.Prescription {
-	return predicate.Prescription(sql.FieldIsNull(FieldMemo))
-}
-
-// MemoNotNil applies the NotNil predicate on the "memo" field.
-func MemoNotNil() predicate.Prescription {
-	return predicate.Prescription(sql.FieldNotNull(FieldMemo))
-}
-
-// MemoEqualFold applies the EqualFold predicate on the "memo" field.
-func MemoEqualFold(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldEqualFold(FieldMemo, v))
-}
-
-// MemoContainsFold applies the ContainsFold predicate on the "memo" field.
-func MemoContainsFold(v string) predicate.Prescription {
-	return predicate.Prescription(sql.FieldContainsFold(FieldMemo, v))
-}
-
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Prescription {
 	return predicate.Prescription(sql.FieldEQ(FieldCreatedAt, v))
@@ -593,6 +514,29 @@ func UpdatedAtIsNil() predicate.Prescription {
 // UpdatedAtNotNil applies the NotNil predicate on the "updated_at" field.
 func UpdatedAtNotNil() predicate.Prescription {
 	return predicate.Prescription(sql.FieldNotNull(FieldUpdatedAt))
+}
+
+// HasPrescriptionItems applies the HasEdge predicate on the "prescription_items" edge.
+func HasPrescriptionItems() predicate.Prescription {
+	return predicate.Prescription(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, PrescriptionItemsTable, PrescriptionItemsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPrescriptionItemsWith applies the HasEdge predicate on the "prescription_items" edge with a given conditions (other predicates).
+func HasPrescriptionItemsWith(preds ...predicate.PrescriptionItem) predicate.Prescription {
+	return predicate.Prescription(func(s *sql.Selector) {
+		step := newPrescriptionItemsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

@@ -56,9 +56,14 @@ func IDLTE(id uuid.UUID) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldLTE(FieldID, id))
 }
 
-// TimezoneLinkID applies equality check predicate on the "timezone_link_id" field. It's identical to TimezoneLinkIDEQ.
-func TimezoneLinkID(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldEQ(FieldTimezoneLinkID, v))
+// PrescriptionID applies equality check predicate on the "prescription_id" field. It's identical to PrescriptionIDEQ.
+func PrescriptionID(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldPrescriptionID, v))
+}
+
+// TimezoneID applies equality check predicate on the "timezone_id" field. It's identical to TimezoneIDEQ.
+func TimezoneID(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldTimezoneID, v))
 }
 
 // MedicineID applies equality check predicate on the "medicine_id" field. It's identical to MedicineIDEQ.
@@ -71,9 +76,29 @@ func MedicineName(v string) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldEQ(FieldMedicineName, v))
 }
 
-// TakeAmount applies equality check predicate on the "take_amount" field. It's identical to TakeAmountEQ.
-func TakeAmount(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldEQ(FieldTakeAmount, v))
+// TimezoneName applies equality check predicate on the "timezone_name" field. It's identical to TimezoneNameEQ.
+func TimezoneName(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldTimezoneName, v))
+}
+
+// Midday applies equality check predicate on the "midday" field. It's identical to MiddayEQ.
+func Midday(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldMidday, v))
+}
+
+// Hour applies equality check predicate on the "hour" field. It's identical to HourEQ.
+func Hour(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldHour, v))
+}
+
+// Minute applies equality check predicate on the "minute" field. It's identical to MinuteEQ.
+func Minute(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldMinute, v))
+}
+
+// TotalAmount applies equality check predicate on the "total_amount" field. It's identical to TotalAmountEQ.
+func TotalAmount(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldTotalAmount, v))
 }
 
 // RemainAmount applies equality check predicate on the "remain_amount" field. It's identical to RemainAmountEQ.
@@ -81,9 +106,9 @@ func RemainAmount(v float64) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldEQ(FieldRemainAmount, v))
 }
 
-// TotalAmount applies equality check predicate on the "total_amount" field. It's identical to TotalAmountEQ.
-func TotalAmount(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldEQ(FieldTotalAmount, v))
+// TakeAmount applies equality check predicate on the "take_amount" field. It's identical to TakeAmountEQ.
+func TakeAmount(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldTakeAmount, v))
 }
 
 // MedicineUnit applies equality check predicate on the "medicine_unit" field. It's identical to MedicineUnitEQ.
@@ -106,44 +131,64 @@ func UpdatedAt(v time.Time) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// TimezoneLinkIDEQ applies the EQ predicate on the "timezone_link_id" field.
-func TimezoneLinkIDEQ(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldEQ(FieldTimezoneLinkID, v))
+// PrescriptionIDEQ applies the EQ predicate on the "prescription_id" field.
+func PrescriptionIDEQ(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldPrescriptionID, v))
 }
 
-// TimezoneLinkIDNEQ applies the NEQ predicate on the "timezone_link_id" field.
-func TimezoneLinkIDNEQ(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldNEQ(FieldTimezoneLinkID, v))
+// PrescriptionIDNEQ applies the NEQ predicate on the "prescription_id" field.
+func PrescriptionIDNEQ(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldPrescriptionID, v))
 }
 
-// TimezoneLinkIDIn applies the In predicate on the "timezone_link_id" field.
-func TimezoneLinkIDIn(vs ...uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldIn(FieldTimezoneLinkID, vs...))
+// PrescriptionIDIn applies the In predicate on the "prescription_id" field.
+func PrescriptionIDIn(vs ...uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldPrescriptionID, vs...))
 }
 
-// TimezoneLinkIDNotIn applies the NotIn predicate on the "timezone_link_id" field.
-func TimezoneLinkIDNotIn(vs ...uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldNotIn(FieldTimezoneLinkID, vs...))
+// PrescriptionIDNotIn applies the NotIn predicate on the "prescription_id" field.
+func PrescriptionIDNotIn(vs ...uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldPrescriptionID, vs...))
 }
 
-// TimezoneLinkIDGT applies the GT predicate on the "timezone_link_id" field.
-func TimezoneLinkIDGT(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldGT(FieldTimezoneLinkID, v))
+// TimezoneIDEQ applies the EQ predicate on the "timezone_id" field.
+func TimezoneIDEQ(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldTimezoneID, v))
 }
 
-// TimezoneLinkIDGTE applies the GTE predicate on the "timezone_link_id" field.
-func TimezoneLinkIDGTE(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldGTE(FieldTimezoneLinkID, v))
+// TimezoneIDNEQ applies the NEQ predicate on the "timezone_id" field.
+func TimezoneIDNEQ(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldTimezoneID, v))
 }
 
-// TimezoneLinkIDLT applies the LT predicate on the "timezone_link_id" field.
-func TimezoneLinkIDLT(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldLT(FieldTimezoneLinkID, v))
+// TimezoneIDIn applies the In predicate on the "timezone_id" field.
+func TimezoneIDIn(vs ...uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldTimezoneID, vs...))
 }
 
-// TimezoneLinkIDLTE applies the LTE predicate on the "timezone_link_id" field.
-func TimezoneLinkIDLTE(v uuid.UUID) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldLTE(FieldTimezoneLinkID, v))
+// TimezoneIDNotIn applies the NotIn predicate on the "timezone_id" field.
+func TimezoneIDNotIn(vs ...uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldTimezoneID, vs...))
+}
+
+// TimezoneIDGT applies the GT predicate on the "timezone_id" field.
+func TimezoneIDGT(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGT(FieldTimezoneID, v))
+}
+
+// TimezoneIDGTE applies the GTE predicate on the "timezone_id" field.
+func TimezoneIDGTE(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGTE(FieldTimezoneID, v))
+}
+
+// TimezoneIDLT applies the LT predicate on the "timezone_id" field.
+func TimezoneIDLT(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLT(FieldTimezoneID, v))
+}
+
+// TimezoneIDLTE applies the LTE predicate on the "timezone_id" field.
+func TimezoneIDLTE(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLTE(FieldTimezoneID, v))
 }
 
 // MedicineIDEQ applies the EQ predicate on the "medicine_id" field.
@@ -251,44 +296,314 @@ func MedicineNameContainsFold(v string) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldContainsFold(FieldMedicineName, v))
 }
 
-// TakeAmountEQ applies the EQ predicate on the "take_amount" field.
-func TakeAmountEQ(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldEQ(FieldTakeAmount, v))
+// TimezoneNameEQ applies the EQ predicate on the "timezone_name" field.
+func TimezoneNameEQ(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldTimezoneName, v))
 }
 
-// TakeAmountNEQ applies the NEQ predicate on the "take_amount" field.
-func TakeAmountNEQ(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldNEQ(FieldTakeAmount, v))
+// TimezoneNameNEQ applies the NEQ predicate on the "timezone_name" field.
+func TimezoneNameNEQ(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldTimezoneName, v))
 }
 
-// TakeAmountIn applies the In predicate on the "take_amount" field.
-func TakeAmountIn(vs ...float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldIn(FieldTakeAmount, vs...))
+// TimezoneNameIn applies the In predicate on the "timezone_name" field.
+func TimezoneNameIn(vs ...string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldTimezoneName, vs...))
 }
 
-// TakeAmountNotIn applies the NotIn predicate on the "take_amount" field.
-func TakeAmountNotIn(vs ...float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldNotIn(FieldTakeAmount, vs...))
+// TimezoneNameNotIn applies the NotIn predicate on the "timezone_name" field.
+func TimezoneNameNotIn(vs ...string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldTimezoneName, vs...))
 }
 
-// TakeAmountGT applies the GT predicate on the "take_amount" field.
-func TakeAmountGT(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldGT(FieldTakeAmount, v))
+// TimezoneNameGT applies the GT predicate on the "timezone_name" field.
+func TimezoneNameGT(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGT(FieldTimezoneName, v))
 }
 
-// TakeAmountGTE applies the GTE predicate on the "take_amount" field.
-func TakeAmountGTE(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldGTE(FieldTakeAmount, v))
+// TimezoneNameGTE applies the GTE predicate on the "timezone_name" field.
+func TimezoneNameGTE(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGTE(FieldTimezoneName, v))
 }
 
-// TakeAmountLT applies the LT predicate on the "take_amount" field.
-func TakeAmountLT(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldLT(FieldTakeAmount, v))
+// TimezoneNameLT applies the LT predicate on the "timezone_name" field.
+func TimezoneNameLT(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLT(FieldTimezoneName, v))
 }
 
-// TakeAmountLTE applies the LTE predicate on the "take_amount" field.
-func TakeAmountLTE(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldLTE(FieldTakeAmount, v))
+// TimezoneNameLTE applies the LTE predicate on the "timezone_name" field.
+func TimezoneNameLTE(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLTE(FieldTimezoneName, v))
+}
+
+// TimezoneNameContains applies the Contains predicate on the "timezone_name" field.
+func TimezoneNameContains(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldContains(FieldTimezoneName, v))
+}
+
+// TimezoneNameHasPrefix applies the HasPrefix predicate on the "timezone_name" field.
+func TimezoneNameHasPrefix(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldHasPrefix(FieldTimezoneName, v))
+}
+
+// TimezoneNameHasSuffix applies the HasSuffix predicate on the "timezone_name" field.
+func TimezoneNameHasSuffix(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldHasSuffix(FieldTimezoneName, v))
+}
+
+// TimezoneNameIsNil applies the IsNil predicate on the "timezone_name" field.
+func TimezoneNameIsNil() predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIsNull(FieldTimezoneName))
+}
+
+// TimezoneNameNotNil applies the NotNil predicate on the "timezone_name" field.
+func TimezoneNameNotNil() predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotNull(FieldTimezoneName))
+}
+
+// TimezoneNameEqualFold applies the EqualFold predicate on the "timezone_name" field.
+func TimezoneNameEqualFold(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEqualFold(FieldTimezoneName, v))
+}
+
+// TimezoneNameContainsFold applies the ContainsFold predicate on the "timezone_name" field.
+func TimezoneNameContainsFold(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldContainsFold(FieldTimezoneName, v))
+}
+
+// MiddayEQ applies the EQ predicate on the "midday" field.
+func MiddayEQ(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldMidday, v))
+}
+
+// MiddayNEQ applies the NEQ predicate on the "midday" field.
+func MiddayNEQ(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldMidday, v))
+}
+
+// MiddayIn applies the In predicate on the "midday" field.
+func MiddayIn(vs ...string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldMidday, vs...))
+}
+
+// MiddayNotIn applies the NotIn predicate on the "midday" field.
+func MiddayNotIn(vs ...string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldMidday, vs...))
+}
+
+// MiddayGT applies the GT predicate on the "midday" field.
+func MiddayGT(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGT(FieldMidday, v))
+}
+
+// MiddayGTE applies the GTE predicate on the "midday" field.
+func MiddayGTE(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGTE(FieldMidday, v))
+}
+
+// MiddayLT applies the LT predicate on the "midday" field.
+func MiddayLT(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLT(FieldMidday, v))
+}
+
+// MiddayLTE applies the LTE predicate on the "midday" field.
+func MiddayLTE(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLTE(FieldMidday, v))
+}
+
+// MiddayContains applies the Contains predicate on the "midday" field.
+func MiddayContains(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldContains(FieldMidday, v))
+}
+
+// MiddayHasPrefix applies the HasPrefix predicate on the "midday" field.
+func MiddayHasPrefix(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldHasPrefix(FieldMidday, v))
+}
+
+// MiddayHasSuffix applies the HasSuffix predicate on the "midday" field.
+func MiddayHasSuffix(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldHasSuffix(FieldMidday, v))
+}
+
+// MiddayEqualFold applies the EqualFold predicate on the "midday" field.
+func MiddayEqualFold(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEqualFold(FieldMidday, v))
+}
+
+// MiddayContainsFold applies the ContainsFold predicate on the "midday" field.
+func MiddayContainsFold(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldContainsFold(FieldMidday, v))
+}
+
+// HourEQ applies the EQ predicate on the "hour" field.
+func HourEQ(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldHour, v))
+}
+
+// HourNEQ applies the NEQ predicate on the "hour" field.
+func HourNEQ(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldHour, v))
+}
+
+// HourIn applies the In predicate on the "hour" field.
+func HourIn(vs ...string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldHour, vs...))
+}
+
+// HourNotIn applies the NotIn predicate on the "hour" field.
+func HourNotIn(vs ...string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldHour, vs...))
+}
+
+// HourGT applies the GT predicate on the "hour" field.
+func HourGT(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGT(FieldHour, v))
+}
+
+// HourGTE applies the GTE predicate on the "hour" field.
+func HourGTE(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGTE(FieldHour, v))
+}
+
+// HourLT applies the LT predicate on the "hour" field.
+func HourLT(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLT(FieldHour, v))
+}
+
+// HourLTE applies the LTE predicate on the "hour" field.
+func HourLTE(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLTE(FieldHour, v))
+}
+
+// HourContains applies the Contains predicate on the "hour" field.
+func HourContains(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldContains(FieldHour, v))
+}
+
+// HourHasPrefix applies the HasPrefix predicate on the "hour" field.
+func HourHasPrefix(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldHasPrefix(FieldHour, v))
+}
+
+// HourHasSuffix applies the HasSuffix predicate on the "hour" field.
+func HourHasSuffix(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldHasSuffix(FieldHour, v))
+}
+
+// HourEqualFold applies the EqualFold predicate on the "hour" field.
+func HourEqualFold(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEqualFold(FieldHour, v))
+}
+
+// HourContainsFold applies the ContainsFold predicate on the "hour" field.
+func HourContainsFold(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldContainsFold(FieldHour, v))
+}
+
+// MinuteEQ applies the EQ predicate on the "minute" field.
+func MinuteEQ(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldMinute, v))
+}
+
+// MinuteNEQ applies the NEQ predicate on the "minute" field.
+func MinuteNEQ(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldMinute, v))
+}
+
+// MinuteIn applies the In predicate on the "minute" field.
+func MinuteIn(vs ...string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldMinute, vs...))
+}
+
+// MinuteNotIn applies the NotIn predicate on the "minute" field.
+func MinuteNotIn(vs ...string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldMinute, vs...))
+}
+
+// MinuteGT applies the GT predicate on the "minute" field.
+func MinuteGT(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGT(FieldMinute, v))
+}
+
+// MinuteGTE applies the GTE predicate on the "minute" field.
+func MinuteGTE(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGTE(FieldMinute, v))
+}
+
+// MinuteLT applies the LT predicate on the "minute" field.
+func MinuteLT(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLT(FieldMinute, v))
+}
+
+// MinuteLTE applies the LTE predicate on the "minute" field.
+func MinuteLTE(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLTE(FieldMinute, v))
+}
+
+// MinuteContains applies the Contains predicate on the "minute" field.
+func MinuteContains(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldContains(FieldMinute, v))
+}
+
+// MinuteHasPrefix applies the HasPrefix predicate on the "minute" field.
+func MinuteHasPrefix(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldHasPrefix(FieldMinute, v))
+}
+
+// MinuteHasSuffix applies the HasSuffix predicate on the "minute" field.
+func MinuteHasSuffix(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldHasSuffix(FieldMinute, v))
+}
+
+// MinuteEqualFold applies the EqualFold predicate on the "minute" field.
+func MinuteEqualFold(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEqualFold(FieldMinute, v))
+}
+
+// MinuteContainsFold applies the ContainsFold predicate on the "minute" field.
+func MinuteContainsFold(v string) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldContainsFold(FieldMinute, v))
+}
+
+// TotalAmountEQ applies the EQ predicate on the "total_amount" field.
+func TotalAmountEQ(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldTotalAmount, v))
+}
+
+// TotalAmountNEQ applies the NEQ predicate on the "total_amount" field.
+func TotalAmountNEQ(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldTotalAmount, v))
+}
+
+// TotalAmountIn applies the In predicate on the "total_amount" field.
+func TotalAmountIn(vs ...float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldTotalAmount, vs...))
+}
+
+// TotalAmountNotIn applies the NotIn predicate on the "total_amount" field.
+func TotalAmountNotIn(vs ...float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldTotalAmount, vs...))
+}
+
+// TotalAmountGT applies the GT predicate on the "total_amount" field.
+func TotalAmountGT(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGT(FieldTotalAmount, v))
+}
+
+// TotalAmountGTE applies the GTE predicate on the "total_amount" field.
+func TotalAmountGTE(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGTE(FieldTotalAmount, v))
+}
+
+// TotalAmountLT applies the LT predicate on the "total_amount" field.
+func TotalAmountLT(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLT(FieldTotalAmount, v))
+}
+
+// TotalAmountLTE applies the LTE predicate on the "total_amount" field.
+func TotalAmountLTE(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLTE(FieldTotalAmount, v))
 }
 
 // RemainAmountEQ applies the EQ predicate on the "remain_amount" field.
@@ -331,44 +646,44 @@ func RemainAmountLTE(v float64) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldLTE(FieldRemainAmount, v))
 }
 
-// TotalAmountEQ applies the EQ predicate on the "total_amount" field.
-func TotalAmountEQ(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldEQ(FieldTotalAmount, v))
+// TakeAmountEQ applies the EQ predicate on the "take_amount" field.
+func TakeAmountEQ(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldTakeAmount, v))
 }
 
-// TotalAmountNEQ applies the NEQ predicate on the "total_amount" field.
-func TotalAmountNEQ(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldNEQ(FieldTotalAmount, v))
+// TakeAmountNEQ applies the NEQ predicate on the "take_amount" field.
+func TakeAmountNEQ(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldTakeAmount, v))
 }
 
-// TotalAmountIn applies the In predicate on the "total_amount" field.
-func TotalAmountIn(vs ...float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldIn(FieldTotalAmount, vs...))
+// TakeAmountIn applies the In predicate on the "take_amount" field.
+func TakeAmountIn(vs ...float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldTakeAmount, vs...))
 }
 
-// TotalAmountNotIn applies the NotIn predicate on the "total_amount" field.
-func TotalAmountNotIn(vs ...float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldNotIn(FieldTotalAmount, vs...))
+// TakeAmountNotIn applies the NotIn predicate on the "take_amount" field.
+func TakeAmountNotIn(vs ...float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldTakeAmount, vs...))
 }
 
-// TotalAmountGT applies the GT predicate on the "total_amount" field.
-func TotalAmountGT(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldGT(FieldTotalAmount, v))
+// TakeAmountGT applies the GT predicate on the "take_amount" field.
+func TakeAmountGT(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGT(FieldTakeAmount, v))
 }
 
-// TotalAmountGTE applies the GTE predicate on the "total_amount" field.
-func TotalAmountGTE(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldGTE(FieldTotalAmount, v))
+// TakeAmountGTE applies the GTE predicate on the "take_amount" field.
+func TakeAmountGTE(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGTE(FieldTakeAmount, v))
 }
 
-// TotalAmountLT applies the LT predicate on the "total_amount" field.
-func TotalAmountLT(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldLT(FieldTotalAmount, v))
+// TakeAmountLT applies the LT predicate on the "take_amount" field.
+func TakeAmountLT(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLT(FieldTakeAmount, v))
 }
 
-// TotalAmountLTE applies the LTE predicate on the "total_amount" field.
-func TotalAmountLTE(v float64) predicate.PrescriptionItem {
-	return predicate.PrescriptionItem(sql.FieldLTE(FieldTotalAmount, v))
+// TakeAmountLTE applies the LTE predicate on the "take_amount" field.
+func TakeAmountLTE(v float64) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLTE(FieldTakeAmount, v))
 }
 
 // MedicineUnitEQ applies the EQ predicate on the "medicine_unit" field.
@@ -611,12 +926,35 @@ func UpdatedAtNotNil() predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldNotNull(FieldUpdatedAt))
 }
 
+// HasPrescription applies the HasEdge predicate on the "prescription" edge.
+func HasPrescription() predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, PrescriptionTable, PrescriptionColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPrescriptionWith applies the HasEdge predicate on the "prescription" edge with a given conditions (other predicates).
+func HasPrescriptionWith(preds ...predicate.Prescription) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(func(s *sql.Selector) {
+		step := newPrescriptionStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasTakeHistoryItem applies the HasEdge predicate on the "take_history_item" edge.
 func HasTakeHistoryItem() predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TakeHistoryItemTable, TakeHistoryItemColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, TakeHistoryItemTable, TakeHistoryItemColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

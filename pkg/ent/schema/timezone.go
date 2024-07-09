@@ -2,7 +2,6 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"time"
@@ -27,7 +26,5 @@ func (TimeZone) Fields() []ent.Field {
 }
 
 func (TimeZone) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("take_history", TakeHistory.Type),
-	}
+	return nil
 }

@@ -14,10 +14,9 @@ import (
 	"nursing_api/pkg/ent/medicine"
 	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
-	"nursing_api/pkg/ent/takehistory"
 	"nursing_api/pkg/ent/takehistoryitem"
+	"nursing_api/pkg/ent/takehistorymemo"
 	"nursing_api/pkg/ent/timezone"
-	"nursing_api/pkg/ent/timezonelink"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
 
@@ -39,14 +38,12 @@ type Client struct {
 	Prescription *PrescriptionClient
 	// PrescriptionItem is the client for interacting with the PrescriptionItem builders.
 	PrescriptionItem *PrescriptionItemClient
-	// TakeHistory is the client for interacting with the TakeHistory builders.
-	TakeHistory *TakeHistoryClient
 	// TakeHistoryItem is the client for interacting with the TakeHistoryItem builders.
 	TakeHistoryItem *TakeHistoryItemClient
+	// TakeHistoryMemo is the client for interacting with the TakeHistoryMemo builders.
+	TakeHistoryMemo *TakeHistoryMemoClient
 	// TimeZone is the client for interacting with the TimeZone builders.
 	TimeZone *TimeZoneClient
-	// TimeZoneLink is the client for interacting with the TimeZoneLink builders.
-	TimeZoneLink *TimeZoneLinkClient
 	// Token is the client for interacting with the Token builders.
 	Token *TokenClient
 	// User is the client for interacting with the User builders.
@@ -65,10 +62,9 @@ func (c *Client) init() {
 	c.Medicine = NewMedicineClient(c.config)
 	c.Prescription = NewPrescriptionClient(c.config)
 	c.PrescriptionItem = NewPrescriptionItemClient(c.config)
-	c.TakeHistory = NewTakeHistoryClient(c.config)
 	c.TakeHistoryItem = NewTakeHistoryItemClient(c.config)
+	c.TakeHistoryMemo = NewTakeHistoryMemoClient(c.config)
 	c.TimeZone = NewTimeZoneClient(c.config)
-	c.TimeZoneLink = NewTimeZoneLinkClient(c.config)
 	c.Token = NewTokenClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -166,10 +162,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Medicine:         NewMedicineClient(cfg),
 		Prescription:     NewPrescriptionClient(cfg),
 		PrescriptionItem: NewPrescriptionItemClient(cfg),
-		TakeHistory:      NewTakeHistoryClient(cfg),
 		TakeHistoryItem:  NewTakeHistoryItemClient(cfg),
+		TakeHistoryMemo:  NewTakeHistoryMemoClient(cfg),
 		TimeZone:         NewTimeZoneClient(cfg),
-		TimeZoneLink:     NewTimeZoneLinkClient(cfg),
 		Token:            NewTokenClient(cfg),
 		User:             NewUserClient(cfg),
 	}, nil
@@ -194,10 +189,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Medicine:         NewMedicineClient(cfg),
 		Prescription:     NewPrescriptionClient(cfg),
 		PrescriptionItem: NewPrescriptionItemClient(cfg),
-		TakeHistory:      NewTakeHistoryClient(cfg),
 		TakeHistoryItem:  NewTakeHistoryItemClient(cfg),
+		TakeHistoryMemo:  NewTakeHistoryMemoClient(cfg),
 		TimeZone:         NewTimeZoneClient(cfg),
-		TimeZoneLink:     NewTimeZoneLinkClient(cfg),
 		Token:            NewTokenClient(cfg),
 		User:             NewUserClient(cfg),
 	}, nil
@@ -229,8 +223,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Medicine, c.Prescription, c.PrescriptionItem, c.TakeHistory,
-		c.TakeHistoryItem, c.TimeZone, c.TimeZoneLink, c.Token, c.User,
+		c.Medicine, c.Prescription, c.PrescriptionItem, c.TakeHistoryItem,
+		c.TakeHistoryMemo, c.TimeZone, c.Token, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -240,8 +234,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Medicine, c.Prescription, c.PrescriptionItem, c.TakeHistory,
-		c.TakeHistoryItem, c.TimeZone, c.TimeZoneLink, c.Token, c.User,
+		c.Medicine, c.Prescription, c.PrescriptionItem, c.TakeHistoryItem,
+		c.TakeHistoryMemo, c.TimeZone, c.Token, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -256,14 +250,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Prescription.mutate(ctx, m)
 	case *PrescriptionItemMutation:
 		return c.PrescriptionItem.mutate(ctx, m)
-	case *TakeHistoryMutation:
-		return c.TakeHistory.mutate(ctx, m)
 	case *TakeHistoryItemMutation:
 		return c.TakeHistoryItem.mutate(ctx, m)
+	case *TakeHistoryMemoMutation:
+		return c.TakeHistoryMemo.mutate(ctx, m)
 	case *TimeZoneMutation:
 		return c.TimeZone.mutate(ctx, m)
-	case *TimeZoneLinkMutation:
-		return c.TimeZoneLink.mutate(ctx, m)
 	case *TokenMutation:
 		return c.Token.mutate(ctx, m)
 	case *UserMutation:
@@ -514,6 +506,22 @@ func (c *PrescriptionClient) GetX(ctx context.Context, id uuid.UUID) *Prescripti
 	return obj
 }
 
+// QueryPrescriptionItems queries the prescription_items edge of a Prescription.
+func (c *PrescriptionClient) QueryPrescriptionItems(pr *Prescription) *PrescriptionItemQuery {
+	query := (&PrescriptionItemClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(prescription.Table, prescription.FieldID, id),
+			sqlgraph.To(prescriptionitem.Table, prescriptionitem.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, prescription.PrescriptionItemsTable, prescription.PrescriptionItemsColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PrescriptionClient) Hooks() []Hook {
 	return c.hooks.Prescription
@@ -647,6 +655,22 @@ func (c *PrescriptionItemClient) GetX(ctx context.Context, id uuid.UUID) *Prescr
 	return obj
 }
 
+// QueryPrescription queries the prescription edge of a PrescriptionItem.
+func (c *PrescriptionItemClient) QueryPrescription(pi *PrescriptionItem) *PrescriptionQuery {
+	query := (&PrescriptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pi.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(prescriptionitem.Table, prescriptionitem.FieldID, id),
+			sqlgraph.To(prescription.Table, prescription.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, prescriptionitem.PrescriptionTable, prescriptionitem.PrescriptionColumn),
+		)
+		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryTakeHistoryItem queries the take_history_item edge of a PrescriptionItem.
 func (c *PrescriptionItemClient) QueryTakeHistoryItem(pi *PrescriptionItem) *TakeHistoryItemQuery {
 	query := (&TakeHistoryItemClient{config: c.config}).Query()
@@ -655,7 +679,7 @@ func (c *PrescriptionItemClient) QueryTakeHistoryItem(pi *PrescriptionItem) *Tak
 		step := sqlgraph.NewStep(
 			sqlgraph.From(prescriptionitem.Table, prescriptionitem.FieldID, id),
 			sqlgraph.To(takehistoryitem.Table, takehistoryitem.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, prescriptionitem.TakeHistoryItemTable, prescriptionitem.TakeHistoryItemColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, prescriptionitem.TakeHistoryItemTable, prescriptionitem.TakeHistoryItemColumn),
 		)
 		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
 		return fromV, nil
@@ -685,155 +709,6 @@ func (c *PrescriptionItemClient) mutate(ctx context.Context, m *PrescriptionItem
 		return (&PrescriptionItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown PrescriptionItem mutation op: %q", m.Op())
-	}
-}
-
-// TakeHistoryClient is a client for the TakeHistory schema.
-type TakeHistoryClient struct {
-	config
-}
-
-// NewTakeHistoryClient returns a client for the TakeHistory from the given config.
-func NewTakeHistoryClient(c config) *TakeHistoryClient {
-	return &TakeHistoryClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `takehistory.Hooks(f(g(h())))`.
-func (c *TakeHistoryClient) Use(hooks ...Hook) {
-	c.hooks.TakeHistory = append(c.hooks.TakeHistory, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `takehistory.Intercept(f(g(h())))`.
-func (c *TakeHistoryClient) Intercept(interceptors ...Interceptor) {
-	c.inters.TakeHistory = append(c.inters.TakeHistory, interceptors...)
-}
-
-// Create returns a builder for creating a TakeHistory entity.
-func (c *TakeHistoryClient) Create() *TakeHistoryCreate {
-	mutation := newTakeHistoryMutation(c.config, OpCreate)
-	return &TakeHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of TakeHistory entities.
-func (c *TakeHistoryClient) CreateBulk(builders ...*TakeHistoryCreate) *TakeHistoryCreateBulk {
-	return &TakeHistoryCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *TakeHistoryClient) MapCreateBulk(slice any, setFunc func(*TakeHistoryCreate, int)) *TakeHistoryCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &TakeHistoryCreateBulk{err: fmt.Errorf("calling to TakeHistoryClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*TakeHistoryCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &TakeHistoryCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for TakeHistory.
-func (c *TakeHistoryClient) Update() *TakeHistoryUpdate {
-	mutation := newTakeHistoryMutation(c.config, OpUpdate)
-	return &TakeHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *TakeHistoryClient) UpdateOne(th *TakeHistory) *TakeHistoryUpdateOne {
-	mutation := newTakeHistoryMutation(c.config, OpUpdateOne, withTakeHistory(th))
-	return &TakeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *TakeHistoryClient) UpdateOneID(id uuid.UUID) *TakeHistoryUpdateOne {
-	mutation := newTakeHistoryMutation(c.config, OpUpdateOne, withTakeHistoryID(id))
-	return &TakeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for TakeHistory.
-func (c *TakeHistoryClient) Delete() *TakeHistoryDelete {
-	mutation := newTakeHistoryMutation(c.config, OpDelete)
-	return &TakeHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *TakeHistoryClient) DeleteOne(th *TakeHistory) *TakeHistoryDeleteOne {
-	return c.DeleteOneID(th.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *TakeHistoryClient) DeleteOneID(id uuid.UUID) *TakeHistoryDeleteOne {
-	builder := c.Delete().Where(takehistory.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &TakeHistoryDeleteOne{builder}
-}
-
-// Query returns a query builder for TakeHistory.
-func (c *TakeHistoryClient) Query() *TakeHistoryQuery {
-	return &TakeHistoryQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeTakeHistory},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a TakeHistory entity by its id.
-func (c *TakeHistoryClient) Get(ctx context.Context, id uuid.UUID) (*TakeHistory, error) {
-	return c.Query().Where(takehistory.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *TakeHistoryClient) GetX(ctx context.Context, id uuid.UUID) *TakeHistory {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTimezone queries the timezone edge of a TakeHistory.
-func (c *TakeHistoryClient) QueryTimezone(th *TakeHistory) *TimeZoneQuery {
-	query := (&TimeZoneClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := th.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(takehistory.Table, takehistory.FieldID, id),
-			sqlgraph.To(timezone.Table, timezone.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, takehistory.TimezoneTable, takehistory.TimezoneColumn),
-		)
-		fromV = sqlgraph.Neighbors(th.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *TakeHistoryClient) Hooks() []Hook {
-	return c.hooks.TakeHistory
-}
-
-// Interceptors returns the client interceptors.
-func (c *TakeHistoryClient) Interceptors() []Interceptor {
-	return c.inters.TakeHistory
-}
-
-func (c *TakeHistoryClient) mutate(ctx context.Context, m *TakeHistoryMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&TakeHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&TakeHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&TakeHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&TakeHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown TakeHistory mutation op: %q", m.Op())
 	}
 }
 
@@ -953,7 +828,7 @@ func (c *TakeHistoryItemClient) QueryPrescriptionItem(thi *TakeHistoryItem) *Pre
 		step := sqlgraph.NewStep(
 			sqlgraph.From(takehistoryitem.Table, takehistoryitem.FieldID, id),
 			sqlgraph.To(prescriptionitem.Table, prescriptionitem.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, takehistoryitem.PrescriptionItemTable, takehistoryitem.PrescriptionItemColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, takehistoryitem.PrescriptionItemTable, takehistoryitem.PrescriptionItemColumn),
 		)
 		fromV = sqlgraph.Neighbors(thi.driver.Dialect(), step)
 		return fromV, nil
@@ -983,6 +858,139 @@ func (c *TakeHistoryItemClient) mutate(ctx context.Context, m *TakeHistoryItemMu
 		return (&TakeHistoryItemDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown TakeHistoryItem mutation op: %q", m.Op())
+	}
+}
+
+// TakeHistoryMemoClient is a client for the TakeHistoryMemo schema.
+type TakeHistoryMemoClient struct {
+	config
+}
+
+// NewTakeHistoryMemoClient returns a client for the TakeHistoryMemo from the given config.
+func NewTakeHistoryMemoClient(c config) *TakeHistoryMemoClient {
+	return &TakeHistoryMemoClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `takehistorymemo.Hooks(f(g(h())))`.
+func (c *TakeHistoryMemoClient) Use(hooks ...Hook) {
+	c.hooks.TakeHistoryMemo = append(c.hooks.TakeHistoryMemo, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `takehistorymemo.Intercept(f(g(h())))`.
+func (c *TakeHistoryMemoClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TakeHistoryMemo = append(c.inters.TakeHistoryMemo, interceptors...)
+}
+
+// Create returns a builder for creating a TakeHistoryMemo entity.
+func (c *TakeHistoryMemoClient) Create() *TakeHistoryMemoCreate {
+	mutation := newTakeHistoryMemoMutation(c.config, OpCreate)
+	return &TakeHistoryMemoCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TakeHistoryMemo entities.
+func (c *TakeHistoryMemoClient) CreateBulk(builders ...*TakeHistoryMemoCreate) *TakeHistoryMemoCreateBulk {
+	return &TakeHistoryMemoCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TakeHistoryMemoClient) MapCreateBulk(slice any, setFunc func(*TakeHistoryMemoCreate, int)) *TakeHistoryMemoCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TakeHistoryMemoCreateBulk{err: fmt.Errorf("calling to TakeHistoryMemoClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TakeHistoryMemoCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TakeHistoryMemoCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TakeHistoryMemo.
+func (c *TakeHistoryMemoClient) Update() *TakeHistoryMemoUpdate {
+	mutation := newTakeHistoryMemoMutation(c.config, OpUpdate)
+	return &TakeHistoryMemoUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TakeHistoryMemoClient) UpdateOne(thm *TakeHistoryMemo) *TakeHistoryMemoUpdateOne {
+	mutation := newTakeHistoryMemoMutation(c.config, OpUpdateOne, withTakeHistoryMemo(thm))
+	return &TakeHistoryMemoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TakeHistoryMemoClient) UpdateOneID(id uuid.UUID) *TakeHistoryMemoUpdateOne {
+	mutation := newTakeHistoryMemoMutation(c.config, OpUpdateOne, withTakeHistoryMemoID(id))
+	return &TakeHistoryMemoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TakeHistoryMemo.
+func (c *TakeHistoryMemoClient) Delete() *TakeHistoryMemoDelete {
+	mutation := newTakeHistoryMemoMutation(c.config, OpDelete)
+	return &TakeHistoryMemoDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TakeHistoryMemoClient) DeleteOne(thm *TakeHistoryMemo) *TakeHistoryMemoDeleteOne {
+	return c.DeleteOneID(thm.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TakeHistoryMemoClient) DeleteOneID(id uuid.UUID) *TakeHistoryMemoDeleteOne {
+	builder := c.Delete().Where(takehistorymemo.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TakeHistoryMemoDeleteOne{builder}
+}
+
+// Query returns a query builder for TakeHistoryMemo.
+func (c *TakeHistoryMemoClient) Query() *TakeHistoryMemoQuery {
+	return &TakeHistoryMemoQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTakeHistoryMemo},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TakeHistoryMemo entity by its id.
+func (c *TakeHistoryMemoClient) Get(ctx context.Context, id uuid.UUID) (*TakeHistoryMemo, error) {
+	return c.Query().Where(takehistorymemo.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TakeHistoryMemoClient) GetX(ctx context.Context, id uuid.UUID) *TakeHistoryMemo {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *TakeHistoryMemoClient) Hooks() []Hook {
+	return c.hooks.TakeHistoryMemo
+}
+
+// Interceptors returns the client interceptors.
+func (c *TakeHistoryMemoClient) Interceptors() []Interceptor {
+	return c.inters.TakeHistoryMemo
+}
+
+func (c *TakeHistoryMemoClient) mutate(ctx context.Context, m *TakeHistoryMemoMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TakeHistoryMemoCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TakeHistoryMemoUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TakeHistoryMemoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TakeHistoryMemoDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TakeHistoryMemo mutation op: %q", m.Op())
 	}
 }
 
@@ -1094,22 +1102,6 @@ func (c *TimeZoneClient) GetX(ctx context.Context, id uuid.UUID) *TimeZone {
 	return obj
 }
 
-// QueryTakeHistory queries the take_history edge of a TimeZone.
-func (c *TimeZoneClient) QueryTakeHistory(tz *TimeZone) *TakeHistoryQuery {
-	query := (&TakeHistoryClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := tz.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(timezone.Table, timezone.FieldID, id),
-			sqlgraph.To(takehistory.Table, takehistory.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, timezone.TakeHistoryTable, timezone.TakeHistoryColumn),
-		)
-		fromV = sqlgraph.Neighbors(tz.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *TimeZoneClient) Hooks() []Hook {
 	return c.hooks.TimeZone
@@ -1132,139 +1124,6 @@ func (c *TimeZoneClient) mutate(ctx context.Context, m *TimeZoneMutation) (Value
 		return (&TimeZoneDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown TimeZone mutation op: %q", m.Op())
-	}
-}
-
-// TimeZoneLinkClient is a client for the TimeZoneLink schema.
-type TimeZoneLinkClient struct {
-	config
-}
-
-// NewTimeZoneLinkClient returns a client for the TimeZoneLink from the given config.
-func NewTimeZoneLinkClient(c config) *TimeZoneLinkClient {
-	return &TimeZoneLinkClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `timezonelink.Hooks(f(g(h())))`.
-func (c *TimeZoneLinkClient) Use(hooks ...Hook) {
-	c.hooks.TimeZoneLink = append(c.hooks.TimeZoneLink, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `timezonelink.Intercept(f(g(h())))`.
-func (c *TimeZoneLinkClient) Intercept(interceptors ...Interceptor) {
-	c.inters.TimeZoneLink = append(c.inters.TimeZoneLink, interceptors...)
-}
-
-// Create returns a builder for creating a TimeZoneLink entity.
-func (c *TimeZoneLinkClient) Create() *TimeZoneLinkCreate {
-	mutation := newTimeZoneLinkMutation(c.config, OpCreate)
-	return &TimeZoneLinkCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of TimeZoneLink entities.
-func (c *TimeZoneLinkClient) CreateBulk(builders ...*TimeZoneLinkCreate) *TimeZoneLinkCreateBulk {
-	return &TimeZoneLinkCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *TimeZoneLinkClient) MapCreateBulk(slice any, setFunc func(*TimeZoneLinkCreate, int)) *TimeZoneLinkCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &TimeZoneLinkCreateBulk{err: fmt.Errorf("calling to TimeZoneLinkClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*TimeZoneLinkCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &TimeZoneLinkCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for TimeZoneLink.
-func (c *TimeZoneLinkClient) Update() *TimeZoneLinkUpdate {
-	mutation := newTimeZoneLinkMutation(c.config, OpUpdate)
-	return &TimeZoneLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *TimeZoneLinkClient) UpdateOne(tzl *TimeZoneLink) *TimeZoneLinkUpdateOne {
-	mutation := newTimeZoneLinkMutation(c.config, OpUpdateOne, withTimeZoneLink(tzl))
-	return &TimeZoneLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *TimeZoneLinkClient) UpdateOneID(id uuid.UUID) *TimeZoneLinkUpdateOne {
-	mutation := newTimeZoneLinkMutation(c.config, OpUpdateOne, withTimeZoneLinkID(id))
-	return &TimeZoneLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for TimeZoneLink.
-func (c *TimeZoneLinkClient) Delete() *TimeZoneLinkDelete {
-	mutation := newTimeZoneLinkMutation(c.config, OpDelete)
-	return &TimeZoneLinkDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *TimeZoneLinkClient) DeleteOne(tzl *TimeZoneLink) *TimeZoneLinkDeleteOne {
-	return c.DeleteOneID(tzl.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *TimeZoneLinkClient) DeleteOneID(id uuid.UUID) *TimeZoneLinkDeleteOne {
-	builder := c.Delete().Where(timezonelink.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &TimeZoneLinkDeleteOne{builder}
-}
-
-// Query returns a query builder for TimeZoneLink.
-func (c *TimeZoneLinkClient) Query() *TimeZoneLinkQuery {
-	return &TimeZoneLinkQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeTimeZoneLink},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a TimeZoneLink entity by its id.
-func (c *TimeZoneLinkClient) Get(ctx context.Context, id uuid.UUID) (*TimeZoneLink, error) {
-	return c.Query().Where(timezonelink.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *TimeZoneLinkClient) GetX(ctx context.Context, id uuid.UUID) *TimeZoneLink {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *TimeZoneLinkClient) Hooks() []Hook {
-	return c.hooks.TimeZoneLink
-}
-
-// Interceptors returns the client interceptors.
-func (c *TimeZoneLinkClient) Interceptors() []Interceptor {
-	return c.inters.TimeZoneLink
-}
-
-func (c *TimeZoneLinkClient) mutate(ctx context.Context, m *TimeZoneLinkMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&TimeZoneLinkCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&TimeZoneLinkUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&TimeZoneLinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&TimeZoneLinkDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown TimeZoneLink mutation op: %q", m.Op())
 	}
 }
 
@@ -1537,11 +1396,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Medicine, Prescription, PrescriptionItem, TakeHistory, TakeHistoryItem,
-		TimeZone, TimeZoneLink, Token, User []ent.Hook
+		Medicine, Prescription, PrescriptionItem, TakeHistoryItem, TakeHistoryMemo,
+		TimeZone, Token, User []ent.Hook
 	}
 	inters struct {
-		Medicine, Prescription, PrescriptionItem, TakeHistory, TakeHistoryItem,
-		TimeZone, TimeZoneLink, Token, User []ent.Interceptor
+		Medicine, Prescription, PrescriptionItem, TakeHistoryItem, TakeHistoryMemo,
+		TimeZone, Token, User []ent.Interceptor
 	}
 )

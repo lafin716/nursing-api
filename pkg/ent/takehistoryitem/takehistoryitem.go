@@ -17,24 +17,38 @@ const (
 	FieldID = "id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
-	// FieldTakeHistoryID holds the string denoting the take_history_id field in the database.
-	FieldTakeHistoryID = "take_history_id"
+	// FieldPrescriptionID holds the string denoting the prescription_id field in the database.
+	FieldPrescriptionID = "prescription_id"
 	// FieldPrescriptionItemID holds the string denoting the prescription_item_id field in the database.
 	FieldPrescriptionItemID = "prescription_item_id"
+	// FieldTimezoneID holds the string denoting the timezone_id field in the database.
+	FieldTimezoneID = "timezone_id"
+	// FieldMedicineID holds the string denoting the medicine_id field in the database.
+	FieldMedicineID = "medicine_id"
+	// FieldMedicineName holds the string denoting the medicine_name field in the database.
+	FieldMedicineName = "medicine_name"
+	// FieldTimezoneName holds the string denoting the timezone_name field in the database.
+	FieldTimezoneName = "timezone_name"
+	// FieldMidday holds the string denoting the midday field in the database.
+	FieldMidday = "midday"
+	// FieldHour holds the string denoting the hour field in the database.
+	FieldHour = "hour"
+	// FieldMinute holds the string denoting the minute field in the database.
+	FieldMinute = "minute"
 	// FieldTakeStatus holds the string denoting the take_status field in the database.
 	FieldTakeStatus = "take_status"
-	// FieldTakeAmount holds the string denoting the take_amount field in the database.
-	FieldTakeAmount = "take_amount"
-	// FieldRemainAmount holds the string denoting the remain_amount field in the database.
-	FieldRemainAmount = "remain_amount"
 	// FieldTotalAmount holds the string denoting the total_amount field in the database.
 	FieldTotalAmount = "total_amount"
+	// FieldRemainAmount holds the string denoting the remain_amount field in the database.
+	FieldRemainAmount = "remain_amount"
+	// FieldTakeAmount holds the string denoting the take_amount field in the database.
+	FieldTakeAmount = "take_amount"
 	// FieldTakeUnit holds the string denoting the take_unit field in the database.
 	FieldTakeUnit = "take_unit"
-	// FieldMemo holds the string denoting the memo field in the database.
-	FieldMemo = "memo"
 	// FieldTakeDate holds the string denoting the take_date field in the database.
 	FieldTakeDate = "take_date"
+	// FieldTakeTime holds the string denoting the take_time field in the database.
+	FieldTakeTime = "take_time"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -56,15 +70,22 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldUserID,
-	FieldTakeHistoryID,
+	FieldPrescriptionID,
 	FieldPrescriptionItemID,
+	FieldTimezoneID,
+	FieldMedicineID,
+	FieldMedicineName,
+	FieldTimezoneName,
+	FieldMidday,
+	FieldHour,
+	FieldMinute,
 	FieldTakeStatus,
-	FieldTakeAmount,
-	FieldRemainAmount,
 	FieldTotalAmount,
+	FieldRemainAmount,
+	FieldTakeAmount,
 	FieldTakeUnit,
-	FieldMemo,
 	FieldTakeDate,
+	FieldTakeTime,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -82,12 +103,12 @@ func ValidColumn(column string) bool {
 var (
 	// DefaultTakeStatus holds the default value on creation for the "take_status" field.
 	DefaultTakeStatus bool
-	// DefaultTakeAmount holds the default value on creation for the "take_amount" field.
-	DefaultTakeAmount float64
-	// DefaultRemainAmount holds the default value on creation for the "remain_amount" field.
-	DefaultRemainAmount float64
 	// DefaultTotalAmount holds the default value on creation for the "total_amount" field.
 	DefaultTotalAmount float64
+	// DefaultRemainAmount holds the default value on creation for the "remain_amount" field.
+	DefaultRemainAmount float64
+	// DefaultTakeAmount holds the default value on creation for the "take_amount" field.
+	DefaultTakeAmount float64
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -107,9 +128,9 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
-// ByTakeHistoryID orders the results by the take_history_id field.
-func ByTakeHistoryID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTakeHistoryID, opts...).ToFunc()
+// ByPrescriptionID orders the results by the prescription_id field.
+func ByPrescriptionID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPrescriptionID, opts...).ToFunc()
 }
 
 // ByPrescriptionItemID orders the results by the prescription_item_id field.
@@ -117,19 +138,44 @@ func ByPrescriptionItemID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPrescriptionItemID, opts...).ToFunc()
 }
 
+// ByTimezoneID orders the results by the timezone_id field.
+func ByTimezoneID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezoneID, opts...).ToFunc()
+}
+
+// ByMedicineID orders the results by the medicine_id field.
+func ByMedicineID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMedicineID, opts...).ToFunc()
+}
+
+// ByMedicineName orders the results by the medicine_name field.
+func ByMedicineName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMedicineName, opts...).ToFunc()
+}
+
+// ByTimezoneName orders the results by the timezone_name field.
+func ByTimezoneName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimezoneName, opts...).ToFunc()
+}
+
+// ByMidday orders the results by the midday field.
+func ByMidday(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMidday, opts...).ToFunc()
+}
+
+// ByHour orders the results by the hour field.
+func ByHour(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHour, opts...).ToFunc()
+}
+
+// ByMinute orders the results by the minute field.
+func ByMinute(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMinute, opts...).ToFunc()
+}
+
 // ByTakeStatus orders the results by the take_status field.
 func ByTakeStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTakeStatus, opts...).ToFunc()
-}
-
-// ByTakeAmount orders the results by the take_amount field.
-func ByTakeAmount(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTakeAmount, opts...).ToFunc()
-}
-
-// ByRemainAmount orders the results by the remain_amount field.
-func ByRemainAmount(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRemainAmount, opts...).ToFunc()
 }
 
 // ByTotalAmount orders the results by the total_amount field.
@@ -137,19 +183,29 @@ func ByTotalAmount(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTotalAmount, opts...).ToFunc()
 }
 
+// ByRemainAmount orders the results by the remain_amount field.
+func ByRemainAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRemainAmount, opts...).ToFunc()
+}
+
+// ByTakeAmount orders the results by the take_amount field.
+func ByTakeAmount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeAmount, opts...).ToFunc()
+}
+
 // ByTakeUnit orders the results by the take_unit field.
 func ByTakeUnit(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTakeUnit, opts...).ToFunc()
 }
 
-// ByMemo orders the results by the memo field.
-func ByMemo(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldMemo, opts...).ToFunc()
-}
-
 // ByTakeDate orders the results by the take_date field.
 func ByTakeDate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTakeDate, opts...).ToFunc()
+}
+
+// ByTakeTime orders the results by the take_time field.
+func ByTakeTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTakeTime, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -172,6 +228,6 @@ func newPrescriptionItemStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PrescriptionItemInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, PrescriptionItemTable, PrescriptionItemColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, PrescriptionItemTable, PrescriptionItemColumn),
 	)
 }

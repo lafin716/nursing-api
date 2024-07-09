@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
 	"nursing_api/pkg/ent/takehistoryitem"
 	"time"
@@ -22,9 +23,15 @@ type PrescriptionItemCreate struct {
 	hooks    []Hook
 }
 
-// SetTimezoneLinkID sets the "timezone_link_id" field.
-func (pic *PrescriptionItemCreate) SetTimezoneLinkID(u uuid.UUID) *PrescriptionItemCreate {
-	pic.mutation.SetTimezoneLinkID(u)
+// SetPrescriptionID sets the "prescription_id" field.
+func (pic *PrescriptionItemCreate) SetPrescriptionID(u uuid.UUID) *PrescriptionItemCreate {
+	pic.mutation.SetPrescriptionID(u)
+	return pic
+}
+
+// SetTimezoneID sets the "timezone_id" field.
+func (pic *PrescriptionItemCreate) SetTimezoneID(u uuid.UUID) *PrescriptionItemCreate {
+	pic.mutation.SetTimezoneID(u)
 	return pic
 }
 
@@ -40,16 +47,48 @@ func (pic *PrescriptionItemCreate) SetMedicineName(s string) *PrescriptionItemCr
 	return pic
 }
 
-// SetTakeAmount sets the "take_amount" field.
-func (pic *PrescriptionItemCreate) SetTakeAmount(f float64) *PrescriptionItemCreate {
-	pic.mutation.SetTakeAmount(f)
+// SetTimezoneName sets the "timezone_name" field.
+func (pic *PrescriptionItemCreate) SetTimezoneName(s string) *PrescriptionItemCreate {
+	pic.mutation.SetTimezoneName(s)
 	return pic
 }
 
-// SetNillableTakeAmount sets the "take_amount" field if the given value is not nil.
-func (pic *PrescriptionItemCreate) SetNillableTakeAmount(f *float64) *PrescriptionItemCreate {
+// SetNillableTimezoneName sets the "timezone_name" field if the given value is not nil.
+func (pic *PrescriptionItemCreate) SetNillableTimezoneName(s *string) *PrescriptionItemCreate {
+	if s != nil {
+		pic.SetTimezoneName(*s)
+	}
+	return pic
+}
+
+// SetMidday sets the "midday" field.
+func (pic *PrescriptionItemCreate) SetMidday(s string) *PrescriptionItemCreate {
+	pic.mutation.SetMidday(s)
+	return pic
+}
+
+// SetHour sets the "hour" field.
+func (pic *PrescriptionItemCreate) SetHour(s string) *PrescriptionItemCreate {
+	pic.mutation.SetHour(s)
+	return pic
+}
+
+// SetMinute sets the "minute" field.
+func (pic *PrescriptionItemCreate) SetMinute(s string) *PrescriptionItemCreate {
+	pic.mutation.SetMinute(s)
+	return pic
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (pic *PrescriptionItemCreate) SetTotalAmount(f float64) *PrescriptionItemCreate {
+	pic.mutation.SetTotalAmount(f)
+	return pic
+}
+
+// SetNillableTotalAmount sets the "total_amount" field if the given value is not nil.
+func (pic *PrescriptionItemCreate) SetNillableTotalAmount(f *float64) *PrescriptionItemCreate {
 	if f != nil {
-		pic.SetTakeAmount(*f)
+		pic.SetTotalAmount(*f)
 	}
 	return pic
 }
@@ -68,16 +107,16 @@ func (pic *PrescriptionItemCreate) SetNillableRemainAmount(f *float64) *Prescrip
 	return pic
 }
 
-// SetTotalAmount sets the "total_amount" field.
-func (pic *PrescriptionItemCreate) SetTotalAmount(f float64) *PrescriptionItemCreate {
-	pic.mutation.SetTotalAmount(f)
+// SetTakeAmount sets the "take_amount" field.
+func (pic *PrescriptionItemCreate) SetTakeAmount(f float64) *PrescriptionItemCreate {
+	pic.mutation.SetTakeAmount(f)
 	return pic
 }
 
-// SetNillableTotalAmount sets the "total_amount" field if the given value is not nil.
-func (pic *PrescriptionItemCreate) SetNillableTotalAmount(f *float64) *PrescriptionItemCreate {
+// SetNillableTakeAmount sets the "take_amount" field if the given value is not nil.
+func (pic *PrescriptionItemCreate) SetNillableTakeAmount(f *float64) *PrescriptionItemCreate {
 	if f != nil {
-		pic.SetTotalAmount(*f)
+		pic.SetTakeAmount(*f)
 	}
 	return pic
 }
@@ -152,19 +191,28 @@ func (pic *PrescriptionItemCreate) SetNillableID(u *uuid.UUID) *PrescriptionItem
 	return pic
 }
 
-// AddTakeHistoryItemIDs adds the "take_history_item" edge to the TakeHistoryItem entity by IDs.
-func (pic *PrescriptionItemCreate) AddTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemCreate {
-	pic.mutation.AddTakeHistoryItemIDs(ids...)
+// SetPrescription sets the "prescription" edge to the Prescription entity.
+func (pic *PrescriptionItemCreate) SetPrescription(p *Prescription) *PrescriptionItemCreate {
+	return pic.SetPrescriptionID(p.ID)
+}
+
+// SetTakeHistoryItemID sets the "take_history_item" edge to the TakeHistoryItem entity by ID.
+func (pic *PrescriptionItemCreate) SetTakeHistoryItemID(id uuid.UUID) *PrescriptionItemCreate {
+	pic.mutation.SetTakeHistoryItemID(id)
 	return pic
 }
 
-// AddTakeHistoryItem adds the "take_history_item" edges to the TakeHistoryItem entity.
-func (pic *PrescriptionItemCreate) AddTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableTakeHistoryItemID sets the "take_history_item" edge to the TakeHistoryItem entity by ID if the given value is not nil.
+func (pic *PrescriptionItemCreate) SetNillableTakeHistoryItemID(id *uuid.UUID) *PrescriptionItemCreate {
+	if id != nil {
+		pic = pic.SetTakeHistoryItemID(*id)
 	}
-	return pic.AddTakeHistoryItemIDs(ids...)
+	return pic
+}
+
+// SetTakeHistoryItem sets the "take_history_item" edge to the TakeHistoryItem entity.
+func (pic *PrescriptionItemCreate) SetTakeHistoryItem(t *TakeHistoryItem) *PrescriptionItemCreate {
+	return pic.SetTakeHistoryItemID(t.ID)
 }
 
 // Mutation returns the PrescriptionItemMutation object of the builder.
@@ -202,17 +250,17 @@ func (pic *PrescriptionItemCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pic *PrescriptionItemCreate) defaults() {
-	if _, ok := pic.mutation.TakeAmount(); !ok {
-		v := prescriptionitem.DefaultTakeAmount
-		pic.mutation.SetTakeAmount(v)
+	if _, ok := pic.mutation.TotalAmount(); !ok {
+		v := prescriptionitem.DefaultTotalAmount
+		pic.mutation.SetTotalAmount(v)
 	}
 	if _, ok := pic.mutation.RemainAmount(); !ok {
 		v := prescriptionitem.DefaultRemainAmount
 		pic.mutation.SetRemainAmount(v)
 	}
-	if _, ok := pic.mutation.TotalAmount(); !ok {
-		v := prescriptionitem.DefaultTotalAmount
-		pic.mutation.SetTotalAmount(v)
+	if _, ok := pic.mutation.TakeAmount(); !ok {
+		v := prescriptionitem.DefaultTakeAmount
+		pic.mutation.SetTakeAmount(v)
 	}
 	if _, ok := pic.mutation.MedicineUnit(); !ok {
 		v := prescriptionitem.DefaultMedicineUnit
@@ -230,8 +278,11 @@ func (pic *PrescriptionItemCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (pic *PrescriptionItemCreate) check() error {
-	if _, ok := pic.mutation.TimezoneLinkID(); !ok {
-		return &ValidationError{Name: "timezone_link_id", err: errors.New(`ent: missing required field "PrescriptionItem.timezone_link_id"`)}
+	if _, ok := pic.mutation.PrescriptionID(); !ok {
+		return &ValidationError{Name: "prescription_id", err: errors.New(`ent: missing required field "PrescriptionItem.prescription_id"`)}
+	}
+	if _, ok := pic.mutation.TimezoneID(); !ok {
+		return &ValidationError{Name: "timezone_id", err: errors.New(`ent: missing required field "PrescriptionItem.timezone_id"`)}
 	}
 	if _, ok := pic.mutation.MedicineID(); !ok {
 		return &ValidationError{Name: "medicine_id", err: errors.New(`ent: missing required field "PrescriptionItem.medicine_id"`)}
@@ -239,17 +290,29 @@ func (pic *PrescriptionItemCreate) check() error {
 	if _, ok := pic.mutation.MedicineName(); !ok {
 		return &ValidationError{Name: "medicine_name", err: errors.New(`ent: missing required field "PrescriptionItem.medicine_name"`)}
 	}
-	if _, ok := pic.mutation.TakeAmount(); !ok {
-		return &ValidationError{Name: "take_amount", err: errors.New(`ent: missing required field "PrescriptionItem.take_amount"`)}
+	if _, ok := pic.mutation.Midday(); !ok {
+		return &ValidationError{Name: "midday", err: errors.New(`ent: missing required field "PrescriptionItem.midday"`)}
 	}
-	if _, ok := pic.mutation.RemainAmount(); !ok {
-		return &ValidationError{Name: "remain_amount", err: errors.New(`ent: missing required field "PrescriptionItem.remain_amount"`)}
+	if _, ok := pic.mutation.Hour(); !ok {
+		return &ValidationError{Name: "hour", err: errors.New(`ent: missing required field "PrescriptionItem.hour"`)}
+	}
+	if _, ok := pic.mutation.Minute(); !ok {
+		return &ValidationError{Name: "minute", err: errors.New(`ent: missing required field "PrescriptionItem.minute"`)}
 	}
 	if _, ok := pic.mutation.TotalAmount(); !ok {
 		return &ValidationError{Name: "total_amount", err: errors.New(`ent: missing required field "PrescriptionItem.total_amount"`)}
 	}
+	if _, ok := pic.mutation.RemainAmount(); !ok {
+		return &ValidationError{Name: "remain_amount", err: errors.New(`ent: missing required field "PrescriptionItem.remain_amount"`)}
+	}
+	if _, ok := pic.mutation.TakeAmount(); !ok {
+		return &ValidationError{Name: "take_amount", err: errors.New(`ent: missing required field "PrescriptionItem.take_amount"`)}
+	}
 	if _, ok := pic.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "PrescriptionItem.created_at"`)}
+	}
+	if _, ok := pic.mutation.PrescriptionID(); !ok {
+		return &ValidationError{Name: "prescription", err: errors.New(`ent: missing required edge "PrescriptionItem.prescription"`)}
 	}
 	return nil
 }
@@ -286,9 +349,9 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := pic.mutation.TimezoneLinkID(); ok {
-		_spec.SetField(prescriptionitem.FieldTimezoneLinkID, field.TypeUUID, value)
-		_node.TimezoneLinkID = value
+	if value, ok := pic.mutation.TimezoneID(); ok {
+		_spec.SetField(prescriptionitem.FieldTimezoneID, field.TypeUUID, value)
+		_node.TimezoneID = value
 	}
 	if value, ok := pic.mutation.MedicineID(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineID, field.TypeUUID, value)
@@ -298,17 +361,33 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 		_spec.SetField(prescriptionitem.FieldMedicineName, field.TypeString, value)
 		_node.MedicineName = value
 	}
-	if value, ok := pic.mutation.TakeAmount(); ok {
-		_spec.SetField(prescriptionitem.FieldTakeAmount, field.TypeFloat64, value)
-		_node.TakeAmount = value
+	if value, ok := pic.mutation.TimezoneName(); ok {
+		_spec.SetField(prescriptionitem.FieldTimezoneName, field.TypeString, value)
+		_node.TimezoneName = value
+	}
+	if value, ok := pic.mutation.Midday(); ok {
+		_spec.SetField(prescriptionitem.FieldMidday, field.TypeString, value)
+		_node.Midday = value
+	}
+	if value, ok := pic.mutation.Hour(); ok {
+		_spec.SetField(prescriptionitem.FieldHour, field.TypeString, value)
+		_node.Hour = value
+	}
+	if value, ok := pic.mutation.Minute(); ok {
+		_spec.SetField(prescriptionitem.FieldMinute, field.TypeString, value)
+		_node.Minute = value
+	}
+	if value, ok := pic.mutation.TotalAmount(); ok {
+		_spec.SetField(prescriptionitem.FieldTotalAmount, field.TypeFloat64, value)
+		_node.TotalAmount = value
 	}
 	if value, ok := pic.mutation.RemainAmount(); ok {
 		_spec.SetField(prescriptionitem.FieldRemainAmount, field.TypeFloat64, value)
 		_node.RemainAmount = value
 	}
-	if value, ok := pic.mutation.TotalAmount(); ok {
-		_spec.SetField(prescriptionitem.FieldTotalAmount, field.TypeFloat64, value)
-		_node.TotalAmount = value
+	if value, ok := pic.mutation.TakeAmount(); ok {
+		_spec.SetField(prescriptionitem.FieldTakeAmount, field.TypeFloat64, value)
+		_node.TakeAmount = value
 	}
 	if value, ok := pic.mutation.MedicineUnit(); ok {
 		_spec.SetField(prescriptionitem.FieldMedicineUnit, field.TypeString, value)
@@ -326,9 +405,26 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 		_spec.SetField(prescriptionitem.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
+	if nodes := pic.mutation.PrescriptionIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   prescriptionitem.PrescriptionTable,
+			Columns: []string{prescriptionitem.PrescriptionColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(prescription.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.PrescriptionID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := pic.mutation.TakeHistoryItemIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   prescriptionitem.TakeHistoryItemTable,
 			Columns: []string{prescriptionitem.TakeHistoryItemColumn},

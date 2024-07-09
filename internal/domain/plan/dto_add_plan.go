@@ -18,9 +18,11 @@ type AddTimezoneRequest struct {
 }
 
 type AddMedicineRequest struct {
-	MedicineId uuid.UUID `json:"medicine_id"`
-	Name       string    `json:"name"`
-	TakeAmount float64   `json:"take_amount"`
-	TakeUnit   string    `json:"take_unit"`
-	Memo       string    `json:"memo"`
+	MedicineId   uuid.UUID `json:"medicine_id"`
+	Name         string    `json:"name"`
+	TakeAmount   float64   `json:"take_amount"`
+	TotalAmount  float64   `json:"-"`
+	RemainAmount float64   `json:"-"`
+	TakeUnit     string    `json:"take_unit"`
+	Memo         string    `json:"memo"`
 }

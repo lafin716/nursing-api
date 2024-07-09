@@ -6,9 +6,7 @@ import (
 	"nursing_api/internal/domain/medicine"
 	"nursing_api/internal/domain/plan"
 	"nursing_api/internal/domain/prescription"
-	"nursing_api/internal/domain/take_history"
 	"nursing_api/internal/domain/timezone"
-	timezonelink "nursing_api/internal/domain/timezone_link"
 	"nursing_api/internal/domain/user"
 	medicine_api "nursing_api/pkg/api/medicine"
 	"nursing_api/pkg/database"
@@ -26,9 +24,7 @@ var repository = wire.NewSet(
 	user.NewRepository,
 	medicine.NewRepository,
 	prescription.NewRepository,
-	takehistory.NewRepository,
 	timezone.NewRepository,
-	timezonelink.NewRepository,
 	plan.NewRepository,
 )
 
@@ -37,7 +33,6 @@ var service = wire.NewSet(
 	user.NewService,
 	medicine.NewService,
 	prescription.NewService,
-	takehistory.NewService,
 	plan.NewService,
 	timezone.NewService,
 )

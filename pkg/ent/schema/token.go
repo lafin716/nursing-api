@@ -14,8 +14,8 @@ type Token struct {
 func (Token) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("user_id", uuid.UUID{}),
-		field.String("access_token").SchemaType(varchar(500)),
-		field.String("refresh_token").SchemaType(varchar(200)),
+		field.String("access_token").SchemaType(text()),
+		field.String("refresh_token").SchemaType(text()),
 		field.Time("access_token_expires"),
 		field.Time("refresh_token_expires"),
 		field.Time("created_at").Default(time.Now),

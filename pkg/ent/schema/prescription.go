@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"time"
@@ -20,12 +21,13 @@ func (Prescription) Fields() []ent.Field {
 		field.Int("take_days").Default(0),
 		field.Time("started_at").Optional().Default(time.Now).SchemaType(date()),
 		field.Time("finished_at").Optional().Default(time.Now).SchemaType(date()),
-		field.String("memo").Optional().SchemaType(text()),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Optional(),
 	}
 }
 
 func (Prescription) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("prescription_items", PrescriptionItem.Type),
+	}
 }

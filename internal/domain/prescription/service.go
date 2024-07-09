@@ -1,7 +1,6 @@
 package prescription
 
 import (
-	"nursing_api/pkg/database"
 	"nursing_api/pkg/jwt"
 	"nursing_api/pkg/mono"
 	"strings"
@@ -23,19 +22,16 @@ type UseCase interface {
 }
 
 type prescriptionService struct {
-	db        *database.DatabaseClient
 	repo      Repository
 	mono      *mono.Client
 	jwtClient *jwt.JwtClient
 }
 
 func NewService(
-	db *database.DatabaseClient,
 	repo Repository,
 	jwtClient *jwt.JwtClient,
 ) UseCase {
 	return &prescriptionService{
-		db:        db,
 		repo:      repo,
 		jwtClient: jwtClient,
 		mono:      mono.NewMono(),
@@ -55,15 +51,7 @@ func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
 		TargetDate: targetDate,
 		Limit:      req.Limit,
 	}
-	resp, err := p.repo.GetListBySearch(search)
-	for _, item := range resp {
-		prescriptionItems, err := p.repo.GetItemListByTimezoneLinkId(item.ID)
-		if err != nil {
-			item.PrescriptionItems = []*PrescriptionItem{}
-			continue
-		}
-		item.PrescriptionItems = prescriptionItems
-	}
+	resp, err := p.repo.GetList(search)
 	if err != nil {
 		return FailGetList("처방전 목록이 없습니다.", err)
 	}
@@ -120,7 +108,6 @@ func (p prescriptionService) Register(req *RegisterRequest) *RegisterResponse {
 		TakeDays:          req.TakeDays,
 		StartedAt:         started,
 		FinishedAt:        finished,
-		Memo:              req.Memo,
 		CreatedAt:         time.Now(),
 		PrescriptionItems: items,
 	}
@@ -161,7 +148,6 @@ func (p prescriptionService) Update(req *UpdateRequest) *UpdateResponse {
 		TakeDays:         req.TakeDays,
 		StartedAt:        started,
 		FinishedAt:       finished,
-		Memo:             req.Memo,
 	}
 	found.update(updated)
 

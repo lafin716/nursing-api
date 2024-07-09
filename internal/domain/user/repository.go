@@ -23,11 +23,11 @@ type Repository interface {
 	Delete(userId uuid.UUID) (bool, error)
 }
 
-func NewRepository(dbClient *database.DatabaseClient) Repository {
+func NewRepository(dbClient database.DatabaseClient) Repository {
 	return &userRepository{
-		root:   dbClient.Client,
-		client: dbClient.Client.User,
-		ctx:    dbClient.Ctx,
+		root:   dbClient.GetClient(),
+		client: dbClient.GetClient().User,
+		ctx:    dbClient.GetCtx(),
 	}
 }
 

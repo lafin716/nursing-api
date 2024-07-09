@@ -13,7 +13,6 @@ var Set = wire.NewSet(
 	NewAuthHttpApi,
 	NewMedicineHttpApi,
 	NewPrescriptionApi,
-	NewTakeHistoryHttpApi,
 	NewPlanHttpApi,
 	NewTimeZoneApi,
 )

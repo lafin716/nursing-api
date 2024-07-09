@@ -20,10 +20,10 @@ type Repository interface {
 	DeleteToken(userId uuid.UUID) (bool, error)
 }
 
-func NewRepository(dbClient *database.DatabaseClient) Repository {
+func NewRepository(dbClient database.DatabaseClient) Repository {
 	return &authRepository{
-		client: dbClient.Client.Token,
-		ctx:    dbClient.Ctx,
+		client: dbClient.GetClient().Token,
+		ctx:    dbClient.GetCtx(),
 	}
 }
 

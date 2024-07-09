@@ -16,9 +16,7 @@ import (
 	"nursing_api/internal/domain/medicine"
 	"nursing_api/internal/domain/plan"
 	"nursing_api/internal/domain/prescription"
-	"nursing_api/internal/domain/take_history"
 	"nursing_api/internal/domain/timezone"
-	"nursing_api/internal/domain/timezone_link"
 	"nursing_api/internal/domain/user"
 	"nursing_api/internal/middleware"
 	"nursing_api/internal/router"
@@ -56,20 +54,16 @@ func New() (*Server, error) {
 	medicineUseCase := medicine.NewService(medicineRepository, medicineApi)
 	medicineHttpApi := api.NewMedicineHttpApi(medicineUseCase)
 	prescriptionRepository := prescription.NewRepository(databaseClient)
-	prescriptionUseCase := prescription.NewService(databaseClient, prescriptionRepository, jwtClient)
+	prescriptionUseCase := prescription.NewService(prescriptionRepository, jwtClient)
 	prescriptionApi := api.NewPrescriptionApi(prescriptionUseCase, jwtClient)
-	takehistoryRepository := takehistory.NewRepository(databaseClient)
 	client := mono.NewMono()
-	takehistoryUseCase := takehistory.NewService(takehistoryRepository, client)
-	takeHistoryHttpApi := api.NewTakeHistoryHttpApi(takehistoryUseCase, jwtClient)
-	planRepository := plan.NewRepository(client, databaseClient)
-	timezoneRepository := timezone.NewRepository(databaseClient)
-	timezonelinkRepository := timezonelink.NewRepository(databaseClient)
-	planUseCase := plan.NewService(databaseClient, client, planRepository, prescriptionRepository, timezoneRepository, timezonelinkRepository, takehistoryRepository, medicineRepository)
+	planRepository := plan.NewRepository(databaseClient, client)
+	planUseCase := plan.NewService(client, planRepository)
 	planHttpApi := api.NewPlanHttpApi(planUseCase, jwtClient)
+	timezoneRepository := timezone.NewRepository(databaseClient)
 	timezoneUseCase := timezone.NewService(timezoneRepository)
 	timeZoneApi := api.NewTimeZoneApi(timezoneUseCase, jwtClient)
-	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi, takeHistoryHttpApi, planHttpApi, timeZoneApi)
+	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi, planHttpApi, timeZoneApi)
 	server := NewServer(fiberConfig, databaseClient, routable)
 	return server, nil
 }
@@ -84,7 +78,7 @@ type Server struct {
 
 func NewServer(
 	cfg *web.FiberConfig,
-	dbClient *database.DatabaseClient, router2 router.Routable,
+	dbClient database.DatabaseClient, router2 router.Routable,
 
 ) *Server {
 
@@ -100,7 +94,7 @@ func NewServer(
 	return &Server{
 		app: app,
 		cfg: cfg,
-		db:  dbClient.Client,
+		db:  dbClient.GetClient(),
 	}
 }
 

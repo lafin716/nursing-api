@@ -21,10 +21,10 @@ type medicineRepository struct {
 	ctx    context.Context
 }
 
-func NewRepository(dbClient *database.DatabaseClient) Repository {
+func NewRepository(dbClient database.DatabaseClient) Repository {
 	return &medicineRepository{
-		client: dbClient.Client.Medicine,
-		ctx:    dbClient.Ctx,
+		client: dbClient.GetClient().Medicine,
+		ctx:    dbClient.GetCtx(),
 	}
 }
 

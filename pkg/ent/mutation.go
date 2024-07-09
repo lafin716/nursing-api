@@ -10,10 +10,9 @@ import (
 	"nursing_api/pkg/ent/predicate"
 	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
-	"nursing_api/pkg/ent/takehistory"
 	"nursing_api/pkg/ent/takehistoryitem"
+	"nursing_api/pkg/ent/takehistorymemo"
 	"nursing_api/pkg/ent/timezone"
-	"nursing_api/pkg/ent/timezonelink"
 	"nursing_api/pkg/ent/token"
 	"nursing_api/pkg/ent/user"
 	"sync"
@@ -36,10 +35,9 @@ const (
 	TypeMedicine         = "Medicine"
 	TypePrescription     = "Prescription"
 	TypePrescriptionItem = "PrescriptionItem"
-	TypeTakeHistory      = "TakeHistory"
 	TypeTakeHistoryItem  = "TakeHistoryItem"
+	TypeTakeHistoryMemo  = "TakeHistoryMemo"
 	TypeTimeZone         = "TimeZone"
-	TypeTimeZoneLink     = "TimeZoneLink"
 	TypeToken            = "Token"
 	TypeUser             = "User"
 )
@@ -1731,23 +1729,25 @@ func (m *MedicineMutation) ResetEdge(name string) error {
 // PrescriptionMutation represents an operation that mutates the Prescription nodes in the graph.
 type PrescriptionMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *uuid.UUID
-	user_id           *uuid.UUID
-	prescription_name *string
-	hospital_name     *string
-	take_days         *int
-	addtake_days      *int
-	started_at        *time.Time
-	finished_at       *time.Time
-	memo              *string
-	created_at        *time.Time
-	updated_at        *time.Time
-	clearedFields     map[string]struct{}
-	done              bool
-	oldValue          func(context.Context) (*Prescription, error)
-	predicates        []predicate.Prescription
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	user_id                   *uuid.UUID
+	prescription_name         *string
+	hospital_name             *string
+	take_days                 *int
+	addtake_days              *int
+	started_at                *time.Time
+	finished_at               *time.Time
+	created_at                *time.Time
+	updated_at                *time.Time
+	clearedFields             map[string]struct{}
+	prescription_items        map[uuid.UUID]struct{}
+	removedprescription_items map[uuid.UUID]struct{}
+	clearedprescription_items bool
+	done                      bool
+	oldValue                  func(context.Context) (*Prescription, error)
+	predicates                []predicate.Prescription
 }
 
 var _ ent.Mutation = (*PrescriptionMutation)(nil)
@@ -2142,55 +2142,6 @@ func (m *PrescriptionMutation) ResetFinishedAt() {
 	delete(m.clearedFields, prescription.FieldFinishedAt)
 }
 
-// SetMemo sets the "memo" field.
-func (m *PrescriptionMutation) SetMemo(s string) {
-	m.memo = &s
-}
-
-// Memo returns the value of the "memo" field in the mutation.
-func (m *PrescriptionMutation) Memo() (r string, exists bool) {
-	v := m.memo
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMemo returns the old "memo" field's value of the Prescription entity.
-// If the Prescription object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrescriptionMutation) OldMemo(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMemo is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMemo requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMemo: %w", err)
-	}
-	return oldValue.Memo, nil
-}
-
-// ClearMemo clears the value of the "memo" field.
-func (m *PrescriptionMutation) ClearMemo() {
-	m.memo = nil
-	m.clearedFields[prescription.FieldMemo] = struct{}{}
-}
-
-// MemoCleared returns if the "memo" field was cleared in this mutation.
-func (m *PrescriptionMutation) MemoCleared() bool {
-	_, ok := m.clearedFields[prescription.FieldMemo]
-	return ok
-}
-
-// ResetMemo resets all changes to the "memo" field.
-func (m *PrescriptionMutation) ResetMemo() {
-	m.memo = nil
-	delete(m.clearedFields, prescription.FieldMemo)
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (m *PrescriptionMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -2276,6 +2227,60 @@ func (m *PrescriptionMutation) ResetUpdatedAt() {
 	delete(m.clearedFields, prescription.FieldUpdatedAt)
 }
 
+// AddPrescriptionItemIDs adds the "prescription_items" edge to the PrescriptionItem entity by ids.
+func (m *PrescriptionMutation) AddPrescriptionItemIDs(ids ...uuid.UUID) {
+	if m.prescription_items == nil {
+		m.prescription_items = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.prescription_items[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPrescriptionItems clears the "prescription_items" edge to the PrescriptionItem entity.
+func (m *PrescriptionMutation) ClearPrescriptionItems() {
+	m.clearedprescription_items = true
+}
+
+// PrescriptionItemsCleared reports if the "prescription_items" edge to the PrescriptionItem entity was cleared.
+func (m *PrescriptionMutation) PrescriptionItemsCleared() bool {
+	return m.clearedprescription_items
+}
+
+// RemovePrescriptionItemIDs removes the "prescription_items" edge to the PrescriptionItem entity by IDs.
+func (m *PrescriptionMutation) RemovePrescriptionItemIDs(ids ...uuid.UUID) {
+	if m.removedprescription_items == nil {
+		m.removedprescription_items = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.prescription_items, ids[i])
+		m.removedprescription_items[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPrescriptionItems returns the removed IDs of the "prescription_items" edge to the PrescriptionItem entity.
+func (m *PrescriptionMutation) RemovedPrescriptionItemsIDs() (ids []uuid.UUID) {
+	for id := range m.removedprescription_items {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PrescriptionItemsIDs returns the "prescription_items" edge IDs in the mutation.
+func (m *PrescriptionMutation) PrescriptionItemsIDs() (ids []uuid.UUID) {
+	for id := range m.prescription_items {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPrescriptionItems resets all changes to the "prescription_items" edge.
+func (m *PrescriptionMutation) ResetPrescriptionItems() {
+	m.prescription_items = nil
+	m.clearedprescription_items = false
+	m.removedprescription_items = nil
+}
+
 // Where appends a list predicates to the PrescriptionMutation builder.
 func (m *PrescriptionMutation) Where(ps ...predicate.Prescription) {
 	m.predicates = append(m.predicates, ps...)
@@ -2310,7 +2315,7 @@ func (m *PrescriptionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PrescriptionMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 8)
 	if m.user_id != nil {
 		fields = append(fields, prescription.FieldUserID)
 	}
@@ -2328,9 +2333,6 @@ func (m *PrescriptionMutation) Fields() []string {
 	}
 	if m.finished_at != nil {
 		fields = append(fields, prescription.FieldFinishedAt)
-	}
-	if m.memo != nil {
-		fields = append(fields, prescription.FieldMemo)
 	}
 	if m.created_at != nil {
 		fields = append(fields, prescription.FieldCreatedAt)
@@ -2358,8 +2360,6 @@ func (m *PrescriptionMutation) Field(name string) (ent.Value, bool) {
 		return m.StartedAt()
 	case prescription.FieldFinishedAt:
 		return m.FinishedAt()
-	case prescription.FieldMemo:
-		return m.Memo()
 	case prescription.FieldCreatedAt:
 		return m.CreatedAt()
 	case prescription.FieldUpdatedAt:
@@ -2385,8 +2385,6 @@ func (m *PrescriptionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldStartedAt(ctx)
 	case prescription.FieldFinishedAt:
 		return m.OldFinishedAt(ctx)
-	case prescription.FieldMemo:
-		return m.OldMemo(ctx)
 	case prescription.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case prescription.FieldUpdatedAt:
@@ -2441,13 +2439,6 @@ func (m *PrescriptionMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetFinishedAt(v)
-		return nil
-	case prescription.FieldMemo:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMemo(v)
 		return nil
 	case prescription.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -2520,9 +2511,6 @@ func (m *PrescriptionMutation) ClearedFields() []string {
 	if m.FieldCleared(prescription.FieldFinishedAt) {
 		fields = append(fields, prescription.FieldFinishedAt)
 	}
-	if m.FieldCleared(prescription.FieldMemo) {
-		fields = append(fields, prescription.FieldMemo)
-	}
 	if m.FieldCleared(prescription.FieldUpdatedAt) {
 		fields = append(fields, prescription.FieldUpdatedAt)
 	}
@@ -2551,9 +2539,6 @@ func (m *PrescriptionMutation) ClearField(name string) error {
 		return nil
 	case prescription.FieldFinishedAt:
 		m.ClearFinishedAt()
-		return nil
-	case prescription.FieldMemo:
-		m.ClearMemo()
 		return nil
 	case prescription.FieldUpdatedAt:
 		m.ClearUpdatedAt()
@@ -2584,9 +2569,6 @@ func (m *PrescriptionMutation) ResetField(name string) error {
 	case prescription.FieldFinishedAt:
 		m.ResetFinishedAt()
 		return nil
-	case prescription.FieldMemo:
-		m.ResetMemo()
-		return nil
 	case prescription.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -2599,49 +2581,85 @@ func (m *PrescriptionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PrescriptionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.prescription_items != nil {
+		edges = append(edges, prescription.EdgePrescriptionItems)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *PrescriptionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case prescription.EdgePrescriptionItems:
+		ids := make([]ent.Value, 0, len(m.prescription_items))
+		for id := range m.prescription_items {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PrescriptionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedprescription_items != nil {
+		edges = append(edges, prescription.EdgePrescriptionItems)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *PrescriptionMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case prescription.EdgePrescriptionItems:
+		ids := make([]ent.Value, 0, len(m.removedprescription_items))
+		for id := range m.removedprescription_items {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PrescriptionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedprescription_items {
+		edges = append(edges, prescription.EdgePrescriptionItems)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *PrescriptionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case prescription.EdgePrescriptionItems:
+		return m.clearedprescription_items
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *PrescriptionMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Prescription unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *PrescriptionMutation) ResetEdge(name string) error {
+	switch name {
+	case prescription.EdgePrescriptionItems:
+		m.ResetPrescriptionItems()
+		return nil
+	}
 	return fmt.Errorf("unknown Prescription edge %s", name)
 }
 
@@ -2651,22 +2669,27 @@ type PrescriptionItemMutation struct {
 	op                       Op
 	typ                      string
 	id                       *uuid.UUID
-	timezone_link_id         *uuid.UUID
+	timezone_id              *uuid.UUID
 	medicine_id              *uuid.UUID
 	medicine_name            *string
-	take_amount              *float64
-	addtake_amount           *float64
-	remain_amount            *float64
-	addremain_amount         *float64
+	timezone_name            *string
+	midday                   *string
+	hour                     *string
+	minute                   *string
 	total_amount             *float64
 	addtotal_amount          *float64
+	remain_amount            *float64
+	addremain_amount         *float64
+	take_amount              *float64
+	addtake_amount           *float64
 	medicine_unit            *string
 	memo                     *string
 	created_at               *time.Time
 	updated_at               *time.Time
 	clearedFields            map[string]struct{}
-	take_history_item        map[uuid.UUID]struct{}
-	removedtake_history_item map[uuid.UUID]struct{}
+	prescription             *uuid.UUID
+	clearedprescription      bool
+	take_history_item        *uuid.UUID
 	clearedtake_history_item bool
 	done                     bool
 	oldValue                 func(context.Context) (*PrescriptionItem, error)
@@ -2777,40 +2800,76 @@ func (m *PrescriptionItemMutation) IDs(ctx context.Context) ([]uuid.UUID, error)
 	}
 }
 
-// SetTimezoneLinkID sets the "timezone_link_id" field.
-func (m *PrescriptionItemMutation) SetTimezoneLinkID(u uuid.UUID) {
-	m.timezone_link_id = &u
+// SetPrescriptionID sets the "prescription_id" field.
+func (m *PrescriptionItemMutation) SetPrescriptionID(u uuid.UUID) {
+	m.prescription = &u
 }
 
-// TimezoneLinkID returns the value of the "timezone_link_id" field in the mutation.
-func (m *PrescriptionItemMutation) TimezoneLinkID() (r uuid.UUID, exists bool) {
-	v := m.timezone_link_id
+// PrescriptionID returns the value of the "prescription_id" field in the mutation.
+func (m *PrescriptionItemMutation) PrescriptionID() (r uuid.UUID, exists bool) {
+	v := m.prescription
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTimezoneLinkID returns the old "timezone_link_id" field's value of the PrescriptionItem entity.
+// OldPrescriptionID returns the old "prescription_id" field's value of the PrescriptionItem entity.
 // If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrescriptionItemMutation) OldTimezoneLinkID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *PrescriptionItemMutation) OldPrescriptionID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTimezoneLinkID is only allowed on UpdateOne operations")
+		return v, errors.New("OldPrescriptionID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTimezoneLinkID requires an ID field in the mutation")
+		return v, errors.New("OldPrescriptionID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTimezoneLinkID: %w", err)
+		return v, fmt.Errorf("querying old value for OldPrescriptionID: %w", err)
 	}
-	return oldValue.TimezoneLinkID, nil
+	return oldValue.PrescriptionID, nil
 }
 
-// ResetTimezoneLinkID resets all changes to the "timezone_link_id" field.
-func (m *PrescriptionItemMutation) ResetTimezoneLinkID() {
-	m.timezone_link_id = nil
+// ResetPrescriptionID resets all changes to the "prescription_id" field.
+func (m *PrescriptionItemMutation) ResetPrescriptionID() {
+	m.prescription = nil
+}
+
+// SetTimezoneID sets the "timezone_id" field.
+func (m *PrescriptionItemMutation) SetTimezoneID(u uuid.UUID) {
+	m.timezone_id = &u
+}
+
+// TimezoneID returns the value of the "timezone_id" field in the mutation.
+func (m *PrescriptionItemMutation) TimezoneID() (r uuid.UUID, exists bool) {
+	v := m.timezone_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezoneID returns the old "timezone_id" field's value of the PrescriptionItem entity.
+// If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PrescriptionItemMutation) OldTimezoneID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezoneID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezoneID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezoneID: %w", err)
+	}
+	return oldValue.TimezoneID, nil
+}
+
+// ResetTimezoneID resets all changes to the "timezone_id" field.
+func (m *PrescriptionItemMutation) ResetTimezoneID() {
+	m.timezone_id = nil
 }
 
 // SetMedicineID sets the "medicine_id" field.
@@ -2885,60 +2944,217 @@ func (m *PrescriptionItemMutation) ResetMedicineName() {
 	m.medicine_name = nil
 }
 
-// SetTakeAmount sets the "take_amount" field.
-func (m *PrescriptionItemMutation) SetTakeAmount(f float64) {
-	m.take_amount = &f
-	m.addtake_amount = nil
+// SetTimezoneName sets the "timezone_name" field.
+func (m *PrescriptionItemMutation) SetTimezoneName(s string) {
+	m.timezone_name = &s
 }
 
-// TakeAmount returns the value of the "take_amount" field in the mutation.
-func (m *PrescriptionItemMutation) TakeAmount() (r float64, exists bool) {
-	v := m.take_amount
+// TimezoneName returns the value of the "timezone_name" field in the mutation.
+func (m *PrescriptionItemMutation) TimezoneName() (r string, exists bool) {
+	v := m.timezone_name
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTakeAmount returns the old "take_amount" field's value of the PrescriptionItem entity.
+// OldTimezoneName returns the old "timezone_name" field's value of the PrescriptionItem entity.
 // If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrescriptionItemMutation) OldTakeAmount(ctx context.Context) (v float64, err error) {
+func (m *PrescriptionItemMutation) OldTimezoneName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTakeAmount is only allowed on UpdateOne operations")
+		return v, errors.New("OldTimezoneName is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTakeAmount requires an ID field in the mutation")
+		return v, errors.New("OldTimezoneName requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTakeAmount: %w", err)
+		return v, fmt.Errorf("querying old value for OldTimezoneName: %w", err)
 	}
-	return oldValue.TakeAmount, nil
+	return oldValue.TimezoneName, nil
 }
 
-// AddTakeAmount adds f to the "take_amount" field.
-func (m *PrescriptionItemMutation) AddTakeAmount(f float64) {
-	if m.addtake_amount != nil {
-		*m.addtake_amount += f
-	} else {
-		m.addtake_amount = &f
-	}
+// ClearTimezoneName clears the value of the "timezone_name" field.
+func (m *PrescriptionItemMutation) ClearTimezoneName() {
+	m.timezone_name = nil
+	m.clearedFields[prescriptionitem.FieldTimezoneName] = struct{}{}
 }
 
-// AddedTakeAmount returns the value that was added to the "take_amount" field in this mutation.
-func (m *PrescriptionItemMutation) AddedTakeAmount() (r float64, exists bool) {
-	v := m.addtake_amount
+// TimezoneNameCleared returns if the "timezone_name" field was cleared in this mutation.
+func (m *PrescriptionItemMutation) TimezoneNameCleared() bool {
+	_, ok := m.clearedFields[prescriptionitem.FieldTimezoneName]
+	return ok
+}
+
+// ResetTimezoneName resets all changes to the "timezone_name" field.
+func (m *PrescriptionItemMutation) ResetTimezoneName() {
+	m.timezone_name = nil
+	delete(m.clearedFields, prescriptionitem.FieldTimezoneName)
+}
+
+// SetMidday sets the "midday" field.
+func (m *PrescriptionItemMutation) SetMidday(s string) {
+	m.midday = &s
+}
+
+// Midday returns the value of the "midday" field in the mutation.
+func (m *PrescriptionItemMutation) Midday() (r string, exists bool) {
+	v := m.midday
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetTakeAmount resets all changes to the "take_amount" field.
-func (m *PrescriptionItemMutation) ResetTakeAmount() {
-	m.take_amount = nil
-	m.addtake_amount = nil
+// OldMidday returns the old "midday" field's value of the PrescriptionItem entity.
+// If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PrescriptionItemMutation) OldMidday(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMidday is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMidday requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMidday: %w", err)
+	}
+	return oldValue.Midday, nil
+}
+
+// ResetMidday resets all changes to the "midday" field.
+func (m *PrescriptionItemMutation) ResetMidday() {
+	m.midday = nil
+}
+
+// SetHour sets the "hour" field.
+func (m *PrescriptionItemMutation) SetHour(s string) {
+	m.hour = &s
+}
+
+// Hour returns the value of the "hour" field in the mutation.
+func (m *PrescriptionItemMutation) Hour() (r string, exists bool) {
+	v := m.hour
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHour returns the old "hour" field's value of the PrescriptionItem entity.
+// If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PrescriptionItemMutation) OldHour(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHour is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHour requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHour: %w", err)
+	}
+	return oldValue.Hour, nil
+}
+
+// ResetHour resets all changes to the "hour" field.
+func (m *PrescriptionItemMutation) ResetHour() {
+	m.hour = nil
+}
+
+// SetMinute sets the "minute" field.
+func (m *PrescriptionItemMutation) SetMinute(s string) {
+	m.minute = &s
+}
+
+// Minute returns the value of the "minute" field in the mutation.
+func (m *PrescriptionItemMutation) Minute() (r string, exists bool) {
+	v := m.minute
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMinute returns the old "minute" field's value of the PrescriptionItem entity.
+// If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PrescriptionItemMutation) OldMinute(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMinute is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMinute requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMinute: %w", err)
+	}
+	return oldValue.Minute, nil
+}
+
+// ResetMinute resets all changes to the "minute" field.
+func (m *PrescriptionItemMutation) ResetMinute() {
+	m.minute = nil
+}
+
+// SetTotalAmount sets the "total_amount" field.
+func (m *PrescriptionItemMutation) SetTotalAmount(f float64) {
+	m.total_amount = &f
+	m.addtotal_amount = nil
+}
+
+// TotalAmount returns the value of the "total_amount" field in the mutation.
+func (m *PrescriptionItemMutation) TotalAmount() (r float64, exists bool) {
+	v := m.total_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalAmount returns the old "total_amount" field's value of the PrescriptionItem entity.
+// If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PrescriptionItemMutation) OldTotalAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalAmount: %w", err)
+	}
+	return oldValue.TotalAmount, nil
+}
+
+// AddTotalAmount adds f to the "total_amount" field.
+func (m *PrescriptionItemMutation) AddTotalAmount(f float64) {
+	if m.addtotal_amount != nil {
+		*m.addtotal_amount += f
+	} else {
+		m.addtotal_amount = &f
+	}
+}
+
+// AddedTotalAmount returns the value that was added to the "total_amount" field in this mutation.
+func (m *PrescriptionItemMutation) AddedTotalAmount() (r float64, exists bool) {
+	v := m.addtotal_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTotalAmount resets all changes to the "total_amount" field.
+func (m *PrescriptionItemMutation) ResetTotalAmount() {
+	m.total_amount = nil
+	m.addtotal_amount = nil
 }
 
 // SetRemainAmount sets the "remain_amount" field.
@@ -2997,60 +3213,60 @@ func (m *PrescriptionItemMutation) ResetRemainAmount() {
 	m.addremain_amount = nil
 }
 
-// SetTotalAmount sets the "total_amount" field.
-func (m *PrescriptionItemMutation) SetTotalAmount(f float64) {
-	m.total_amount = &f
-	m.addtotal_amount = nil
+// SetTakeAmount sets the "take_amount" field.
+func (m *PrescriptionItemMutation) SetTakeAmount(f float64) {
+	m.take_amount = &f
+	m.addtake_amount = nil
 }
 
-// TotalAmount returns the value of the "total_amount" field in the mutation.
-func (m *PrescriptionItemMutation) TotalAmount() (r float64, exists bool) {
-	v := m.total_amount
+// TakeAmount returns the value of the "take_amount" field in the mutation.
+func (m *PrescriptionItemMutation) TakeAmount() (r float64, exists bool) {
+	v := m.take_amount
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTotalAmount returns the old "total_amount" field's value of the PrescriptionItem entity.
+// OldTakeAmount returns the old "take_amount" field's value of the PrescriptionItem entity.
 // If the PrescriptionItem object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PrescriptionItemMutation) OldTotalAmount(ctx context.Context) (v float64, err error) {
+func (m *PrescriptionItemMutation) OldTakeAmount(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTotalAmount is only allowed on UpdateOne operations")
+		return v, errors.New("OldTakeAmount is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTotalAmount requires an ID field in the mutation")
+		return v, errors.New("OldTakeAmount requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTotalAmount: %w", err)
+		return v, fmt.Errorf("querying old value for OldTakeAmount: %w", err)
 	}
-	return oldValue.TotalAmount, nil
+	return oldValue.TakeAmount, nil
 }
 
-// AddTotalAmount adds f to the "total_amount" field.
-func (m *PrescriptionItemMutation) AddTotalAmount(f float64) {
-	if m.addtotal_amount != nil {
-		*m.addtotal_amount += f
+// AddTakeAmount adds f to the "take_amount" field.
+func (m *PrescriptionItemMutation) AddTakeAmount(f float64) {
+	if m.addtake_amount != nil {
+		*m.addtake_amount += f
 	} else {
-		m.addtotal_amount = &f
+		m.addtake_amount = &f
 	}
 }
 
-// AddedTotalAmount returns the value that was added to the "total_amount" field in this mutation.
-func (m *PrescriptionItemMutation) AddedTotalAmount() (r float64, exists bool) {
-	v := m.addtotal_amount
+// AddedTakeAmount returns the value that was added to the "take_amount" field in this mutation.
+func (m *PrescriptionItemMutation) AddedTakeAmount() (r float64, exists bool) {
+	v := m.addtake_amount
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetTotalAmount resets all changes to the "total_amount" field.
-func (m *PrescriptionItemMutation) ResetTotalAmount() {
-	m.total_amount = nil
-	m.addtotal_amount = nil
+// ResetTakeAmount resets all changes to the "take_amount" field.
+func (m *PrescriptionItemMutation) ResetTakeAmount() {
+	m.take_amount = nil
+	m.addtake_amount = nil
 }
 
 // SetMedicineUnit sets the "medicine_unit" field.
@@ -3236,14 +3452,36 @@ func (m *PrescriptionItemMutation) ResetUpdatedAt() {
 	delete(m.clearedFields, prescriptionitem.FieldUpdatedAt)
 }
 
-// AddTakeHistoryItemIDs adds the "take_history_item" edge to the TakeHistoryItem entity by ids.
-func (m *PrescriptionItemMutation) AddTakeHistoryItemIDs(ids ...uuid.UUID) {
-	if m.take_history_item == nil {
-		m.take_history_item = make(map[uuid.UUID]struct{})
+// ClearPrescription clears the "prescription" edge to the Prescription entity.
+func (m *PrescriptionItemMutation) ClearPrescription() {
+	m.clearedprescription = true
+	m.clearedFields[prescriptionitem.FieldPrescriptionID] = struct{}{}
+}
+
+// PrescriptionCleared reports if the "prescription" edge to the Prescription entity was cleared.
+func (m *PrescriptionItemMutation) PrescriptionCleared() bool {
+	return m.clearedprescription
+}
+
+// PrescriptionIDs returns the "prescription" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// PrescriptionID instead. It exists only for internal usage by the builders.
+func (m *PrescriptionItemMutation) PrescriptionIDs() (ids []uuid.UUID) {
+	if id := m.prescription; id != nil {
+		ids = append(ids, *id)
 	}
-	for i := range ids {
-		m.take_history_item[ids[i]] = struct{}{}
-	}
+	return
+}
+
+// ResetPrescription resets all changes to the "prescription" edge.
+func (m *PrescriptionItemMutation) ResetPrescription() {
+	m.prescription = nil
+	m.clearedprescription = false
+}
+
+// SetTakeHistoryItemID sets the "take_history_item" edge to the TakeHistoryItem entity by id.
+func (m *PrescriptionItemMutation) SetTakeHistoryItemID(id uuid.UUID) {
+	m.take_history_item = &id
 }
 
 // ClearTakeHistoryItem clears the "take_history_item" edge to the TakeHistoryItem entity.
@@ -3256,29 +3494,20 @@ func (m *PrescriptionItemMutation) TakeHistoryItemCleared() bool {
 	return m.clearedtake_history_item
 }
 
-// RemoveTakeHistoryItemIDs removes the "take_history_item" edge to the TakeHistoryItem entity by IDs.
-func (m *PrescriptionItemMutation) RemoveTakeHistoryItemIDs(ids ...uuid.UUID) {
-	if m.removedtake_history_item == nil {
-		m.removedtake_history_item = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.take_history_item, ids[i])
-		m.removedtake_history_item[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTakeHistoryItem returns the removed IDs of the "take_history_item" edge to the TakeHistoryItem entity.
-func (m *PrescriptionItemMutation) RemovedTakeHistoryItemIDs() (ids []uuid.UUID) {
-	for id := range m.removedtake_history_item {
-		ids = append(ids, id)
+// TakeHistoryItemID returns the "take_history_item" edge ID in the mutation.
+func (m *PrescriptionItemMutation) TakeHistoryItemID() (id uuid.UUID, exists bool) {
+	if m.take_history_item != nil {
+		return *m.take_history_item, true
 	}
 	return
 }
 
 // TakeHistoryItemIDs returns the "take_history_item" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TakeHistoryItemID instead. It exists only for internal usage by the builders.
 func (m *PrescriptionItemMutation) TakeHistoryItemIDs() (ids []uuid.UUID) {
-	for id := range m.take_history_item {
-		ids = append(ids, id)
+	if id := m.take_history_item; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -3287,7 +3516,6 @@ func (m *PrescriptionItemMutation) TakeHistoryItemIDs() (ids []uuid.UUID) {
 func (m *PrescriptionItemMutation) ResetTakeHistoryItem() {
 	m.take_history_item = nil
 	m.clearedtake_history_item = false
-	m.removedtake_history_item = nil
 }
 
 // Where appends a list predicates to the PrescriptionItemMutation builder.
@@ -3324,9 +3552,12 @@ func (m *PrescriptionItemMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PrescriptionItemMutation) Fields() []string {
-	fields := make([]string, 0, 10)
-	if m.timezone_link_id != nil {
-		fields = append(fields, prescriptionitem.FieldTimezoneLinkID)
+	fields := make([]string, 0, 15)
+	if m.prescription != nil {
+		fields = append(fields, prescriptionitem.FieldPrescriptionID)
+	}
+	if m.timezone_id != nil {
+		fields = append(fields, prescriptionitem.FieldTimezoneID)
 	}
 	if m.medicine_id != nil {
 		fields = append(fields, prescriptionitem.FieldMedicineID)
@@ -3334,14 +3565,26 @@ func (m *PrescriptionItemMutation) Fields() []string {
 	if m.medicine_name != nil {
 		fields = append(fields, prescriptionitem.FieldMedicineName)
 	}
-	if m.take_amount != nil {
-		fields = append(fields, prescriptionitem.FieldTakeAmount)
+	if m.timezone_name != nil {
+		fields = append(fields, prescriptionitem.FieldTimezoneName)
+	}
+	if m.midday != nil {
+		fields = append(fields, prescriptionitem.FieldMidday)
+	}
+	if m.hour != nil {
+		fields = append(fields, prescriptionitem.FieldHour)
+	}
+	if m.minute != nil {
+		fields = append(fields, prescriptionitem.FieldMinute)
+	}
+	if m.total_amount != nil {
+		fields = append(fields, prescriptionitem.FieldTotalAmount)
 	}
 	if m.remain_amount != nil {
 		fields = append(fields, prescriptionitem.FieldRemainAmount)
 	}
-	if m.total_amount != nil {
-		fields = append(fields, prescriptionitem.FieldTotalAmount)
+	if m.take_amount != nil {
+		fields = append(fields, prescriptionitem.FieldTakeAmount)
 	}
 	if m.medicine_unit != nil {
 		fields = append(fields, prescriptionitem.FieldMedicineUnit)
@@ -3363,18 +3606,28 @@ func (m *PrescriptionItemMutation) Fields() []string {
 // schema.
 func (m *PrescriptionItemMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case prescriptionitem.FieldTimezoneLinkID:
-		return m.TimezoneLinkID()
+	case prescriptionitem.FieldPrescriptionID:
+		return m.PrescriptionID()
+	case prescriptionitem.FieldTimezoneID:
+		return m.TimezoneID()
 	case prescriptionitem.FieldMedicineID:
 		return m.MedicineID()
 	case prescriptionitem.FieldMedicineName:
 		return m.MedicineName()
-	case prescriptionitem.FieldTakeAmount:
-		return m.TakeAmount()
-	case prescriptionitem.FieldRemainAmount:
-		return m.RemainAmount()
+	case prescriptionitem.FieldTimezoneName:
+		return m.TimezoneName()
+	case prescriptionitem.FieldMidday:
+		return m.Midday()
+	case prescriptionitem.FieldHour:
+		return m.Hour()
+	case prescriptionitem.FieldMinute:
+		return m.Minute()
 	case prescriptionitem.FieldTotalAmount:
 		return m.TotalAmount()
+	case prescriptionitem.FieldRemainAmount:
+		return m.RemainAmount()
+	case prescriptionitem.FieldTakeAmount:
+		return m.TakeAmount()
 	case prescriptionitem.FieldMedicineUnit:
 		return m.MedicineUnit()
 	case prescriptionitem.FieldMemo:
@@ -3392,18 +3645,28 @@ func (m *PrescriptionItemMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *PrescriptionItemMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case prescriptionitem.FieldTimezoneLinkID:
-		return m.OldTimezoneLinkID(ctx)
+	case prescriptionitem.FieldPrescriptionID:
+		return m.OldPrescriptionID(ctx)
+	case prescriptionitem.FieldTimezoneID:
+		return m.OldTimezoneID(ctx)
 	case prescriptionitem.FieldMedicineID:
 		return m.OldMedicineID(ctx)
 	case prescriptionitem.FieldMedicineName:
 		return m.OldMedicineName(ctx)
-	case prescriptionitem.FieldTakeAmount:
-		return m.OldTakeAmount(ctx)
-	case prescriptionitem.FieldRemainAmount:
-		return m.OldRemainAmount(ctx)
+	case prescriptionitem.FieldTimezoneName:
+		return m.OldTimezoneName(ctx)
+	case prescriptionitem.FieldMidday:
+		return m.OldMidday(ctx)
+	case prescriptionitem.FieldHour:
+		return m.OldHour(ctx)
+	case prescriptionitem.FieldMinute:
+		return m.OldMinute(ctx)
 	case prescriptionitem.FieldTotalAmount:
 		return m.OldTotalAmount(ctx)
+	case prescriptionitem.FieldRemainAmount:
+		return m.OldRemainAmount(ctx)
+	case prescriptionitem.FieldTakeAmount:
+		return m.OldTakeAmount(ctx)
 	case prescriptionitem.FieldMedicineUnit:
 		return m.OldMedicineUnit(ctx)
 	case prescriptionitem.FieldMemo:
@@ -3421,12 +3684,19 @@ func (m *PrescriptionItemMutation) OldField(ctx context.Context, name string) (e
 // type.
 func (m *PrescriptionItemMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case prescriptionitem.FieldTimezoneLinkID:
+	case prescriptionitem.FieldPrescriptionID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTimezoneLinkID(v)
+		m.SetPrescriptionID(v)
+		return nil
+	case prescriptionitem.FieldTimezoneID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneID(v)
 		return nil
 	case prescriptionitem.FieldMedicineID:
 		v, ok := value.(uuid.UUID)
@@ -3442,12 +3712,40 @@ func (m *PrescriptionItemMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetMedicineName(v)
 		return nil
-	case prescriptionitem.FieldTakeAmount:
+	case prescriptionitem.FieldTimezoneName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneName(v)
+		return nil
+	case prescriptionitem.FieldMidday:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMidday(v)
+		return nil
+	case prescriptionitem.FieldHour:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHour(v)
+		return nil
+	case prescriptionitem.FieldMinute:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMinute(v)
+		return nil
+	case prescriptionitem.FieldTotalAmount:
 		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTakeAmount(v)
+		m.SetTotalAmount(v)
 		return nil
 	case prescriptionitem.FieldRemainAmount:
 		v, ok := value.(float64)
@@ -3456,12 +3754,12 @@ func (m *PrescriptionItemMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetRemainAmount(v)
 		return nil
-	case prescriptionitem.FieldTotalAmount:
+	case prescriptionitem.FieldTakeAmount:
 		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTotalAmount(v)
+		m.SetTakeAmount(v)
 		return nil
 	case prescriptionitem.FieldMedicineUnit:
 		v, ok := value.(string)
@@ -3499,14 +3797,14 @@ func (m *PrescriptionItemMutation) SetField(name string, value ent.Value) error 
 // this mutation.
 func (m *PrescriptionItemMutation) AddedFields() []string {
 	var fields []string
-	if m.addtake_amount != nil {
-		fields = append(fields, prescriptionitem.FieldTakeAmount)
+	if m.addtotal_amount != nil {
+		fields = append(fields, prescriptionitem.FieldTotalAmount)
 	}
 	if m.addremain_amount != nil {
 		fields = append(fields, prescriptionitem.FieldRemainAmount)
 	}
-	if m.addtotal_amount != nil {
-		fields = append(fields, prescriptionitem.FieldTotalAmount)
+	if m.addtake_amount != nil {
+		fields = append(fields, prescriptionitem.FieldTakeAmount)
 	}
 	return fields
 }
@@ -3516,12 +3814,12 @@ func (m *PrescriptionItemMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *PrescriptionItemMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case prescriptionitem.FieldTakeAmount:
-		return m.AddedTakeAmount()
-	case prescriptionitem.FieldRemainAmount:
-		return m.AddedRemainAmount()
 	case prescriptionitem.FieldTotalAmount:
 		return m.AddedTotalAmount()
+	case prescriptionitem.FieldRemainAmount:
+		return m.AddedRemainAmount()
+	case prescriptionitem.FieldTakeAmount:
+		return m.AddedTakeAmount()
 	}
 	return nil, false
 }
@@ -3531,12 +3829,12 @@ func (m *PrescriptionItemMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *PrescriptionItemMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case prescriptionitem.FieldTakeAmount:
+	case prescriptionitem.FieldTotalAmount:
 		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddTakeAmount(v)
+		m.AddTotalAmount(v)
 		return nil
 	case prescriptionitem.FieldRemainAmount:
 		v, ok := value.(float64)
@@ -3545,12 +3843,12 @@ func (m *PrescriptionItemMutation) AddField(name string, value ent.Value) error 
 		}
 		m.AddRemainAmount(v)
 		return nil
-	case prescriptionitem.FieldTotalAmount:
+	case prescriptionitem.FieldTakeAmount:
 		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddTotalAmount(v)
+		m.AddTakeAmount(v)
 		return nil
 	}
 	return fmt.Errorf("unknown PrescriptionItem numeric field %s", name)
@@ -3560,6 +3858,9 @@ func (m *PrescriptionItemMutation) AddField(name string, value ent.Value) error 
 // mutation.
 func (m *PrescriptionItemMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(prescriptionitem.FieldTimezoneName) {
+		fields = append(fields, prescriptionitem.FieldTimezoneName)
+	}
 	if m.FieldCleared(prescriptionitem.FieldMedicineUnit) {
 		fields = append(fields, prescriptionitem.FieldMedicineUnit)
 	}
@@ -3583,6 +3884,9 @@ func (m *PrescriptionItemMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *PrescriptionItemMutation) ClearField(name string) error {
 	switch name {
+	case prescriptionitem.FieldTimezoneName:
+		m.ClearTimezoneName()
+		return nil
 	case prescriptionitem.FieldMedicineUnit:
 		m.ClearMedicineUnit()
 		return nil
@@ -3600,8 +3904,11 @@ func (m *PrescriptionItemMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *PrescriptionItemMutation) ResetField(name string) error {
 	switch name {
-	case prescriptionitem.FieldTimezoneLinkID:
-		m.ResetTimezoneLinkID()
+	case prescriptionitem.FieldPrescriptionID:
+		m.ResetPrescriptionID()
+		return nil
+	case prescriptionitem.FieldTimezoneID:
+		m.ResetTimezoneID()
 		return nil
 	case prescriptionitem.FieldMedicineID:
 		m.ResetMedicineID()
@@ -3609,14 +3916,26 @@ func (m *PrescriptionItemMutation) ResetField(name string) error {
 	case prescriptionitem.FieldMedicineName:
 		m.ResetMedicineName()
 		return nil
-	case prescriptionitem.FieldTakeAmount:
-		m.ResetTakeAmount()
+	case prescriptionitem.FieldTimezoneName:
+		m.ResetTimezoneName()
+		return nil
+	case prescriptionitem.FieldMidday:
+		m.ResetMidday()
+		return nil
+	case prescriptionitem.FieldHour:
+		m.ResetHour()
+		return nil
+	case prescriptionitem.FieldMinute:
+		m.ResetMinute()
+		return nil
+	case prescriptionitem.FieldTotalAmount:
+		m.ResetTotalAmount()
 		return nil
 	case prescriptionitem.FieldRemainAmount:
 		m.ResetRemainAmount()
 		return nil
-	case prescriptionitem.FieldTotalAmount:
-		m.ResetTotalAmount()
+	case prescriptionitem.FieldTakeAmount:
+		m.ResetTakeAmount()
 		return nil
 	case prescriptionitem.FieldMedicineUnit:
 		m.ResetMedicineUnit()
@@ -3636,7 +3955,10 @@ func (m *PrescriptionItemMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PrescriptionItemMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.prescription != nil {
+		edges = append(edges, prescriptionitem.EdgePrescription)
+	}
 	if m.take_history_item != nil {
 		edges = append(edges, prescriptionitem.EdgeTakeHistoryItem)
 	}
@@ -3647,42 +3969,36 @@ func (m *PrescriptionItemMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *PrescriptionItemMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case prescriptionitem.EdgeTakeHistoryItem:
-		ids := make([]ent.Value, 0, len(m.take_history_item))
-		for id := range m.take_history_item {
-			ids = append(ids, id)
+	case prescriptionitem.EdgePrescription:
+		if id := m.prescription; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
+	case prescriptionitem.EdgeTakeHistoryItem:
+		if id := m.take_history_item; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PrescriptionItemMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedtake_history_item != nil {
-		edges = append(edges, prescriptionitem.EdgeTakeHistoryItem)
-	}
+	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *PrescriptionItemMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case prescriptionitem.EdgeTakeHistoryItem:
-		ids := make([]ent.Value, 0, len(m.removedtake_history_item))
-		for id := range m.removedtake_history_item {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PrescriptionItemMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.clearedprescription {
+		edges = append(edges, prescriptionitem.EdgePrescription)
+	}
 	if m.clearedtake_history_item {
 		edges = append(edges, prescriptionitem.EdgeTakeHistoryItem)
 	}
@@ -3693,6 +4009,8 @@ func (m *PrescriptionItemMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *PrescriptionItemMutation) EdgeCleared(name string) bool {
 	switch name {
+	case prescriptionitem.EdgePrescription:
+		return m.clearedprescription
 	case prescriptionitem.EdgeTakeHistoryItem:
 		return m.clearedtake_history_item
 	}
@@ -3703,6 +4021,12 @@ func (m *PrescriptionItemMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *PrescriptionItemMutation) ClearEdge(name string) error {
 	switch name {
+	case prescriptionitem.EdgePrescription:
+		m.ClearPrescription()
+		return nil
+	case prescriptionitem.EdgeTakeHistoryItem:
+		m.ClearTakeHistoryItem()
+		return nil
 	}
 	return fmt.Errorf("unknown PrescriptionItem unique edge %s", name)
 }
@@ -3711,800 +4035,14 @@ func (m *PrescriptionItemMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *PrescriptionItemMutation) ResetEdge(name string) error {
 	switch name {
+	case prescriptionitem.EdgePrescription:
+		m.ResetPrescription()
+		return nil
 	case prescriptionitem.EdgeTakeHistoryItem:
 		m.ResetTakeHistoryItem()
 		return nil
 	}
 	return fmt.Errorf("unknown PrescriptionItem edge %s", name)
-}
-
-// TakeHistoryMutation represents an operation that mutates the TakeHistory nodes in the graph.
-type TakeHistoryMutation struct {
-	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	user_id         *uuid.UUID
-	take_date       *time.Time
-	take_status     *string
-	memo            *string
-	created_at      *time.Time
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	timezone        *uuid.UUID
-	clearedtimezone bool
-	done            bool
-	oldValue        func(context.Context) (*TakeHistory, error)
-	predicates      []predicate.TakeHistory
-}
-
-var _ ent.Mutation = (*TakeHistoryMutation)(nil)
-
-// takehistoryOption allows management of the mutation configuration using functional options.
-type takehistoryOption func(*TakeHistoryMutation)
-
-// newTakeHistoryMutation creates new mutation for the TakeHistory entity.
-func newTakeHistoryMutation(c config, op Op, opts ...takehistoryOption) *TakeHistoryMutation {
-	m := &TakeHistoryMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeTakeHistory,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withTakeHistoryID sets the ID field of the mutation.
-func withTakeHistoryID(id uuid.UUID) takehistoryOption {
-	return func(m *TakeHistoryMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *TakeHistory
-		)
-		m.oldValue = func(ctx context.Context) (*TakeHistory, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().TakeHistory.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withTakeHistory sets the old TakeHistory of the mutation.
-func withTakeHistory(node *TakeHistory) takehistoryOption {
-	return func(m *TakeHistoryMutation) {
-		m.oldValue = func(context.Context) (*TakeHistory, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m TakeHistoryMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m TakeHistoryMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of TakeHistory entities.
-func (m *TakeHistoryMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *TakeHistoryMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *TakeHistoryMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().TakeHistory.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetUserID sets the "user_id" field.
-func (m *TakeHistoryMutation) SetUserID(u uuid.UUID) {
-	m.user_id = &u
-}
-
-// UserID returns the value of the "user_id" field in the mutation.
-func (m *TakeHistoryMutation) UserID() (r uuid.UUID, exists bool) {
-	v := m.user_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUserID returns the old "user_id" field's value of the TakeHistory entity.
-// If the TakeHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
-	}
-	return oldValue.UserID, nil
-}
-
-// ResetUserID resets all changes to the "user_id" field.
-func (m *TakeHistoryMutation) ResetUserID() {
-	m.user_id = nil
-}
-
-// SetTimezoneID sets the "timezone_id" field.
-func (m *TakeHistoryMutation) SetTimezoneID(u uuid.UUID) {
-	m.timezone = &u
-}
-
-// TimezoneID returns the value of the "timezone_id" field in the mutation.
-func (m *TakeHistoryMutation) TimezoneID() (r uuid.UUID, exists bool) {
-	v := m.timezone
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTimezoneID returns the old "timezone_id" field's value of the TakeHistory entity.
-// If the TakeHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryMutation) OldTimezoneID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTimezoneID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTimezoneID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTimezoneID: %w", err)
-	}
-	return oldValue.TimezoneID, nil
-}
-
-// ClearTimezoneID clears the value of the "timezone_id" field.
-func (m *TakeHistoryMutation) ClearTimezoneID() {
-	m.timezone = nil
-	m.clearedFields[takehistory.FieldTimezoneID] = struct{}{}
-}
-
-// TimezoneIDCleared returns if the "timezone_id" field was cleared in this mutation.
-func (m *TakeHistoryMutation) TimezoneIDCleared() bool {
-	_, ok := m.clearedFields[takehistory.FieldTimezoneID]
-	return ok
-}
-
-// ResetTimezoneID resets all changes to the "timezone_id" field.
-func (m *TakeHistoryMutation) ResetTimezoneID() {
-	m.timezone = nil
-	delete(m.clearedFields, takehistory.FieldTimezoneID)
-}
-
-// SetTakeDate sets the "take_date" field.
-func (m *TakeHistoryMutation) SetTakeDate(t time.Time) {
-	m.take_date = &t
-}
-
-// TakeDate returns the value of the "take_date" field in the mutation.
-func (m *TakeHistoryMutation) TakeDate() (r time.Time, exists bool) {
-	v := m.take_date
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTakeDate returns the old "take_date" field's value of the TakeHistory entity.
-// If the TakeHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryMutation) OldTakeDate(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTakeDate is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTakeDate requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTakeDate: %w", err)
-	}
-	return oldValue.TakeDate, nil
-}
-
-// ResetTakeDate resets all changes to the "take_date" field.
-func (m *TakeHistoryMutation) ResetTakeDate() {
-	m.take_date = nil
-}
-
-// SetTakeStatus sets the "take_status" field.
-func (m *TakeHistoryMutation) SetTakeStatus(s string) {
-	m.take_status = &s
-}
-
-// TakeStatus returns the value of the "take_status" field in the mutation.
-func (m *TakeHistoryMutation) TakeStatus() (r string, exists bool) {
-	v := m.take_status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTakeStatus returns the old "take_status" field's value of the TakeHistory entity.
-// If the TakeHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryMutation) OldTakeStatus(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTakeStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTakeStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTakeStatus: %w", err)
-	}
-	return oldValue.TakeStatus, nil
-}
-
-// ClearTakeStatus clears the value of the "take_status" field.
-func (m *TakeHistoryMutation) ClearTakeStatus() {
-	m.take_status = nil
-	m.clearedFields[takehistory.FieldTakeStatus] = struct{}{}
-}
-
-// TakeStatusCleared returns if the "take_status" field was cleared in this mutation.
-func (m *TakeHistoryMutation) TakeStatusCleared() bool {
-	_, ok := m.clearedFields[takehistory.FieldTakeStatus]
-	return ok
-}
-
-// ResetTakeStatus resets all changes to the "take_status" field.
-func (m *TakeHistoryMutation) ResetTakeStatus() {
-	m.take_status = nil
-	delete(m.clearedFields, takehistory.FieldTakeStatus)
-}
-
-// SetMemo sets the "memo" field.
-func (m *TakeHistoryMutation) SetMemo(s string) {
-	m.memo = &s
-}
-
-// Memo returns the value of the "memo" field in the mutation.
-func (m *TakeHistoryMutation) Memo() (r string, exists bool) {
-	v := m.memo
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMemo returns the old "memo" field's value of the TakeHistory entity.
-// If the TakeHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryMutation) OldMemo(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMemo is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMemo requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMemo: %w", err)
-	}
-	return oldValue.Memo, nil
-}
-
-// ClearMemo clears the value of the "memo" field.
-func (m *TakeHistoryMutation) ClearMemo() {
-	m.memo = nil
-	m.clearedFields[takehistory.FieldMemo] = struct{}{}
-}
-
-// MemoCleared returns if the "memo" field was cleared in this mutation.
-func (m *TakeHistoryMutation) MemoCleared() bool {
-	_, ok := m.clearedFields[takehistory.FieldMemo]
-	return ok
-}
-
-// ResetMemo resets all changes to the "memo" field.
-func (m *TakeHistoryMutation) ResetMemo() {
-	m.memo = nil
-	delete(m.clearedFields, takehistory.FieldMemo)
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *TakeHistoryMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *TakeHistoryMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the TakeHistory entity.
-// If the TakeHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *TakeHistoryMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *TakeHistoryMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *TakeHistoryMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the TakeHistory entity.
-// If the TakeHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ClearUpdatedAt clears the value of the "updated_at" field.
-func (m *TakeHistoryMutation) ClearUpdatedAt() {
-	m.updated_at = nil
-	m.clearedFields[takehistory.FieldUpdatedAt] = struct{}{}
-}
-
-// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
-func (m *TakeHistoryMutation) UpdatedAtCleared() bool {
-	_, ok := m.clearedFields[takehistory.FieldUpdatedAt]
-	return ok
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *TakeHistoryMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-	delete(m.clearedFields, takehistory.FieldUpdatedAt)
-}
-
-// ClearTimezone clears the "timezone" edge to the TimeZone entity.
-func (m *TakeHistoryMutation) ClearTimezone() {
-	m.clearedtimezone = true
-	m.clearedFields[takehistory.FieldTimezoneID] = struct{}{}
-}
-
-// TimezoneCleared reports if the "timezone" edge to the TimeZone entity was cleared.
-func (m *TakeHistoryMutation) TimezoneCleared() bool {
-	return m.TimezoneIDCleared() || m.clearedtimezone
-}
-
-// TimezoneIDs returns the "timezone" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TimezoneID instead. It exists only for internal usage by the builders.
-func (m *TakeHistoryMutation) TimezoneIDs() (ids []uuid.UUID) {
-	if id := m.timezone; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTimezone resets all changes to the "timezone" edge.
-func (m *TakeHistoryMutation) ResetTimezone() {
-	m.timezone = nil
-	m.clearedtimezone = false
-}
-
-// Where appends a list predicates to the TakeHistoryMutation builder.
-func (m *TakeHistoryMutation) Where(ps ...predicate.TakeHistory) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the TakeHistoryMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *TakeHistoryMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.TakeHistory, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *TakeHistoryMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *TakeHistoryMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (TakeHistory).
-func (m *TakeHistoryMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *TakeHistoryMutation) Fields() []string {
-	fields := make([]string, 0, 7)
-	if m.user_id != nil {
-		fields = append(fields, takehistory.FieldUserID)
-	}
-	if m.timezone != nil {
-		fields = append(fields, takehistory.FieldTimezoneID)
-	}
-	if m.take_date != nil {
-		fields = append(fields, takehistory.FieldTakeDate)
-	}
-	if m.take_status != nil {
-		fields = append(fields, takehistory.FieldTakeStatus)
-	}
-	if m.memo != nil {
-		fields = append(fields, takehistory.FieldMemo)
-	}
-	if m.created_at != nil {
-		fields = append(fields, takehistory.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, takehistory.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *TakeHistoryMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case takehistory.FieldUserID:
-		return m.UserID()
-	case takehistory.FieldTimezoneID:
-		return m.TimezoneID()
-	case takehistory.FieldTakeDate:
-		return m.TakeDate()
-	case takehistory.FieldTakeStatus:
-		return m.TakeStatus()
-	case takehistory.FieldMemo:
-		return m.Memo()
-	case takehistory.FieldCreatedAt:
-		return m.CreatedAt()
-	case takehistory.FieldUpdatedAt:
-		return m.UpdatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *TakeHistoryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case takehistory.FieldUserID:
-		return m.OldUserID(ctx)
-	case takehistory.FieldTimezoneID:
-		return m.OldTimezoneID(ctx)
-	case takehistory.FieldTakeDate:
-		return m.OldTakeDate(ctx)
-	case takehistory.FieldTakeStatus:
-		return m.OldTakeStatus(ctx)
-	case takehistory.FieldMemo:
-		return m.OldMemo(ctx)
-	case takehistory.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case takehistory.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown TakeHistory field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *TakeHistoryMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case takehistory.FieldUserID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUserID(v)
-		return nil
-	case takehistory.FieldTimezoneID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTimezoneID(v)
-		return nil
-	case takehistory.FieldTakeDate:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTakeDate(v)
-		return nil
-	case takehistory.FieldTakeStatus:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTakeStatus(v)
-		return nil
-	case takehistory.FieldMemo:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMemo(v)
-		return nil
-	case takehistory.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case takehistory.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown TakeHistory field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *TakeHistoryMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *TakeHistoryMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *TakeHistoryMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown TakeHistory numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *TakeHistoryMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(takehistory.FieldTimezoneID) {
-		fields = append(fields, takehistory.FieldTimezoneID)
-	}
-	if m.FieldCleared(takehistory.FieldTakeStatus) {
-		fields = append(fields, takehistory.FieldTakeStatus)
-	}
-	if m.FieldCleared(takehistory.FieldMemo) {
-		fields = append(fields, takehistory.FieldMemo)
-	}
-	if m.FieldCleared(takehistory.FieldUpdatedAt) {
-		fields = append(fields, takehistory.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *TakeHistoryMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *TakeHistoryMutation) ClearField(name string) error {
-	switch name {
-	case takehistory.FieldTimezoneID:
-		m.ClearTimezoneID()
-		return nil
-	case takehistory.FieldTakeStatus:
-		m.ClearTakeStatus()
-		return nil
-	case takehistory.FieldMemo:
-		m.ClearMemo()
-		return nil
-	case takehistory.FieldUpdatedAt:
-		m.ClearUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown TakeHistory nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *TakeHistoryMutation) ResetField(name string) error {
-	switch name {
-	case takehistory.FieldUserID:
-		m.ResetUserID()
-		return nil
-	case takehistory.FieldTimezoneID:
-		m.ResetTimezoneID()
-		return nil
-	case takehistory.FieldTakeDate:
-		m.ResetTakeDate()
-		return nil
-	case takehistory.FieldTakeStatus:
-		m.ResetTakeStatus()
-		return nil
-	case takehistory.FieldMemo:
-		m.ResetMemo()
-		return nil
-	case takehistory.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case takehistory.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown TakeHistory field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *TakeHistoryMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.timezone != nil {
-		edges = append(edges, takehistory.EdgeTimezone)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *TakeHistoryMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case takehistory.EdgeTimezone:
-		if id := m.timezone; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *TakeHistoryMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *TakeHistoryMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *TakeHistoryMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedtimezone {
-		edges = append(edges, takehistory.EdgeTimezone)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *TakeHistoryMutation) EdgeCleared(name string) bool {
-	switch name {
-	case takehistory.EdgeTimezone:
-		return m.clearedtimezone
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *TakeHistoryMutation) ClearEdge(name string) error {
-	switch name {
-	case takehistory.EdgeTimezone:
-		m.ClearTimezone()
-		return nil
-	}
-	return fmt.Errorf("unknown TakeHistory unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *TakeHistoryMutation) ResetEdge(name string) error {
-	switch name {
-	case takehistory.EdgeTimezone:
-		m.ResetTimezone()
-		return nil
-	}
-	return fmt.Errorf("unknown TakeHistory edge %s", name)
 }
 
 // TakeHistoryItemMutation represents an operation that mutates the TakeHistoryItem nodes in the graph.
@@ -4514,17 +4052,24 @@ type TakeHistoryItemMutation struct {
 	typ                      string
 	id                       *uuid.UUID
 	user_id                  *uuid.UUID
-	take_history_id          *uuid.UUID
+	prescription_id          *uuid.UUID
+	timezone_id              *uuid.UUID
+	medicine_id              *uuid.UUID
+	medicine_name            *string
+	timezone_name            *string
+	midday                   *string
+	hour                     *string
+	minute                   *string
 	take_status              *bool
-	take_amount              *float64
-	addtake_amount           *float64
-	remain_amount            *float64
-	addremain_amount         *float64
 	total_amount             *float64
 	addtotal_amount          *float64
+	remain_amount            *float64
+	addremain_amount         *float64
+	take_amount              *float64
+	addtake_amount           *float64
 	take_unit                *string
-	memo                     *string
 	take_date                *time.Time
+	take_time                *string
 	created_at               *time.Time
 	updated_at               *time.Time
 	clearedFields            map[string]struct{}
@@ -4675,40 +4220,40 @@ func (m *TakeHistoryItemMutation) ResetUserID() {
 	m.user_id = nil
 }
 
-// SetTakeHistoryID sets the "take_history_id" field.
-func (m *TakeHistoryItemMutation) SetTakeHistoryID(u uuid.UUID) {
-	m.take_history_id = &u
+// SetPrescriptionID sets the "prescription_id" field.
+func (m *TakeHistoryItemMutation) SetPrescriptionID(u uuid.UUID) {
+	m.prescription_id = &u
 }
 
-// TakeHistoryID returns the value of the "take_history_id" field in the mutation.
-func (m *TakeHistoryItemMutation) TakeHistoryID() (r uuid.UUID, exists bool) {
-	v := m.take_history_id
+// PrescriptionID returns the value of the "prescription_id" field in the mutation.
+func (m *TakeHistoryItemMutation) PrescriptionID() (r uuid.UUID, exists bool) {
+	v := m.prescription_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTakeHistoryID returns the old "take_history_id" field's value of the TakeHistoryItem entity.
+// OldPrescriptionID returns the old "prescription_id" field's value of the TakeHistoryItem entity.
 // If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryItemMutation) OldTakeHistoryID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *TakeHistoryItemMutation) OldPrescriptionID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTakeHistoryID is only allowed on UpdateOne operations")
+		return v, errors.New("OldPrescriptionID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTakeHistoryID requires an ID field in the mutation")
+		return v, errors.New("OldPrescriptionID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTakeHistoryID: %w", err)
+		return v, fmt.Errorf("querying old value for OldPrescriptionID: %w", err)
 	}
-	return oldValue.TakeHistoryID, nil
+	return oldValue.PrescriptionID, nil
 }
 
-// ResetTakeHistoryID resets all changes to the "take_history_id" field.
-func (m *TakeHistoryItemMutation) ResetTakeHistoryID() {
-	m.take_history_id = nil
+// ResetPrescriptionID resets all changes to the "prescription_id" field.
+func (m *TakeHistoryItemMutation) ResetPrescriptionID() {
+	m.prescription_id = nil
 }
 
 // SetPrescriptionItemID sets the "prescription_item_id" field.
@@ -4742,22 +4287,274 @@ func (m *TakeHistoryItemMutation) OldPrescriptionItemID(ctx context.Context) (v 
 	return oldValue.PrescriptionItemID, nil
 }
 
-// ClearPrescriptionItemID clears the value of the "prescription_item_id" field.
-func (m *TakeHistoryItemMutation) ClearPrescriptionItemID() {
-	m.prescription_item = nil
-	m.clearedFields[takehistoryitem.FieldPrescriptionItemID] = struct{}{}
-}
-
-// PrescriptionItemIDCleared returns if the "prescription_item_id" field was cleared in this mutation.
-func (m *TakeHistoryItemMutation) PrescriptionItemIDCleared() bool {
-	_, ok := m.clearedFields[takehistoryitem.FieldPrescriptionItemID]
-	return ok
-}
-
 // ResetPrescriptionItemID resets all changes to the "prescription_item_id" field.
 func (m *TakeHistoryItemMutation) ResetPrescriptionItemID() {
 	m.prescription_item = nil
-	delete(m.clearedFields, takehistoryitem.FieldPrescriptionItemID)
+}
+
+// SetTimezoneID sets the "timezone_id" field.
+func (m *TakeHistoryItemMutation) SetTimezoneID(u uuid.UUID) {
+	m.timezone_id = &u
+}
+
+// TimezoneID returns the value of the "timezone_id" field in the mutation.
+func (m *TakeHistoryItemMutation) TimezoneID() (r uuid.UUID, exists bool) {
+	v := m.timezone_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezoneID returns the old "timezone_id" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldTimezoneID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezoneID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezoneID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezoneID: %w", err)
+	}
+	return oldValue.TimezoneID, nil
+}
+
+// ResetTimezoneID resets all changes to the "timezone_id" field.
+func (m *TakeHistoryItemMutation) ResetTimezoneID() {
+	m.timezone_id = nil
+}
+
+// SetMedicineID sets the "medicine_id" field.
+func (m *TakeHistoryItemMutation) SetMedicineID(u uuid.UUID) {
+	m.medicine_id = &u
+}
+
+// MedicineID returns the value of the "medicine_id" field in the mutation.
+func (m *TakeHistoryItemMutation) MedicineID() (r uuid.UUID, exists bool) {
+	v := m.medicine_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMedicineID returns the old "medicine_id" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldMedicineID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMedicineID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMedicineID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMedicineID: %w", err)
+	}
+	return oldValue.MedicineID, nil
+}
+
+// ResetMedicineID resets all changes to the "medicine_id" field.
+func (m *TakeHistoryItemMutation) ResetMedicineID() {
+	m.medicine_id = nil
+}
+
+// SetMedicineName sets the "medicine_name" field.
+func (m *TakeHistoryItemMutation) SetMedicineName(s string) {
+	m.medicine_name = &s
+}
+
+// MedicineName returns the value of the "medicine_name" field in the mutation.
+func (m *TakeHistoryItemMutation) MedicineName() (r string, exists bool) {
+	v := m.medicine_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMedicineName returns the old "medicine_name" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldMedicineName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMedicineName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMedicineName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMedicineName: %w", err)
+	}
+	return oldValue.MedicineName, nil
+}
+
+// ResetMedicineName resets all changes to the "medicine_name" field.
+func (m *TakeHistoryItemMutation) ResetMedicineName() {
+	m.medicine_name = nil
+}
+
+// SetTimezoneName sets the "timezone_name" field.
+func (m *TakeHistoryItemMutation) SetTimezoneName(s string) {
+	m.timezone_name = &s
+}
+
+// TimezoneName returns the value of the "timezone_name" field in the mutation.
+func (m *TakeHistoryItemMutation) TimezoneName() (r string, exists bool) {
+	v := m.timezone_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezoneName returns the old "timezone_name" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldTimezoneName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezoneName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezoneName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezoneName: %w", err)
+	}
+	return oldValue.TimezoneName, nil
+}
+
+// ClearTimezoneName clears the value of the "timezone_name" field.
+func (m *TakeHistoryItemMutation) ClearTimezoneName() {
+	m.timezone_name = nil
+	m.clearedFields[takehistoryitem.FieldTimezoneName] = struct{}{}
+}
+
+// TimezoneNameCleared returns if the "timezone_name" field was cleared in this mutation.
+func (m *TakeHistoryItemMutation) TimezoneNameCleared() bool {
+	_, ok := m.clearedFields[takehistoryitem.FieldTimezoneName]
+	return ok
+}
+
+// ResetTimezoneName resets all changes to the "timezone_name" field.
+func (m *TakeHistoryItemMutation) ResetTimezoneName() {
+	m.timezone_name = nil
+	delete(m.clearedFields, takehistoryitem.FieldTimezoneName)
+}
+
+// SetMidday sets the "midday" field.
+func (m *TakeHistoryItemMutation) SetMidday(s string) {
+	m.midday = &s
+}
+
+// Midday returns the value of the "midday" field in the mutation.
+func (m *TakeHistoryItemMutation) Midday() (r string, exists bool) {
+	v := m.midday
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMidday returns the old "midday" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldMidday(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMidday is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMidday requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMidday: %w", err)
+	}
+	return oldValue.Midday, nil
+}
+
+// ResetMidday resets all changes to the "midday" field.
+func (m *TakeHistoryItemMutation) ResetMidday() {
+	m.midday = nil
+}
+
+// SetHour sets the "hour" field.
+func (m *TakeHistoryItemMutation) SetHour(s string) {
+	m.hour = &s
+}
+
+// Hour returns the value of the "hour" field in the mutation.
+func (m *TakeHistoryItemMutation) Hour() (r string, exists bool) {
+	v := m.hour
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHour returns the old "hour" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldHour(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHour is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHour requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHour: %w", err)
+	}
+	return oldValue.Hour, nil
+}
+
+// ResetHour resets all changes to the "hour" field.
+func (m *TakeHistoryItemMutation) ResetHour() {
+	m.hour = nil
+}
+
+// SetMinute sets the "minute" field.
+func (m *TakeHistoryItemMutation) SetMinute(s string) {
+	m.minute = &s
+}
+
+// Minute returns the value of the "minute" field in the mutation.
+func (m *TakeHistoryItemMutation) Minute() (r string, exists bool) {
+	v := m.minute
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMinute returns the old "minute" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldMinute(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMinute is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMinute requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMinute: %w", err)
+	}
+	return oldValue.Minute, nil
+}
+
+// ResetMinute resets all changes to the "minute" field.
+func (m *TakeHistoryItemMutation) ResetMinute() {
+	m.minute = nil
 }
 
 // SetTakeStatus sets the "take_status" field.
@@ -4794,118 +4591,6 @@ func (m *TakeHistoryItemMutation) OldTakeStatus(ctx context.Context) (v bool, er
 // ResetTakeStatus resets all changes to the "take_status" field.
 func (m *TakeHistoryItemMutation) ResetTakeStatus() {
 	m.take_status = nil
-}
-
-// SetTakeAmount sets the "take_amount" field.
-func (m *TakeHistoryItemMutation) SetTakeAmount(f float64) {
-	m.take_amount = &f
-	m.addtake_amount = nil
-}
-
-// TakeAmount returns the value of the "take_amount" field in the mutation.
-func (m *TakeHistoryItemMutation) TakeAmount() (r float64, exists bool) {
-	v := m.take_amount
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTakeAmount returns the old "take_amount" field's value of the TakeHistoryItem entity.
-// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryItemMutation) OldTakeAmount(ctx context.Context) (v float64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTakeAmount is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTakeAmount requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTakeAmount: %w", err)
-	}
-	return oldValue.TakeAmount, nil
-}
-
-// AddTakeAmount adds f to the "take_amount" field.
-func (m *TakeHistoryItemMutation) AddTakeAmount(f float64) {
-	if m.addtake_amount != nil {
-		*m.addtake_amount += f
-	} else {
-		m.addtake_amount = &f
-	}
-}
-
-// AddedTakeAmount returns the value that was added to the "take_amount" field in this mutation.
-func (m *TakeHistoryItemMutation) AddedTakeAmount() (r float64, exists bool) {
-	v := m.addtake_amount
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetTakeAmount resets all changes to the "take_amount" field.
-func (m *TakeHistoryItemMutation) ResetTakeAmount() {
-	m.take_amount = nil
-	m.addtake_amount = nil
-}
-
-// SetRemainAmount sets the "remain_amount" field.
-func (m *TakeHistoryItemMutation) SetRemainAmount(f float64) {
-	m.remain_amount = &f
-	m.addremain_amount = nil
-}
-
-// RemainAmount returns the value of the "remain_amount" field in the mutation.
-func (m *TakeHistoryItemMutation) RemainAmount() (r float64, exists bool) {
-	v := m.remain_amount
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRemainAmount returns the old "remain_amount" field's value of the TakeHistoryItem entity.
-// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryItemMutation) OldRemainAmount(ctx context.Context) (v float64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRemainAmount is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRemainAmount requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRemainAmount: %w", err)
-	}
-	return oldValue.RemainAmount, nil
-}
-
-// AddRemainAmount adds f to the "remain_amount" field.
-func (m *TakeHistoryItemMutation) AddRemainAmount(f float64) {
-	if m.addremain_amount != nil {
-		*m.addremain_amount += f
-	} else {
-		m.addremain_amount = &f
-	}
-}
-
-// AddedRemainAmount returns the value that was added to the "remain_amount" field in this mutation.
-func (m *TakeHistoryItemMutation) AddedRemainAmount() (r float64, exists bool) {
-	v := m.addremain_amount
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetRemainAmount resets all changes to the "remain_amount" field.
-func (m *TakeHistoryItemMutation) ResetRemainAmount() {
-	m.remain_amount = nil
-	m.addremain_amount = nil
 }
 
 // SetTotalAmount sets the "total_amount" field.
@@ -4964,6 +4649,118 @@ func (m *TakeHistoryItemMutation) ResetTotalAmount() {
 	m.addtotal_amount = nil
 }
 
+// SetRemainAmount sets the "remain_amount" field.
+func (m *TakeHistoryItemMutation) SetRemainAmount(f float64) {
+	m.remain_amount = &f
+	m.addremain_amount = nil
+}
+
+// RemainAmount returns the value of the "remain_amount" field in the mutation.
+func (m *TakeHistoryItemMutation) RemainAmount() (r float64, exists bool) {
+	v := m.remain_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRemainAmount returns the old "remain_amount" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldRemainAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRemainAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRemainAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRemainAmount: %w", err)
+	}
+	return oldValue.RemainAmount, nil
+}
+
+// AddRemainAmount adds f to the "remain_amount" field.
+func (m *TakeHistoryItemMutation) AddRemainAmount(f float64) {
+	if m.addremain_amount != nil {
+		*m.addremain_amount += f
+	} else {
+		m.addremain_amount = &f
+	}
+}
+
+// AddedRemainAmount returns the value that was added to the "remain_amount" field in this mutation.
+func (m *TakeHistoryItemMutation) AddedRemainAmount() (r float64, exists bool) {
+	v := m.addremain_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRemainAmount resets all changes to the "remain_amount" field.
+func (m *TakeHistoryItemMutation) ResetRemainAmount() {
+	m.remain_amount = nil
+	m.addremain_amount = nil
+}
+
+// SetTakeAmount sets the "take_amount" field.
+func (m *TakeHistoryItemMutation) SetTakeAmount(f float64) {
+	m.take_amount = &f
+	m.addtake_amount = nil
+}
+
+// TakeAmount returns the value of the "take_amount" field in the mutation.
+func (m *TakeHistoryItemMutation) TakeAmount() (r float64, exists bool) {
+	v := m.take_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTakeAmount returns the old "take_amount" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldTakeAmount(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTakeAmount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTakeAmount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTakeAmount: %w", err)
+	}
+	return oldValue.TakeAmount, nil
+}
+
+// AddTakeAmount adds f to the "take_amount" field.
+func (m *TakeHistoryItemMutation) AddTakeAmount(f float64) {
+	if m.addtake_amount != nil {
+		*m.addtake_amount += f
+	} else {
+		m.addtake_amount = &f
+	}
+}
+
+// AddedTakeAmount returns the value that was added to the "take_amount" field in this mutation.
+func (m *TakeHistoryItemMutation) AddedTakeAmount() (r float64, exists bool) {
+	v := m.addtake_amount
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTakeAmount resets all changes to the "take_amount" field.
+func (m *TakeHistoryItemMutation) ResetTakeAmount() {
+	m.take_amount = nil
+	m.addtake_amount = nil
+}
+
 // SetTakeUnit sets the "take_unit" field.
 func (m *TakeHistoryItemMutation) SetTakeUnit(s string) {
 	m.take_unit = &s
@@ -5000,55 +4797,6 @@ func (m *TakeHistoryItemMutation) ResetTakeUnit() {
 	m.take_unit = nil
 }
 
-// SetMemo sets the "memo" field.
-func (m *TakeHistoryItemMutation) SetMemo(s string) {
-	m.memo = &s
-}
-
-// Memo returns the value of the "memo" field in the mutation.
-func (m *TakeHistoryItemMutation) Memo() (r string, exists bool) {
-	v := m.memo
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMemo returns the old "memo" field's value of the TakeHistoryItem entity.
-// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TakeHistoryItemMutation) OldMemo(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMemo is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMemo requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMemo: %w", err)
-	}
-	return oldValue.Memo, nil
-}
-
-// ClearMemo clears the value of the "memo" field.
-func (m *TakeHistoryItemMutation) ClearMemo() {
-	m.memo = nil
-	m.clearedFields[takehistoryitem.FieldMemo] = struct{}{}
-}
-
-// MemoCleared returns if the "memo" field was cleared in this mutation.
-func (m *TakeHistoryItemMutation) MemoCleared() bool {
-	_, ok := m.clearedFields[takehistoryitem.FieldMemo]
-	return ok
-}
-
-// ResetMemo resets all changes to the "memo" field.
-func (m *TakeHistoryItemMutation) ResetMemo() {
-	m.memo = nil
-	delete(m.clearedFields, takehistoryitem.FieldMemo)
-}
-
 // SetTakeDate sets the "take_date" field.
 func (m *TakeHistoryItemMutation) SetTakeDate(t time.Time) {
 	m.take_date = &t
@@ -5083,6 +4831,42 @@ func (m *TakeHistoryItemMutation) OldTakeDate(ctx context.Context) (v time.Time,
 // ResetTakeDate resets all changes to the "take_date" field.
 func (m *TakeHistoryItemMutation) ResetTakeDate() {
 	m.take_date = nil
+}
+
+// SetTakeTime sets the "take_time" field.
+func (m *TakeHistoryItemMutation) SetTakeTime(s string) {
+	m.take_time = &s
+}
+
+// TakeTime returns the value of the "take_time" field in the mutation.
+func (m *TakeHistoryItemMutation) TakeTime() (r string, exists bool) {
+	v := m.take_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTakeTime returns the old "take_time" field's value of the TakeHistoryItem entity.
+// If the TakeHistoryItem object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryItemMutation) OldTakeTime(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTakeTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTakeTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTakeTime: %w", err)
+	}
+	return oldValue.TakeTime, nil
+}
+
+// ResetTakeTime resets all changes to the "take_time" field.
+func (m *TakeHistoryItemMutation) ResetTakeTime() {
+	m.take_time = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -5178,7 +4962,7 @@ func (m *TakeHistoryItemMutation) ClearPrescriptionItem() {
 
 // PrescriptionItemCleared reports if the "prescription_item" edge to the PrescriptionItem entity was cleared.
 func (m *TakeHistoryItemMutation) PrescriptionItemCleared() bool {
-	return m.PrescriptionItemIDCleared() || m.clearedprescription_item
+	return m.clearedprescription_item
 }
 
 // PrescriptionItemIDs returns the "prescription_item" edge IDs in the mutation.
@@ -5231,36 +5015,57 @@ func (m *TakeHistoryItemMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TakeHistoryItemMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 19)
 	if m.user_id != nil {
 		fields = append(fields, takehistoryitem.FieldUserID)
 	}
-	if m.take_history_id != nil {
-		fields = append(fields, takehistoryitem.FieldTakeHistoryID)
+	if m.prescription_id != nil {
+		fields = append(fields, takehistoryitem.FieldPrescriptionID)
 	}
 	if m.prescription_item != nil {
 		fields = append(fields, takehistoryitem.FieldPrescriptionItemID)
 	}
+	if m.timezone_id != nil {
+		fields = append(fields, takehistoryitem.FieldTimezoneID)
+	}
+	if m.medicine_id != nil {
+		fields = append(fields, takehistoryitem.FieldMedicineID)
+	}
+	if m.medicine_name != nil {
+		fields = append(fields, takehistoryitem.FieldMedicineName)
+	}
+	if m.timezone_name != nil {
+		fields = append(fields, takehistoryitem.FieldTimezoneName)
+	}
+	if m.midday != nil {
+		fields = append(fields, takehistoryitem.FieldMidday)
+	}
+	if m.hour != nil {
+		fields = append(fields, takehistoryitem.FieldHour)
+	}
+	if m.minute != nil {
+		fields = append(fields, takehistoryitem.FieldMinute)
+	}
 	if m.take_status != nil {
 		fields = append(fields, takehistoryitem.FieldTakeStatus)
-	}
-	if m.take_amount != nil {
-		fields = append(fields, takehistoryitem.FieldTakeAmount)
-	}
-	if m.remain_amount != nil {
-		fields = append(fields, takehistoryitem.FieldRemainAmount)
 	}
 	if m.total_amount != nil {
 		fields = append(fields, takehistoryitem.FieldTotalAmount)
 	}
+	if m.remain_amount != nil {
+		fields = append(fields, takehistoryitem.FieldRemainAmount)
+	}
+	if m.take_amount != nil {
+		fields = append(fields, takehistoryitem.FieldTakeAmount)
+	}
 	if m.take_unit != nil {
 		fields = append(fields, takehistoryitem.FieldTakeUnit)
 	}
-	if m.memo != nil {
-		fields = append(fields, takehistoryitem.FieldMemo)
-	}
 	if m.take_date != nil {
 		fields = append(fields, takehistoryitem.FieldTakeDate)
+	}
+	if m.take_time != nil {
+		fields = append(fields, takehistoryitem.FieldTakeTime)
 	}
 	if m.created_at != nil {
 		fields = append(fields, takehistoryitem.FieldCreatedAt)
@@ -5278,24 +5083,38 @@ func (m *TakeHistoryItemMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case takehistoryitem.FieldUserID:
 		return m.UserID()
-	case takehistoryitem.FieldTakeHistoryID:
-		return m.TakeHistoryID()
+	case takehistoryitem.FieldPrescriptionID:
+		return m.PrescriptionID()
 	case takehistoryitem.FieldPrescriptionItemID:
 		return m.PrescriptionItemID()
+	case takehistoryitem.FieldTimezoneID:
+		return m.TimezoneID()
+	case takehistoryitem.FieldMedicineID:
+		return m.MedicineID()
+	case takehistoryitem.FieldMedicineName:
+		return m.MedicineName()
+	case takehistoryitem.FieldTimezoneName:
+		return m.TimezoneName()
+	case takehistoryitem.FieldMidday:
+		return m.Midday()
+	case takehistoryitem.FieldHour:
+		return m.Hour()
+	case takehistoryitem.FieldMinute:
+		return m.Minute()
 	case takehistoryitem.FieldTakeStatus:
 		return m.TakeStatus()
-	case takehistoryitem.FieldTakeAmount:
-		return m.TakeAmount()
-	case takehistoryitem.FieldRemainAmount:
-		return m.RemainAmount()
 	case takehistoryitem.FieldTotalAmount:
 		return m.TotalAmount()
+	case takehistoryitem.FieldRemainAmount:
+		return m.RemainAmount()
+	case takehistoryitem.FieldTakeAmount:
+		return m.TakeAmount()
 	case takehistoryitem.FieldTakeUnit:
 		return m.TakeUnit()
-	case takehistoryitem.FieldMemo:
-		return m.Memo()
 	case takehistoryitem.FieldTakeDate:
 		return m.TakeDate()
+	case takehistoryitem.FieldTakeTime:
+		return m.TakeTime()
 	case takehistoryitem.FieldCreatedAt:
 		return m.CreatedAt()
 	case takehistoryitem.FieldUpdatedAt:
@@ -5311,24 +5130,38 @@ func (m *TakeHistoryItemMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case takehistoryitem.FieldUserID:
 		return m.OldUserID(ctx)
-	case takehistoryitem.FieldTakeHistoryID:
-		return m.OldTakeHistoryID(ctx)
+	case takehistoryitem.FieldPrescriptionID:
+		return m.OldPrescriptionID(ctx)
 	case takehistoryitem.FieldPrescriptionItemID:
 		return m.OldPrescriptionItemID(ctx)
+	case takehistoryitem.FieldTimezoneID:
+		return m.OldTimezoneID(ctx)
+	case takehistoryitem.FieldMedicineID:
+		return m.OldMedicineID(ctx)
+	case takehistoryitem.FieldMedicineName:
+		return m.OldMedicineName(ctx)
+	case takehistoryitem.FieldTimezoneName:
+		return m.OldTimezoneName(ctx)
+	case takehistoryitem.FieldMidday:
+		return m.OldMidday(ctx)
+	case takehistoryitem.FieldHour:
+		return m.OldHour(ctx)
+	case takehistoryitem.FieldMinute:
+		return m.OldMinute(ctx)
 	case takehistoryitem.FieldTakeStatus:
 		return m.OldTakeStatus(ctx)
-	case takehistoryitem.FieldTakeAmount:
-		return m.OldTakeAmount(ctx)
-	case takehistoryitem.FieldRemainAmount:
-		return m.OldRemainAmount(ctx)
 	case takehistoryitem.FieldTotalAmount:
 		return m.OldTotalAmount(ctx)
+	case takehistoryitem.FieldRemainAmount:
+		return m.OldRemainAmount(ctx)
+	case takehistoryitem.FieldTakeAmount:
+		return m.OldTakeAmount(ctx)
 	case takehistoryitem.FieldTakeUnit:
 		return m.OldTakeUnit(ctx)
-	case takehistoryitem.FieldMemo:
-		return m.OldMemo(ctx)
 	case takehistoryitem.FieldTakeDate:
 		return m.OldTakeDate(ctx)
+	case takehistoryitem.FieldTakeTime:
+		return m.OldTakeTime(ctx)
 	case takehistoryitem.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case takehistoryitem.FieldUpdatedAt:
@@ -5349,12 +5182,12 @@ func (m *TakeHistoryItemMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUserID(v)
 		return nil
-	case takehistoryitem.FieldTakeHistoryID:
+	case takehistoryitem.FieldPrescriptionID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTakeHistoryID(v)
+		m.SetPrescriptionID(v)
 		return nil
 	case takehistoryitem.FieldPrescriptionItemID:
 		v, ok := value.(uuid.UUID)
@@ -5363,26 +5196,61 @@ func (m *TakeHistoryItemMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPrescriptionItemID(v)
 		return nil
+	case takehistoryitem.FieldTimezoneID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneID(v)
+		return nil
+	case takehistoryitem.FieldMedicineID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMedicineID(v)
+		return nil
+	case takehistoryitem.FieldMedicineName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMedicineName(v)
+		return nil
+	case takehistoryitem.FieldTimezoneName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneName(v)
+		return nil
+	case takehistoryitem.FieldMidday:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMidday(v)
+		return nil
+	case takehistoryitem.FieldHour:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHour(v)
+		return nil
+	case takehistoryitem.FieldMinute:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMinute(v)
+		return nil
 	case takehistoryitem.FieldTakeStatus:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTakeStatus(v)
-		return nil
-	case takehistoryitem.FieldTakeAmount:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTakeAmount(v)
-		return nil
-	case takehistoryitem.FieldRemainAmount:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRemainAmount(v)
 		return nil
 	case takehistoryitem.FieldTotalAmount:
 		v, ok := value.(float64)
@@ -5391,6 +5259,20 @@ func (m *TakeHistoryItemMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTotalAmount(v)
 		return nil
+	case takehistoryitem.FieldRemainAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRemainAmount(v)
+		return nil
+	case takehistoryitem.FieldTakeAmount:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTakeAmount(v)
+		return nil
 	case takehistoryitem.FieldTakeUnit:
 		v, ok := value.(string)
 		if !ok {
@@ -5398,19 +5280,19 @@ func (m *TakeHistoryItemMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTakeUnit(v)
 		return nil
-	case takehistoryitem.FieldMemo:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMemo(v)
-		return nil
 	case takehistoryitem.FieldTakeDate:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTakeDate(v)
+		return nil
+	case takehistoryitem.FieldTakeTime:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTakeTime(v)
 		return nil
 	case takehistoryitem.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -5434,14 +5316,14 @@ func (m *TakeHistoryItemMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *TakeHistoryItemMutation) AddedFields() []string {
 	var fields []string
-	if m.addtake_amount != nil {
-		fields = append(fields, takehistoryitem.FieldTakeAmount)
+	if m.addtotal_amount != nil {
+		fields = append(fields, takehistoryitem.FieldTotalAmount)
 	}
 	if m.addremain_amount != nil {
 		fields = append(fields, takehistoryitem.FieldRemainAmount)
 	}
-	if m.addtotal_amount != nil {
-		fields = append(fields, takehistoryitem.FieldTotalAmount)
+	if m.addtake_amount != nil {
+		fields = append(fields, takehistoryitem.FieldTakeAmount)
 	}
 	return fields
 }
@@ -5451,12 +5333,12 @@ func (m *TakeHistoryItemMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *TakeHistoryItemMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case takehistoryitem.FieldTakeAmount:
-		return m.AddedTakeAmount()
-	case takehistoryitem.FieldRemainAmount:
-		return m.AddedRemainAmount()
 	case takehistoryitem.FieldTotalAmount:
 		return m.AddedTotalAmount()
+	case takehistoryitem.FieldRemainAmount:
+		return m.AddedRemainAmount()
+	case takehistoryitem.FieldTakeAmount:
+		return m.AddedTakeAmount()
 	}
 	return nil, false
 }
@@ -5466,12 +5348,12 @@ func (m *TakeHistoryItemMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TakeHistoryItemMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case takehistoryitem.FieldTakeAmount:
+	case takehistoryitem.FieldTotalAmount:
 		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddTakeAmount(v)
+		m.AddTotalAmount(v)
 		return nil
 	case takehistoryitem.FieldRemainAmount:
 		v, ok := value.(float64)
@@ -5480,12 +5362,12 @@ func (m *TakeHistoryItemMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddRemainAmount(v)
 		return nil
-	case takehistoryitem.FieldTotalAmount:
+	case takehistoryitem.FieldTakeAmount:
 		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddTotalAmount(v)
+		m.AddTakeAmount(v)
 		return nil
 	}
 	return fmt.Errorf("unknown TakeHistoryItem numeric field %s", name)
@@ -5495,11 +5377,8 @@ func (m *TakeHistoryItemMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TakeHistoryItemMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(takehistoryitem.FieldPrescriptionItemID) {
-		fields = append(fields, takehistoryitem.FieldPrescriptionItemID)
-	}
-	if m.FieldCleared(takehistoryitem.FieldMemo) {
-		fields = append(fields, takehistoryitem.FieldMemo)
+	if m.FieldCleared(takehistoryitem.FieldTimezoneName) {
+		fields = append(fields, takehistoryitem.FieldTimezoneName)
 	}
 	if m.FieldCleared(takehistoryitem.FieldUpdatedAt) {
 		fields = append(fields, takehistoryitem.FieldUpdatedAt)
@@ -5518,11 +5397,8 @@ func (m *TakeHistoryItemMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TakeHistoryItemMutation) ClearField(name string) error {
 	switch name {
-	case takehistoryitem.FieldPrescriptionItemID:
-		m.ClearPrescriptionItemID()
-		return nil
-	case takehistoryitem.FieldMemo:
-		m.ClearMemo()
+	case takehistoryitem.FieldTimezoneName:
+		m.ClearTimezoneName()
 		return nil
 	case takehistoryitem.FieldUpdatedAt:
 		m.ClearUpdatedAt()
@@ -5538,32 +5414,53 @@ func (m *TakeHistoryItemMutation) ResetField(name string) error {
 	case takehistoryitem.FieldUserID:
 		m.ResetUserID()
 		return nil
-	case takehistoryitem.FieldTakeHistoryID:
-		m.ResetTakeHistoryID()
+	case takehistoryitem.FieldPrescriptionID:
+		m.ResetPrescriptionID()
 		return nil
 	case takehistoryitem.FieldPrescriptionItemID:
 		m.ResetPrescriptionItemID()
 		return nil
+	case takehistoryitem.FieldTimezoneID:
+		m.ResetTimezoneID()
+		return nil
+	case takehistoryitem.FieldMedicineID:
+		m.ResetMedicineID()
+		return nil
+	case takehistoryitem.FieldMedicineName:
+		m.ResetMedicineName()
+		return nil
+	case takehistoryitem.FieldTimezoneName:
+		m.ResetTimezoneName()
+		return nil
+	case takehistoryitem.FieldMidday:
+		m.ResetMidday()
+		return nil
+	case takehistoryitem.FieldHour:
+		m.ResetHour()
+		return nil
+	case takehistoryitem.FieldMinute:
+		m.ResetMinute()
+		return nil
 	case takehistoryitem.FieldTakeStatus:
 		m.ResetTakeStatus()
-		return nil
-	case takehistoryitem.FieldTakeAmount:
-		m.ResetTakeAmount()
-		return nil
-	case takehistoryitem.FieldRemainAmount:
-		m.ResetRemainAmount()
 		return nil
 	case takehistoryitem.FieldTotalAmount:
 		m.ResetTotalAmount()
 		return nil
+	case takehistoryitem.FieldRemainAmount:
+		m.ResetRemainAmount()
+		return nil
+	case takehistoryitem.FieldTakeAmount:
+		m.ResetTakeAmount()
+		return nil
 	case takehistoryitem.FieldTakeUnit:
 		m.ResetTakeUnit()
 		return nil
-	case takehistoryitem.FieldMemo:
-		m.ResetMemo()
-		return nil
 	case takehistoryitem.FieldTakeDate:
 		m.ResetTakeDate()
+		return nil
+	case takehistoryitem.FieldTakeTime:
+		m.ResetTakeTime()
 		return nil
 	case takehistoryitem.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -5649,27 +5546,667 @@ func (m *TakeHistoryItemMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown TakeHistoryItem edge %s", name)
 }
 
+// TakeHistoryMemoMutation represents an operation that mutates the TakeHistoryMemo nodes in the graph.
+type TakeHistoryMemoMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	user_id       *uuid.UUID
+	timezone_id   *uuid.UUID
+	take_date     *time.Time
+	memo          *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*TakeHistoryMemo, error)
+	predicates    []predicate.TakeHistoryMemo
+}
+
+var _ ent.Mutation = (*TakeHistoryMemoMutation)(nil)
+
+// takehistorymemoOption allows management of the mutation configuration using functional options.
+type takehistorymemoOption func(*TakeHistoryMemoMutation)
+
+// newTakeHistoryMemoMutation creates new mutation for the TakeHistoryMemo entity.
+func newTakeHistoryMemoMutation(c config, op Op, opts ...takehistorymemoOption) *TakeHistoryMemoMutation {
+	m := &TakeHistoryMemoMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTakeHistoryMemo,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTakeHistoryMemoID sets the ID field of the mutation.
+func withTakeHistoryMemoID(id uuid.UUID) takehistorymemoOption {
+	return func(m *TakeHistoryMemoMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TakeHistoryMemo
+		)
+		m.oldValue = func(ctx context.Context) (*TakeHistoryMemo, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TakeHistoryMemo.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTakeHistoryMemo sets the old TakeHistoryMemo of the mutation.
+func withTakeHistoryMemo(node *TakeHistoryMemo) takehistorymemoOption {
+	return func(m *TakeHistoryMemoMutation) {
+		m.oldValue = func(context.Context) (*TakeHistoryMemo, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TakeHistoryMemoMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TakeHistoryMemoMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TakeHistoryMemo entities.
+func (m *TakeHistoryMemoMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TakeHistoryMemoMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TakeHistoryMemoMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TakeHistoryMemo.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *TakeHistoryMemoMutation) SetUserID(u uuid.UUID) {
+	m.user_id = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *TakeHistoryMemoMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the TakeHistoryMemo entity.
+// If the TakeHistoryMemo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryMemoMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *TakeHistoryMemoMutation) ResetUserID() {
+	m.user_id = nil
+}
+
+// SetTimezoneID sets the "timezone_id" field.
+func (m *TakeHistoryMemoMutation) SetTimezoneID(u uuid.UUID) {
+	m.timezone_id = &u
+}
+
+// TimezoneID returns the value of the "timezone_id" field in the mutation.
+func (m *TakeHistoryMemoMutation) TimezoneID() (r uuid.UUID, exists bool) {
+	v := m.timezone_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimezoneID returns the old "timezone_id" field's value of the TakeHistoryMemo entity.
+// If the TakeHistoryMemo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryMemoMutation) OldTimezoneID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimezoneID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimezoneID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimezoneID: %w", err)
+	}
+	return oldValue.TimezoneID, nil
+}
+
+// ResetTimezoneID resets all changes to the "timezone_id" field.
+func (m *TakeHistoryMemoMutation) ResetTimezoneID() {
+	m.timezone_id = nil
+}
+
+// SetTakeDate sets the "take_date" field.
+func (m *TakeHistoryMemoMutation) SetTakeDate(t time.Time) {
+	m.take_date = &t
+}
+
+// TakeDate returns the value of the "take_date" field in the mutation.
+func (m *TakeHistoryMemoMutation) TakeDate() (r time.Time, exists bool) {
+	v := m.take_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTakeDate returns the old "take_date" field's value of the TakeHistoryMemo entity.
+// If the TakeHistoryMemo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryMemoMutation) OldTakeDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTakeDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTakeDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTakeDate: %w", err)
+	}
+	return oldValue.TakeDate, nil
+}
+
+// ResetTakeDate resets all changes to the "take_date" field.
+func (m *TakeHistoryMemoMutation) ResetTakeDate() {
+	m.take_date = nil
+}
+
+// SetMemo sets the "memo" field.
+func (m *TakeHistoryMemoMutation) SetMemo(s string) {
+	m.memo = &s
+}
+
+// Memo returns the value of the "memo" field in the mutation.
+func (m *TakeHistoryMemoMutation) Memo() (r string, exists bool) {
+	v := m.memo
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMemo returns the old "memo" field's value of the TakeHistoryMemo entity.
+// If the TakeHistoryMemo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryMemoMutation) OldMemo(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMemo is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMemo requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMemo: %w", err)
+	}
+	return oldValue.Memo, nil
+}
+
+// ClearMemo clears the value of the "memo" field.
+func (m *TakeHistoryMemoMutation) ClearMemo() {
+	m.memo = nil
+	m.clearedFields[takehistorymemo.FieldMemo] = struct{}{}
+}
+
+// MemoCleared returns if the "memo" field was cleared in this mutation.
+func (m *TakeHistoryMemoMutation) MemoCleared() bool {
+	_, ok := m.clearedFields[takehistorymemo.FieldMemo]
+	return ok
+}
+
+// ResetMemo resets all changes to the "memo" field.
+func (m *TakeHistoryMemoMutation) ResetMemo() {
+	m.memo = nil
+	delete(m.clearedFields, takehistorymemo.FieldMemo)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TakeHistoryMemoMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TakeHistoryMemoMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TakeHistoryMemo entity.
+// If the TakeHistoryMemo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryMemoMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TakeHistoryMemoMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *TakeHistoryMemoMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *TakeHistoryMemoMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the TakeHistoryMemo entity.
+// If the TakeHistoryMemo object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TakeHistoryMemoMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ClearUpdatedAt clears the value of the "updated_at" field.
+func (m *TakeHistoryMemoMutation) ClearUpdatedAt() {
+	m.updated_at = nil
+	m.clearedFields[takehistorymemo.FieldUpdatedAt] = struct{}{}
+}
+
+// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
+func (m *TakeHistoryMemoMutation) UpdatedAtCleared() bool {
+	_, ok := m.clearedFields[takehistorymemo.FieldUpdatedAt]
+	return ok
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *TakeHistoryMemoMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	delete(m.clearedFields, takehistorymemo.FieldUpdatedAt)
+}
+
+// Where appends a list predicates to the TakeHistoryMemoMutation builder.
+func (m *TakeHistoryMemoMutation) Where(ps ...predicate.TakeHistoryMemo) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TakeHistoryMemoMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TakeHistoryMemoMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TakeHistoryMemo, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TakeHistoryMemoMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TakeHistoryMemoMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TakeHistoryMemo).
+func (m *TakeHistoryMemoMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TakeHistoryMemoMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.user_id != nil {
+		fields = append(fields, takehistorymemo.FieldUserID)
+	}
+	if m.timezone_id != nil {
+		fields = append(fields, takehistorymemo.FieldTimezoneID)
+	}
+	if m.take_date != nil {
+		fields = append(fields, takehistorymemo.FieldTakeDate)
+	}
+	if m.memo != nil {
+		fields = append(fields, takehistorymemo.FieldMemo)
+	}
+	if m.created_at != nil {
+		fields = append(fields, takehistorymemo.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, takehistorymemo.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TakeHistoryMemoMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case takehistorymemo.FieldUserID:
+		return m.UserID()
+	case takehistorymemo.FieldTimezoneID:
+		return m.TimezoneID()
+	case takehistorymemo.FieldTakeDate:
+		return m.TakeDate()
+	case takehistorymemo.FieldMemo:
+		return m.Memo()
+	case takehistorymemo.FieldCreatedAt:
+		return m.CreatedAt()
+	case takehistorymemo.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TakeHistoryMemoMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case takehistorymemo.FieldUserID:
+		return m.OldUserID(ctx)
+	case takehistorymemo.FieldTimezoneID:
+		return m.OldTimezoneID(ctx)
+	case takehistorymemo.FieldTakeDate:
+		return m.OldTakeDate(ctx)
+	case takehistorymemo.FieldMemo:
+		return m.OldMemo(ctx)
+	case takehistorymemo.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case takehistorymemo.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown TakeHistoryMemo field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TakeHistoryMemoMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case takehistorymemo.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case takehistorymemo.FieldTimezoneID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimezoneID(v)
+		return nil
+	case takehistorymemo.FieldTakeDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTakeDate(v)
+		return nil
+	case takehistorymemo.FieldMemo:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMemo(v)
+		return nil
+	case takehistorymemo.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case takehistorymemo.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TakeHistoryMemo field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TakeHistoryMemoMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TakeHistoryMemoMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TakeHistoryMemoMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TakeHistoryMemo numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TakeHistoryMemoMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(takehistorymemo.FieldMemo) {
+		fields = append(fields, takehistorymemo.FieldMemo)
+	}
+	if m.FieldCleared(takehistorymemo.FieldUpdatedAt) {
+		fields = append(fields, takehistorymemo.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TakeHistoryMemoMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TakeHistoryMemoMutation) ClearField(name string) error {
+	switch name {
+	case takehistorymemo.FieldMemo:
+		m.ClearMemo()
+		return nil
+	case takehistorymemo.FieldUpdatedAt:
+		m.ClearUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TakeHistoryMemo nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TakeHistoryMemoMutation) ResetField(name string) error {
+	switch name {
+	case takehistorymemo.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case takehistorymemo.FieldTimezoneID:
+		m.ResetTimezoneID()
+		return nil
+	case takehistorymemo.FieldTakeDate:
+		m.ResetTakeDate()
+		return nil
+	case takehistorymemo.FieldMemo:
+		m.ResetMemo()
+		return nil
+	case takehistorymemo.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case takehistorymemo.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown TakeHistoryMemo field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TakeHistoryMemoMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TakeHistoryMemoMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TakeHistoryMemoMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TakeHistoryMemoMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TakeHistoryMemoMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TakeHistoryMemoMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TakeHistoryMemoMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown TakeHistoryMemo unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TakeHistoryMemoMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown TakeHistoryMemo edge %s", name)
+}
+
 // TimeZoneMutation represents an operation that mutates the TimeZone nodes in the graph.
 type TimeZoneMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	user_id             *uuid.UUID
-	timezone_name       *string
-	is_default          *bool
-	midday              *string
-	hour                *string
-	minute              *string
-	created_at          *time.Time
-	updated_at          *time.Time
-	clearedFields       map[string]struct{}
-	take_history        map[uuid.UUID]struct{}
-	removedtake_history map[uuid.UUID]struct{}
-	clearedtake_history bool
-	done                bool
-	oldValue            func(context.Context) (*TimeZone, error)
-	predicates          []predicate.TimeZone
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	user_id       *uuid.UUID
+	timezone_name *string
+	is_default    *bool
+	midday        *string
+	hour          *string
+	minute        *string
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*TimeZone, error)
+	predicates    []predicate.TimeZone
 }
 
 var _ ent.Mutation = (*TimeZoneMutation)(nil)
@@ -6090,60 +6627,6 @@ func (m *TimeZoneMutation) ResetUpdatedAt() {
 	delete(m.clearedFields, timezone.FieldUpdatedAt)
 }
 
-// AddTakeHistoryIDs adds the "take_history" edge to the TakeHistory entity by ids.
-func (m *TimeZoneMutation) AddTakeHistoryIDs(ids ...uuid.UUID) {
-	if m.take_history == nil {
-		m.take_history = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.take_history[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTakeHistory clears the "take_history" edge to the TakeHistory entity.
-func (m *TimeZoneMutation) ClearTakeHistory() {
-	m.clearedtake_history = true
-}
-
-// TakeHistoryCleared reports if the "take_history" edge to the TakeHistory entity was cleared.
-func (m *TimeZoneMutation) TakeHistoryCleared() bool {
-	return m.clearedtake_history
-}
-
-// RemoveTakeHistoryIDs removes the "take_history" edge to the TakeHistory entity by IDs.
-func (m *TimeZoneMutation) RemoveTakeHistoryIDs(ids ...uuid.UUID) {
-	if m.removedtake_history == nil {
-		m.removedtake_history = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.take_history, ids[i])
-		m.removedtake_history[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTakeHistory returns the removed IDs of the "take_history" edge to the TakeHistory entity.
-func (m *TimeZoneMutation) RemovedTakeHistoryIDs() (ids []uuid.UUID) {
-	for id := range m.removedtake_history {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TakeHistoryIDs returns the "take_history" edge IDs in the mutation.
-func (m *TimeZoneMutation) TakeHistoryIDs() (ids []uuid.UUID) {
-	for id := range m.take_history {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTakeHistory resets all changes to the "take_history" edge.
-func (m *TimeZoneMutation) ResetTakeHistory() {
-	m.take_history = nil
-	m.clearedtake_history = false
-	m.removedtake_history = nil
-}
-
 // Where appends a list predicates to the TimeZoneMutation builder.
 func (m *TimeZoneMutation) Where(ps ...predicate.TimeZone) {
 	m.predicates = append(m.predicates, ps...)
@@ -6411,891 +6894,50 @@ func (m *TimeZoneMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TimeZoneMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.take_history != nil {
-		edges = append(edges, timezone.EdgeTakeHistory)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TimeZoneMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case timezone.EdgeTakeHistory:
-		ids := make([]ent.Value, 0, len(m.take_history))
-		for id := range m.take_history {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TimeZoneMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedtake_history != nil {
-		edges = append(edges, timezone.EdgeTakeHistory)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TimeZoneMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case timezone.EdgeTakeHistory:
-		ids := make([]ent.Value, 0, len(m.removedtake_history))
-		for id := range m.removedtake_history {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TimeZoneMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedtake_history {
-		edges = append(edges, timezone.EdgeTakeHistory)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TimeZoneMutation) EdgeCleared(name string) bool {
-	switch name {
-	case timezone.EdgeTakeHistory:
-		return m.clearedtake_history
-	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TimeZoneMutation) ClearEdge(name string) error {
-	switch name {
-	}
 	return fmt.Errorf("unknown TimeZone unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TimeZoneMutation) ResetEdge(name string) error {
-	switch name {
-	case timezone.EdgeTakeHistory:
-		m.ResetTakeHistory()
-		return nil
-	}
 	return fmt.Errorf("unknown TimeZone edge %s", name)
-}
-
-// TimeZoneLinkMutation represents an operation that mutates the TimeZoneLink nodes in the graph.
-type TimeZoneLinkMutation struct {
-	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	prescription_id *uuid.UUID
-	timezone_id     *uuid.UUID
-	timezone_name   *string
-	use_alert       *bool
-	midday          *string
-	hour            *string
-	minute          *string
-	created_at      *time.Time
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*TimeZoneLink, error)
-	predicates      []predicate.TimeZoneLink
-}
-
-var _ ent.Mutation = (*TimeZoneLinkMutation)(nil)
-
-// timezonelinkOption allows management of the mutation configuration using functional options.
-type timezonelinkOption func(*TimeZoneLinkMutation)
-
-// newTimeZoneLinkMutation creates new mutation for the TimeZoneLink entity.
-func newTimeZoneLinkMutation(c config, op Op, opts ...timezonelinkOption) *TimeZoneLinkMutation {
-	m := &TimeZoneLinkMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeTimeZoneLink,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withTimeZoneLinkID sets the ID field of the mutation.
-func withTimeZoneLinkID(id uuid.UUID) timezonelinkOption {
-	return func(m *TimeZoneLinkMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *TimeZoneLink
-		)
-		m.oldValue = func(ctx context.Context) (*TimeZoneLink, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().TimeZoneLink.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withTimeZoneLink sets the old TimeZoneLink of the mutation.
-func withTimeZoneLink(node *TimeZoneLink) timezonelinkOption {
-	return func(m *TimeZoneLinkMutation) {
-		m.oldValue = func(context.Context) (*TimeZoneLink, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m TimeZoneLinkMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m TimeZoneLinkMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of TimeZoneLink entities.
-func (m *TimeZoneLinkMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *TimeZoneLinkMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *TimeZoneLinkMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().TimeZoneLink.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetPrescriptionID sets the "prescription_id" field.
-func (m *TimeZoneLinkMutation) SetPrescriptionID(u uuid.UUID) {
-	m.prescription_id = &u
-}
-
-// PrescriptionID returns the value of the "prescription_id" field in the mutation.
-func (m *TimeZoneLinkMutation) PrescriptionID() (r uuid.UUID, exists bool) {
-	v := m.prescription_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPrescriptionID returns the old "prescription_id" field's value of the TimeZoneLink entity.
-// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimeZoneLinkMutation) OldPrescriptionID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPrescriptionID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPrescriptionID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPrescriptionID: %w", err)
-	}
-	return oldValue.PrescriptionID, nil
-}
-
-// ResetPrescriptionID resets all changes to the "prescription_id" field.
-func (m *TimeZoneLinkMutation) ResetPrescriptionID() {
-	m.prescription_id = nil
-}
-
-// SetTimezoneID sets the "timezone_id" field.
-func (m *TimeZoneLinkMutation) SetTimezoneID(u uuid.UUID) {
-	m.timezone_id = &u
-}
-
-// TimezoneID returns the value of the "timezone_id" field in the mutation.
-func (m *TimeZoneLinkMutation) TimezoneID() (r uuid.UUID, exists bool) {
-	v := m.timezone_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTimezoneID returns the old "timezone_id" field's value of the TimeZoneLink entity.
-// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimeZoneLinkMutation) OldTimezoneID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTimezoneID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTimezoneID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTimezoneID: %w", err)
-	}
-	return oldValue.TimezoneID, nil
-}
-
-// ResetTimezoneID resets all changes to the "timezone_id" field.
-func (m *TimeZoneLinkMutation) ResetTimezoneID() {
-	m.timezone_id = nil
-}
-
-// SetTimezoneName sets the "timezone_name" field.
-func (m *TimeZoneLinkMutation) SetTimezoneName(s string) {
-	m.timezone_name = &s
-}
-
-// TimezoneName returns the value of the "timezone_name" field in the mutation.
-func (m *TimeZoneLinkMutation) TimezoneName() (r string, exists bool) {
-	v := m.timezone_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTimezoneName returns the old "timezone_name" field's value of the TimeZoneLink entity.
-// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimeZoneLinkMutation) OldTimezoneName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTimezoneName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTimezoneName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTimezoneName: %w", err)
-	}
-	return oldValue.TimezoneName, nil
-}
-
-// ClearTimezoneName clears the value of the "timezone_name" field.
-func (m *TimeZoneLinkMutation) ClearTimezoneName() {
-	m.timezone_name = nil
-	m.clearedFields[timezonelink.FieldTimezoneName] = struct{}{}
-}
-
-// TimezoneNameCleared returns if the "timezone_name" field was cleared in this mutation.
-func (m *TimeZoneLinkMutation) TimezoneNameCleared() bool {
-	_, ok := m.clearedFields[timezonelink.FieldTimezoneName]
-	return ok
-}
-
-// ResetTimezoneName resets all changes to the "timezone_name" field.
-func (m *TimeZoneLinkMutation) ResetTimezoneName() {
-	m.timezone_name = nil
-	delete(m.clearedFields, timezonelink.FieldTimezoneName)
-}
-
-// SetUseAlert sets the "use_alert" field.
-func (m *TimeZoneLinkMutation) SetUseAlert(b bool) {
-	m.use_alert = &b
-}
-
-// UseAlert returns the value of the "use_alert" field in the mutation.
-func (m *TimeZoneLinkMutation) UseAlert() (r bool, exists bool) {
-	v := m.use_alert
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUseAlert returns the old "use_alert" field's value of the TimeZoneLink entity.
-// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimeZoneLinkMutation) OldUseAlert(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUseAlert is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUseAlert requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUseAlert: %w", err)
-	}
-	return oldValue.UseAlert, nil
-}
-
-// ResetUseAlert resets all changes to the "use_alert" field.
-func (m *TimeZoneLinkMutation) ResetUseAlert() {
-	m.use_alert = nil
-}
-
-// SetMidday sets the "midday" field.
-func (m *TimeZoneLinkMutation) SetMidday(s string) {
-	m.midday = &s
-}
-
-// Midday returns the value of the "midday" field in the mutation.
-func (m *TimeZoneLinkMutation) Midday() (r string, exists bool) {
-	v := m.midday
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMidday returns the old "midday" field's value of the TimeZoneLink entity.
-// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimeZoneLinkMutation) OldMidday(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMidday is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMidday requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMidday: %w", err)
-	}
-	return oldValue.Midday, nil
-}
-
-// ResetMidday resets all changes to the "midday" field.
-func (m *TimeZoneLinkMutation) ResetMidday() {
-	m.midday = nil
-}
-
-// SetHour sets the "hour" field.
-func (m *TimeZoneLinkMutation) SetHour(s string) {
-	m.hour = &s
-}
-
-// Hour returns the value of the "hour" field in the mutation.
-func (m *TimeZoneLinkMutation) Hour() (r string, exists bool) {
-	v := m.hour
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldHour returns the old "hour" field's value of the TimeZoneLink entity.
-// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimeZoneLinkMutation) OldHour(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldHour is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldHour requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldHour: %w", err)
-	}
-	return oldValue.Hour, nil
-}
-
-// ResetHour resets all changes to the "hour" field.
-func (m *TimeZoneLinkMutation) ResetHour() {
-	m.hour = nil
-}
-
-// SetMinute sets the "minute" field.
-func (m *TimeZoneLinkMutation) SetMinute(s string) {
-	m.minute = &s
-}
-
-// Minute returns the value of the "minute" field in the mutation.
-func (m *TimeZoneLinkMutation) Minute() (r string, exists bool) {
-	v := m.minute
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMinute returns the old "minute" field's value of the TimeZoneLink entity.
-// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimeZoneLinkMutation) OldMinute(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMinute is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMinute requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMinute: %w", err)
-	}
-	return oldValue.Minute, nil
-}
-
-// ResetMinute resets all changes to the "minute" field.
-func (m *TimeZoneLinkMutation) ResetMinute() {
-	m.minute = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *TimeZoneLinkMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *TimeZoneLinkMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the TimeZoneLink entity.
-// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimeZoneLinkMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *TimeZoneLinkMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *TimeZoneLinkMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *TimeZoneLinkMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the TimeZoneLink entity.
-// If the TimeZoneLink object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimeZoneLinkMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ClearUpdatedAt clears the value of the "updated_at" field.
-func (m *TimeZoneLinkMutation) ClearUpdatedAt() {
-	m.updated_at = nil
-	m.clearedFields[timezonelink.FieldUpdatedAt] = struct{}{}
-}
-
-// UpdatedAtCleared returns if the "updated_at" field was cleared in this mutation.
-func (m *TimeZoneLinkMutation) UpdatedAtCleared() bool {
-	_, ok := m.clearedFields[timezonelink.FieldUpdatedAt]
-	return ok
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *TimeZoneLinkMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-	delete(m.clearedFields, timezonelink.FieldUpdatedAt)
-}
-
-// Where appends a list predicates to the TimeZoneLinkMutation builder.
-func (m *TimeZoneLinkMutation) Where(ps ...predicate.TimeZoneLink) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the TimeZoneLinkMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *TimeZoneLinkMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.TimeZoneLink, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *TimeZoneLinkMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *TimeZoneLinkMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (TimeZoneLink).
-func (m *TimeZoneLinkMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *TimeZoneLinkMutation) Fields() []string {
-	fields := make([]string, 0, 9)
-	if m.prescription_id != nil {
-		fields = append(fields, timezonelink.FieldPrescriptionID)
-	}
-	if m.timezone_id != nil {
-		fields = append(fields, timezonelink.FieldTimezoneID)
-	}
-	if m.timezone_name != nil {
-		fields = append(fields, timezonelink.FieldTimezoneName)
-	}
-	if m.use_alert != nil {
-		fields = append(fields, timezonelink.FieldUseAlert)
-	}
-	if m.midday != nil {
-		fields = append(fields, timezonelink.FieldMidday)
-	}
-	if m.hour != nil {
-		fields = append(fields, timezonelink.FieldHour)
-	}
-	if m.minute != nil {
-		fields = append(fields, timezonelink.FieldMinute)
-	}
-	if m.created_at != nil {
-		fields = append(fields, timezonelink.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, timezonelink.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *TimeZoneLinkMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case timezonelink.FieldPrescriptionID:
-		return m.PrescriptionID()
-	case timezonelink.FieldTimezoneID:
-		return m.TimezoneID()
-	case timezonelink.FieldTimezoneName:
-		return m.TimezoneName()
-	case timezonelink.FieldUseAlert:
-		return m.UseAlert()
-	case timezonelink.FieldMidday:
-		return m.Midday()
-	case timezonelink.FieldHour:
-		return m.Hour()
-	case timezonelink.FieldMinute:
-		return m.Minute()
-	case timezonelink.FieldCreatedAt:
-		return m.CreatedAt()
-	case timezonelink.FieldUpdatedAt:
-		return m.UpdatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *TimeZoneLinkMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case timezonelink.FieldPrescriptionID:
-		return m.OldPrescriptionID(ctx)
-	case timezonelink.FieldTimezoneID:
-		return m.OldTimezoneID(ctx)
-	case timezonelink.FieldTimezoneName:
-		return m.OldTimezoneName(ctx)
-	case timezonelink.FieldUseAlert:
-		return m.OldUseAlert(ctx)
-	case timezonelink.FieldMidday:
-		return m.OldMidday(ctx)
-	case timezonelink.FieldHour:
-		return m.OldHour(ctx)
-	case timezonelink.FieldMinute:
-		return m.OldMinute(ctx)
-	case timezonelink.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case timezonelink.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown TimeZoneLink field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *TimeZoneLinkMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case timezonelink.FieldPrescriptionID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPrescriptionID(v)
-		return nil
-	case timezonelink.FieldTimezoneID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTimezoneID(v)
-		return nil
-	case timezonelink.FieldTimezoneName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTimezoneName(v)
-		return nil
-	case timezonelink.FieldUseAlert:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUseAlert(v)
-		return nil
-	case timezonelink.FieldMidday:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMidday(v)
-		return nil
-	case timezonelink.FieldHour:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetHour(v)
-		return nil
-	case timezonelink.FieldMinute:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMinute(v)
-		return nil
-	case timezonelink.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case timezonelink.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown TimeZoneLink field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *TimeZoneLinkMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *TimeZoneLinkMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *TimeZoneLinkMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown TimeZoneLink numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *TimeZoneLinkMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(timezonelink.FieldTimezoneName) {
-		fields = append(fields, timezonelink.FieldTimezoneName)
-	}
-	if m.FieldCleared(timezonelink.FieldUpdatedAt) {
-		fields = append(fields, timezonelink.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *TimeZoneLinkMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *TimeZoneLinkMutation) ClearField(name string) error {
-	switch name {
-	case timezonelink.FieldTimezoneName:
-		m.ClearTimezoneName()
-		return nil
-	case timezonelink.FieldUpdatedAt:
-		m.ClearUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown TimeZoneLink nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *TimeZoneLinkMutation) ResetField(name string) error {
-	switch name {
-	case timezonelink.FieldPrescriptionID:
-		m.ResetPrescriptionID()
-		return nil
-	case timezonelink.FieldTimezoneID:
-		m.ResetTimezoneID()
-		return nil
-	case timezonelink.FieldTimezoneName:
-		m.ResetTimezoneName()
-		return nil
-	case timezonelink.FieldUseAlert:
-		m.ResetUseAlert()
-		return nil
-	case timezonelink.FieldMidday:
-		m.ResetMidday()
-		return nil
-	case timezonelink.FieldHour:
-		m.ResetHour()
-		return nil
-	case timezonelink.FieldMinute:
-		m.ResetMinute()
-		return nil
-	case timezonelink.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case timezonelink.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown TimeZoneLink field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *TimeZoneLinkMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *TimeZoneLinkMutation) AddedIDs(name string) []ent.Value {
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *TimeZoneLinkMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *TimeZoneLinkMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *TimeZoneLinkMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *TimeZoneLinkMutation) EdgeCleared(name string) bool {
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *TimeZoneLinkMutation) ClearEdge(name string) error {
-	return fmt.Errorf("unknown TimeZoneLink unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *TimeZoneLinkMutation) ResetEdge(name string) error {
-	return fmt.Errorf("unknown TimeZoneLink edge %s", name)
 }
 
 // TokenMutation represents an operation that mutates the Token nodes in the graph.

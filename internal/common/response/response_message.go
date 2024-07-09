@@ -55,6 +55,7 @@ const (
 
 	// 복용계획
 	CODE_NOT_FOUND_PLAN                   = ResultCode(5000)
+	CODE_FAIL_ADD_PLAN                    = ResultCode(5001)
 	CODE_NOT_FOUND_PLAN_ITEM              = ResultCode(5005)
 	CODE_NOT_FOUND_PLAN_TIMEZONE          = ResultCode(5010)
 	CODE_FAIL_CONNECT_TIMEZONE            = ResultCode(5020)
@@ -65,6 +66,9 @@ const (
 	CODE_NO_RESULT_PLAN_BY_DATE           = ResultCode(5070)
 	CODE_FAIL_TAKE_PLAN                   = ResultCode(5080)
 	CODE_TOO_MUCH_TAKE_AMOUNT             = ResultCode(5081)
+	CODE_ZERO_TAKE_AMOUNT                 = ResultCode(5082)
+	CODE_NOT_VALID_AMOUNT                 = ResultCode(5083)
+	CODE_REMAIN_AMOUNT_CANNOT_BE_NEGATIVE = ResultCode(5084)
 	CODE_FAIL_SAVE_PLAN_LOG               = ResultCode(5090)
 	CODE_CANNOT_UPDATE_MEMO_BEFORE_TAKING = ResultCode(5100)
 	CODE_FAIL_UPDATE_MEMO                 = ResultCode(5110)
@@ -74,6 +78,8 @@ const (
 	// 복용내역
 	CODE_FAIL_GET_LIST_TAKE_HISTORY      = ResultCode(6000)
 	CODE_FAIL_GET_ITEM_LIST_TAKE_HISTORY = ResultCode(6001)
+	CODE_FAIL_ADD_TAKE_HISTORY_ITEM      = ResultCode(6002)
+	CODE_FAIL_UPDATE_TAKEHISTORY         = ResultCode(6003)
 
 	// 복용시간대
 	CODE_FAIL_GET_LIST_TAKE_TIMEZONE        = ResultCode(7000)
@@ -129,6 +135,7 @@ var codeMessages = map[ResultCode]string{
 
 	// 복용계획
 	CODE_NOT_FOUND_PLAN:                   "복용계획을 찾을 수 없습니다.",
+	CODE_FAIL_ADD_PLAN:                    "복용계획 등록 중 오류가 발생하였습니다.",
 	CODE_NOT_FOUND_PLAN_ITEM:              "복용계획 항목을 찾을 수 없습니다.",
 	CODE_NOT_FOUND_PLAN_TIMEZONE:          "복용계획 시간대를 찾을 수 없습니다.",
 	CODE_FAIL_CONNECT_TIMEZONE:            "복용계획 시간대 연결 중 오류가 발생하였습니다.",
@@ -144,6 +151,9 @@ var codeMessages = map[ResultCode]string{
 	CODE_FAIL_UPDATE_MEMO:                 "메모 수정 중 오류가 발생하였습니다.",
 	CODE_NO_RESULT_PLAN_BY_MONTH:          "해당월에 복용계획이 없습니다.",
 	CODE_FAIL_UPDATE_RECOVER_TAKE_AMOUNT:  "복용량 복구 중 오류가 발생하였습니다.",
+	CODE_ZERO_TAKE_AMOUNT:                 "복용량은 0이 될 수 없습니다",
+	CODE_NOT_VALID_AMOUNT:                 "복용량과 남은량의 합은 총량과 같아야합니다.",
+	CODE_REMAIN_AMOUNT_CANNOT_BE_NEGATIVE: "남은량은 음수가 될 수 없습니다.",
 
 	// 처방전
 	CODE_FAIL_ADD_PRESCRIPTION:        "처방전 등록 중 오류가 발생하였습니다.",
@@ -154,8 +164,10 @@ var codeMessages = map[ResultCode]string{
 	CODE_FAIL_DELETEITEM_PRESCRIPTION: "처방전 의약품 삭제 중 오류가 발생하였습니다.",
 
 	// 복용내역
+	CODE_FAIL_ADD_TAKE_HISTORY_ITEM:      "복용내역 등록 중 오류가 발생하였습니다.",
 	CODE_FAIL_GET_LIST_TAKE_HISTORY:      "복용내역 목록 조회 중 오류가 발생하였습니다.",
 	CODE_FAIL_GET_ITEM_LIST_TAKE_HISTORY: "복용내역 아이템 목록 조회 중 오류가 발생하였습니다.",
+	CODE_FAIL_UPDATE_TAKEHISTORY:         "복용내역 수정 중 오류가 발생하였습니다.",
 
 	// 복용시간대
 	CODE_FAIL_GET_LIST_TAKE_TIMEZONE:        "복용시간대 목록 조회 중 오류가 발생하였습니다.",

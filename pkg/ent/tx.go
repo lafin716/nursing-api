@@ -18,14 +18,12 @@ type Tx struct {
 	Prescription *PrescriptionClient
 	// PrescriptionItem is the client for interacting with the PrescriptionItem builders.
 	PrescriptionItem *PrescriptionItemClient
-	// TakeHistory is the client for interacting with the TakeHistory builders.
-	TakeHistory *TakeHistoryClient
 	// TakeHistoryItem is the client for interacting with the TakeHistoryItem builders.
 	TakeHistoryItem *TakeHistoryItemClient
+	// TakeHistoryMemo is the client for interacting with the TakeHistoryMemo builders.
+	TakeHistoryMemo *TakeHistoryMemoClient
 	// TimeZone is the client for interacting with the TimeZone builders.
 	TimeZone *TimeZoneClient
-	// TimeZoneLink is the client for interacting with the TimeZoneLink builders.
-	TimeZoneLink *TimeZoneLinkClient
 	// Token is the client for interacting with the Token builders.
 	Token *TokenClient
 	// User is the client for interacting with the User builders.
@@ -164,10 +162,9 @@ func (tx *Tx) init() {
 	tx.Medicine = NewMedicineClient(tx.config)
 	tx.Prescription = NewPrescriptionClient(tx.config)
 	tx.PrescriptionItem = NewPrescriptionItemClient(tx.config)
-	tx.TakeHistory = NewTakeHistoryClient(tx.config)
 	tx.TakeHistoryItem = NewTakeHistoryItemClient(tx.config)
+	tx.TakeHistoryMemo = NewTakeHistoryMemoClient(tx.config)
 	tx.TimeZone = NewTimeZoneClient(tx.config)
-	tx.TimeZoneLink = NewTimeZoneLinkClient(tx.config)
 	tx.Token = NewTokenClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

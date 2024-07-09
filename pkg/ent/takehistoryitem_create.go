@@ -28,9 +28,9 @@ func (thic *TakeHistoryItemCreate) SetUserID(u uuid.UUID) *TakeHistoryItemCreate
 	return thic
 }
 
-// SetTakeHistoryID sets the "take_history_id" field.
-func (thic *TakeHistoryItemCreate) SetTakeHistoryID(u uuid.UUID) *TakeHistoryItemCreate {
-	thic.mutation.SetTakeHistoryID(u)
+// SetPrescriptionID sets the "prescription_id" field.
+func (thic *TakeHistoryItemCreate) SetPrescriptionID(u uuid.UUID) *TakeHistoryItemCreate {
+	thic.mutation.SetPrescriptionID(u)
 	return thic
 }
 
@@ -40,11 +40,53 @@ func (thic *TakeHistoryItemCreate) SetPrescriptionItemID(u uuid.UUID) *TakeHisto
 	return thic
 }
 
-// SetNillablePrescriptionItemID sets the "prescription_item_id" field if the given value is not nil.
-func (thic *TakeHistoryItemCreate) SetNillablePrescriptionItemID(u *uuid.UUID) *TakeHistoryItemCreate {
-	if u != nil {
-		thic.SetPrescriptionItemID(*u)
+// SetTimezoneID sets the "timezone_id" field.
+func (thic *TakeHistoryItemCreate) SetTimezoneID(u uuid.UUID) *TakeHistoryItemCreate {
+	thic.mutation.SetTimezoneID(u)
+	return thic
+}
+
+// SetMedicineID sets the "medicine_id" field.
+func (thic *TakeHistoryItemCreate) SetMedicineID(u uuid.UUID) *TakeHistoryItemCreate {
+	thic.mutation.SetMedicineID(u)
+	return thic
+}
+
+// SetMedicineName sets the "medicine_name" field.
+func (thic *TakeHistoryItemCreate) SetMedicineName(s string) *TakeHistoryItemCreate {
+	thic.mutation.SetMedicineName(s)
+	return thic
+}
+
+// SetTimezoneName sets the "timezone_name" field.
+func (thic *TakeHistoryItemCreate) SetTimezoneName(s string) *TakeHistoryItemCreate {
+	thic.mutation.SetTimezoneName(s)
+	return thic
+}
+
+// SetNillableTimezoneName sets the "timezone_name" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillableTimezoneName(s *string) *TakeHistoryItemCreate {
+	if s != nil {
+		thic.SetTimezoneName(*s)
 	}
+	return thic
+}
+
+// SetMidday sets the "midday" field.
+func (thic *TakeHistoryItemCreate) SetMidday(s string) *TakeHistoryItemCreate {
+	thic.mutation.SetMidday(s)
+	return thic
+}
+
+// SetHour sets the "hour" field.
+func (thic *TakeHistoryItemCreate) SetHour(s string) *TakeHistoryItemCreate {
+	thic.mutation.SetHour(s)
+	return thic
+}
+
+// SetMinute sets the "minute" field.
+func (thic *TakeHistoryItemCreate) SetMinute(s string) *TakeHistoryItemCreate {
+	thic.mutation.SetMinute(s)
 	return thic
 }
 
@@ -58,34 +100,6 @@ func (thic *TakeHistoryItemCreate) SetTakeStatus(b bool) *TakeHistoryItemCreate 
 func (thic *TakeHistoryItemCreate) SetNillableTakeStatus(b *bool) *TakeHistoryItemCreate {
 	if b != nil {
 		thic.SetTakeStatus(*b)
-	}
-	return thic
-}
-
-// SetTakeAmount sets the "take_amount" field.
-func (thic *TakeHistoryItemCreate) SetTakeAmount(f float64) *TakeHistoryItemCreate {
-	thic.mutation.SetTakeAmount(f)
-	return thic
-}
-
-// SetNillableTakeAmount sets the "take_amount" field if the given value is not nil.
-func (thic *TakeHistoryItemCreate) SetNillableTakeAmount(f *float64) *TakeHistoryItemCreate {
-	if f != nil {
-		thic.SetTakeAmount(*f)
-	}
-	return thic
-}
-
-// SetRemainAmount sets the "remain_amount" field.
-func (thic *TakeHistoryItemCreate) SetRemainAmount(f float64) *TakeHistoryItemCreate {
-	thic.mutation.SetRemainAmount(f)
-	return thic
-}
-
-// SetNillableRemainAmount sets the "remain_amount" field if the given value is not nil.
-func (thic *TakeHistoryItemCreate) SetNillableRemainAmount(f *float64) *TakeHistoryItemCreate {
-	if f != nil {
-		thic.SetRemainAmount(*f)
 	}
 	return thic
 }
@@ -104,29 +118,49 @@ func (thic *TakeHistoryItemCreate) SetNillableTotalAmount(f *float64) *TakeHisto
 	return thic
 }
 
+// SetRemainAmount sets the "remain_amount" field.
+func (thic *TakeHistoryItemCreate) SetRemainAmount(f float64) *TakeHistoryItemCreate {
+	thic.mutation.SetRemainAmount(f)
+	return thic
+}
+
+// SetNillableRemainAmount sets the "remain_amount" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillableRemainAmount(f *float64) *TakeHistoryItemCreate {
+	if f != nil {
+		thic.SetRemainAmount(*f)
+	}
+	return thic
+}
+
+// SetTakeAmount sets the "take_amount" field.
+func (thic *TakeHistoryItemCreate) SetTakeAmount(f float64) *TakeHistoryItemCreate {
+	thic.mutation.SetTakeAmount(f)
+	return thic
+}
+
+// SetNillableTakeAmount sets the "take_amount" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillableTakeAmount(f *float64) *TakeHistoryItemCreate {
+	if f != nil {
+		thic.SetTakeAmount(*f)
+	}
+	return thic
+}
+
 // SetTakeUnit sets the "take_unit" field.
 func (thic *TakeHistoryItemCreate) SetTakeUnit(s string) *TakeHistoryItemCreate {
 	thic.mutation.SetTakeUnit(s)
 	return thic
 }
 
-// SetMemo sets the "memo" field.
-func (thic *TakeHistoryItemCreate) SetMemo(s string) *TakeHistoryItemCreate {
-	thic.mutation.SetMemo(s)
-	return thic
-}
-
-// SetNillableMemo sets the "memo" field if the given value is not nil.
-func (thic *TakeHistoryItemCreate) SetNillableMemo(s *string) *TakeHistoryItemCreate {
-	if s != nil {
-		thic.SetMemo(*s)
-	}
-	return thic
-}
-
 // SetTakeDate sets the "take_date" field.
 func (thic *TakeHistoryItemCreate) SetTakeDate(t time.Time) *TakeHistoryItemCreate {
 	thic.mutation.SetTakeDate(t)
+	return thic
+}
+
+// SetTakeTime sets the "take_time" field.
+func (thic *TakeHistoryItemCreate) SetTakeTime(s string) *TakeHistoryItemCreate {
+	thic.mutation.SetTakeTime(s)
 	return thic
 }
 
@@ -216,17 +250,17 @@ func (thic *TakeHistoryItemCreate) defaults() {
 		v := takehistoryitem.DefaultTakeStatus
 		thic.mutation.SetTakeStatus(v)
 	}
-	if _, ok := thic.mutation.TakeAmount(); !ok {
-		v := takehistoryitem.DefaultTakeAmount
-		thic.mutation.SetTakeAmount(v)
+	if _, ok := thic.mutation.TotalAmount(); !ok {
+		v := takehistoryitem.DefaultTotalAmount
+		thic.mutation.SetTotalAmount(v)
 	}
 	if _, ok := thic.mutation.RemainAmount(); !ok {
 		v := takehistoryitem.DefaultRemainAmount
 		thic.mutation.SetRemainAmount(v)
 	}
-	if _, ok := thic.mutation.TotalAmount(); !ok {
-		v := takehistoryitem.DefaultTotalAmount
-		thic.mutation.SetTotalAmount(v)
+	if _, ok := thic.mutation.TakeAmount(); !ok {
+		v := takehistoryitem.DefaultTakeAmount
+		thic.mutation.SetTakeAmount(v)
 	}
 	if _, ok := thic.mutation.CreatedAt(); !ok {
 		v := takehistoryitem.DefaultCreatedAt()
@@ -243,20 +277,41 @@ func (thic *TakeHistoryItemCreate) check() error {
 	if _, ok := thic.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "TakeHistoryItem.user_id"`)}
 	}
-	if _, ok := thic.mutation.TakeHistoryID(); !ok {
-		return &ValidationError{Name: "take_history_id", err: errors.New(`ent: missing required field "TakeHistoryItem.take_history_id"`)}
+	if _, ok := thic.mutation.PrescriptionID(); !ok {
+		return &ValidationError{Name: "prescription_id", err: errors.New(`ent: missing required field "TakeHistoryItem.prescription_id"`)}
+	}
+	if _, ok := thic.mutation.PrescriptionItemID(); !ok {
+		return &ValidationError{Name: "prescription_item_id", err: errors.New(`ent: missing required field "TakeHistoryItem.prescription_item_id"`)}
+	}
+	if _, ok := thic.mutation.TimezoneID(); !ok {
+		return &ValidationError{Name: "timezone_id", err: errors.New(`ent: missing required field "TakeHistoryItem.timezone_id"`)}
+	}
+	if _, ok := thic.mutation.MedicineID(); !ok {
+		return &ValidationError{Name: "medicine_id", err: errors.New(`ent: missing required field "TakeHistoryItem.medicine_id"`)}
+	}
+	if _, ok := thic.mutation.MedicineName(); !ok {
+		return &ValidationError{Name: "medicine_name", err: errors.New(`ent: missing required field "TakeHistoryItem.medicine_name"`)}
+	}
+	if _, ok := thic.mutation.Midday(); !ok {
+		return &ValidationError{Name: "midday", err: errors.New(`ent: missing required field "TakeHistoryItem.midday"`)}
+	}
+	if _, ok := thic.mutation.Hour(); !ok {
+		return &ValidationError{Name: "hour", err: errors.New(`ent: missing required field "TakeHistoryItem.hour"`)}
+	}
+	if _, ok := thic.mutation.Minute(); !ok {
+		return &ValidationError{Name: "minute", err: errors.New(`ent: missing required field "TakeHistoryItem.minute"`)}
 	}
 	if _, ok := thic.mutation.TakeStatus(); !ok {
 		return &ValidationError{Name: "take_status", err: errors.New(`ent: missing required field "TakeHistoryItem.take_status"`)}
 	}
-	if _, ok := thic.mutation.TakeAmount(); !ok {
-		return &ValidationError{Name: "take_amount", err: errors.New(`ent: missing required field "TakeHistoryItem.take_amount"`)}
+	if _, ok := thic.mutation.TotalAmount(); !ok {
+		return &ValidationError{Name: "total_amount", err: errors.New(`ent: missing required field "TakeHistoryItem.total_amount"`)}
 	}
 	if _, ok := thic.mutation.RemainAmount(); !ok {
 		return &ValidationError{Name: "remain_amount", err: errors.New(`ent: missing required field "TakeHistoryItem.remain_amount"`)}
 	}
-	if _, ok := thic.mutation.TotalAmount(); !ok {
-		return &ValidationError{Name: "total_amount", err: errors.New(`ent: missing required field "TakeHistoryItem.total_amount"`)}
+	if _, ok := thic.mutation.TakeAmount(); !ok {
+		return &ValidationError{Name: "take_amount", err: errors.New(`ent: missing required field "TakeHistoryItem.take_amount"`)}
 	}
 	if _, ok := thic.mutation.TakeUnit(); !ok {
 		return &ValidationError{Name: "take_unit", err: errors.New(`ent: missing required field "TakeHistoryItem.take_unit"`)}
@@ -264,8 +319,14 @@ func (thic *TakeHistoryItemCreate) check() error {
 	if _, ok := thic.mutation.TakeDate(); !ok {
 		return &ValidationError{Name: "take_date", err: errors.New(`ent: missing required field "TakeHistoryItem.take_date"`)}
 	}
+	if _, ok := thic.mutation.TakeTime(); !ok {
+		return &ValidationError{Name: "take_time", err: errors.New(`ent: missing required field "TakeHistoryItem.take_time"`)}
+	}
 	if _, ok := thic.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "TakeHistoryItem.created_at"`)}
+	}
+	if _, ok := thic.mutation.PrescriptionItemID(); !ok {
+		return &ValidationError{Name: "prescription_item", err: errors.New(`ent: missing required edge "TakeHistoryItem.prescription_item"`)}
 	}
 	return nil
 }
@@ -306,37 +367,65 @@ func (thic *TakeHistoryItemCreate) createSpec() (*TakeHistoryItem, *sqlgraph.Cre
 		_spec.SetField(takehistoryitem.FieldUserID, field.TypeUUID, value)
 		_node.UserID = value
 	}
-	if value, ok := thic.mutation.TakeHistoryID(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeHistoryID, field.TypeUUID, value)
-		_node.TakeHistoryID = value
+	if value, ok := thic.mutation.PrescriptionID(); ok {
+		_spec.SetField(takehistoryitem.FieldPrescriptionID, field.TypeUUID, value)
+		_node.PrescriptionID = value
+	}
+	if value, ok := thic.mutation.TimezoneID(); ok {
+		_spec.SetField(takehistoryitem.FieldTimezoneID, field.TypeUUID, value)
+		_node.TimezoneID = value
+	}
+	if value, ok := thic.mutation.MedicineID(); ok {
+		_spec.SetField(takehistoryitem.FieldMedicineID, field.TypeUUID, value)
+		_node.MedicineID = value
+	}
+	if value, ok := thic.mutation.MedicineName(); ok {
+		_spec.SetField(takehistoryitem.FieldMedicineName, field.TypeString, value)
+		_node.MedicineName = value
+	}
+	if value, ok := thic.mutation.TimezoneName(); ok {
+		_spec.SetField(takehistoryitem.FieldTimezoneName, field.TypeString, value)
+		_node.TimezoneName = value
+	}
+	if value, ok := thic.mutation.Midday(); ok {
+		_spec.SetField(takehistoryitem.FieldMidday, field.TypeString, value)
+		_node.Midday = value
+	}
+	if value, ok := thic.mutation.Hour(); ok {
+		_spec.SetField(takehistoryitem.FieldHour, field.TypeString, value)
+		_node.Hour = value
+	}
+	if value, ok := thic.mutation.Minute(); ok {
+		_spec.SetField(takehistoryitem.FieldMinute, field.TypeString, value)
+		_node.Minute = value
 	}
 	if value, ok := thic.mutation.TakeStatus(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeStatus, field.TypeBool, value)
 		_node.TakeStatus = value
 	}
-	if value, ok := thic.mutation.TakeAmount(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
-		_node.TakeAmount = value
+	if value, ok := thic.mutation.TotalAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldTotalAmount, field.TypeFloat64, value)
+		_node.TotalAmount = value
 	}
 	if value, ok := thic.mutation.RemainAmount(); ok {
 		_spec.SetField(takehistoryitem.FieldRemainAmount, field.TypeFloat64, value)
 		_node.RemainAmount = value
 	}
-	if value, ok := thic.mutation.TotalAmount(); ok {
-		_spec.SetField(takehistoryitem.FieldTotalAmount, field.TypeFloat64, value)
-		_node.TotalAmount = value
+	if value, ok := thic.mutation.TakeAmount(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeAmount, field.TypeFloat64, value)
+		_node.TakeAmount = value
 	}
 	if value, ok := thic.mutation.TakeUnit(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeUnit, field.TypeString, value)
 		_node.TakeUnit = value
 	}
-	if value, ok := thic.mutation.Memo(); ok {
-		_spec.SetField(takehistoryitem.FieldMemo, field.TypeString, value)
-		_node.Memo = value
-	}
 	if value, ok := thic.mutation.TakeDate(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeDate, field.TypeTime, value)
 		_node.TakeDate = value
+	}
+	if value, ok := thic.mutation.TakeTime(); ok {
+		_spec.SetField(takehistoryitem.FieldTakeTime, field.TypeString, value)
+		_node.TakeTime = value
 	}
 	if value, ok := thic.mutation.CreatedAt(); ok {
 		_spec.SetField(takehistoryitem.FieldCreatedAt, field.TypeTime, value)
@@ -348,7 +437,7 @@ func (thic *TakeHistoryItemCreate) createSpec() (*TakeHistoryItem, *sqlgraph.Cre
 	}
 	if nodes := thic.mutation.PrescriptionItemIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   takehistoryitem.PrescriptionItemTable,
 			Columns: []string{takehistoryitem.PrescriptionItemColumn},

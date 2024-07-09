@@ -15,17 +15,14 @@ type Prescription func(*sql.Selector)
 // PrescriptionItem is the predicate function for prescriptionitem builders.
 type PrescriptionItem func(*sql.Selector)
 
-// TakeHistory is the predicate function for takehistory builders.
-type TakeHistory func(*sql.Selector)
-
 // TakeHistoryItem is the predicate function for takehistoryitem builders.
 type TakeHistoryItem func(*sql.Selector)
 
+// TakeHistoryMemo is the predicate function for takehistorymemo builders.
+type TakeHistoryMemo func(*sql.Selector)
+
 // TimeZone is the predicate function for timezone builders.
 type TimeZone func(*sql.Selector)
-
-// TimeZoneLink is the predicate function for timezonelink builders.
-type TimeZoneLink func(*sql.Selector)
 
 // Token is the predicate function for token builders.
 type Token func(*sql.Selector)

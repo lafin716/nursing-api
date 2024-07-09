@@ -5,37 +5,29 @@ import (
 	"github.com/google/uuid"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
-	schema "nursing_api/pkg/ent/prescription"
-	"nursing_api/pkg/ent/prescriptionitem"
+	pscSchema "nursing_api/pkg/ent/prescription"
+	pscItmSchema "nursing_api/pkg/ent/prescriptionitem"
 	"time"
 )
 
 type Repository interface {
+	// 처방전
+	GetList(search *SearchCondition) ([]*Prescription, error)
 	GetById(id uuid.UUID) (*Prescription, error)
-	GetListBySearch(search *SearchCondition) ([]*Prescription, error)
-	GetItemListByTimezoneLinkId(timezoneLinkId uuid.UUID) ([]*PrescriptionItem, error)
-	GetItemListByTimezoneLinkIds(timezoneLinkIds []uuid.UUID) ([]*PrescriptionItem, error)
-	GetItemListBySearch(search *SearchCondition) ([]*PrescriptionItem, error)
 	Add(prescription *Prescription) (*Prescription, error)
-	AddTx(prescription *Prescription, tx *ent.Tx) (*Prescription, error)
 	Update(prescription *Prescription) (int, error)
-	UpdateTx(prescription *Prescription, tx *ent.Tx) (int, error)
 	Delete(id uuid.UUID) (bool, error)
-	DeleteTx(id uuid.UUID, tx *ent.Tx) (bool, error)
+
+	// 처방전 아이템
+	GetItemList(prescriptionId uuid.UUID) ([]*PrescriptionItem, error)
 	GetItemById(itemId uuid.UUID) (*PrescriptionItem, error)
 	AddItem(item *PrescriptionItem) (*PrescriptionItem, error)
-	AddItemTx(item *PrescriptionItem, tx *ent.Tx) (*PrescriptionItem, error)
 	UpdateItem(prescriptionItem *PrescriptionItem) (int, error)
 	DeleteItem(itemId uuid.UUID) (bool, error)
-	DeleteItemByIds(itemIds []uuid.UUID) (bool, error)
-	DeleteItemByIdsTx(itemIds []uuid.UUID, tx *ent.Tx) (bool, error)
 }
 
 type prescriptionRepository struct {
-	root       *ent.Client
-	client     *ent.PrescriptionClient
-	itemClient *ent.PrescriptionItemClient
-	ctx        context.Context
+	db database.DatabaseClient
 }
 
 type SearchCondition struct {
@@ -47,82 +39,43 @@ type SearchCondition struct {
 }
 
 func NewRepository(
-	dbClient *database.DatabaseClient,
+	db database.DatabaseClient,
 ) Repository {
 	return &prescriptionRepository{
-		root:       dbClient.Client,
-		client:     dbClient.Client.Prescription,
-		itemClient: dbClient.Client.PrescriptionItem,
-		ctx:        dbClient.Ctx,
+		db: db,
 	}
 }
 
-func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, error) {
-	saved, err := p.client.
-		Create().
-		SetUserID(prescription.UserId).
-		SetPrescriptionName(prescription.PrescriptionName).
-		SetHospitalName(prescription.HospitalName).
-		SetTakeDays(prescription.TakeDays).
-		SetStartedAt(prescription.StartedAt).
-		SetFinishedAt(prescription.FinishedAt).
-		SetMemo(prescription.Memo).
-		SetCreatedAt(prescription.CreatedAt).
-		Save(p.ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return toDomain(saved), nil
+func (p prescriptionRepository) GetTxManager() database.TransactionManager {
+	return p.db.GetTxManager()
 }
 
-func (p prescriptionRepository) AddTx(prescription *Prescription, tx *ent.Tx) (*Prescription, error) {
-	saved, err := tx.Prescription.
-		Create().
-		SetUserID(prescription.UserId).
-		SetPrescriptionName(prescription.PrescriptionName).
-		SetHospitalName(prescription.HospitalName).
-		SetTakeDays(prescription.TakeDays).
-		SetStartedAt(prescription.StartedAt).
-		SetFinishedAt(prescription.FinishedAt).
-		SetMemo(prescription.Memo).
-		SetCreatedAt(prescription.CreatedAt).
-		Save(p.ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return toDomain(saved), nil
+func (p prescriptionRepository) GetPrescriptionClient() *ent.PrescriptionClient {
+	return p.db.GetClient().Prescription
 }
 
-func (p prescriptionRepository) GetById(id uuid.UUID) (*Prescription, error) {
-	found, err := p.client.
+func (p prescriptionRepository) GetPrescriptionItemClient() *ent.PrescriptionItemClient {
+	return p.db.GetClient().PrescriptionItem
+}
+
+func (p prescriptionRepository) GetCtx() context.Context {
+	return p.db.GetCtx()
+}
+
+func (p prescriptionRepository) GetList(search *SearchCondition) ([]*Prescription, error) {
+	foundList, err := p.GetPrescriptionClient().
 		Query().
 		Where(
-			schema.ID(id),
-		).
-		Only(p.ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return toDomain(found), nil
-}
-
-func (p prescriptionRepository) GetListBySearch(search *SearchCondition) ([]*Prescription, error) {
-	foundList, err := p.root.Debug().Prescription.
-		Query().
-		Where(
-			schema.And(
-				schema.UserID(search.UserId),
-				schema.And(
-					schema.StartedAtLTE(search.TargetDate),
-					schema.FinishedAtGTE(search.TargetDate),
+			pscSchema.And(
+				pscSchema.UserID(search.UserId),
+				pscSchema.And(
+					pscSchema.StartedAtLTE(search.TargetDate),
+					pscSchema.FinishedAtGTE(search.TargetDate),
 				),
 			),
 		).
 		Limit(search.Limit).
-		All(p.ctx)
+		All(p.GetCtx())
 	if err != nil {
 		return nil, err
 	}
@@ -130,82 +83,51 @@ func (p prescriptionRepository) GetListBySearch(search *SearchCondition) ([]*Pre
 	return toDomains(foundList), nil
 }
 
-func (p prescriptionRepository) GetItemListByTimezoneLinkId(timezoneLinkId uuid.UUID) ([]*PrescriptionItem, error) {
-	foundItemList, err := p.root.Debug().
-		PrescriptionItem.
+func (p prescriptionRepository) GetById(id uuid.UUID) (*Prescription, error) {
+	found, err := p.GetPrescriptionClient().
 		Query().
 		Where(
-			prescriptionitem.TimezoneLinkID(timezoneLinkId),
+			pscSchema.ID(id),
 		).
-		All(p.ctx)
+		Only(p.GetCtx())
 	if err != nil {
 		return nil, err
 	}
 
-	return toDomainItems(foundItemList), nil
+	return toDomain(found), nil
 }
 
-func (p prescriptionRepository) GetItemListByTimezoneLinkIds(timezoneLinkIds []uuid.UUID) ([]*PrescriptionItem, error) {
-	foundItemList, err := p.root.Debug().
-		PrescriptionItem.
-		Query().
-		Where(
-			prescriptionitem.TimezoneLinkIDIn(timezoneLinkIds...),
-		).
-		All(p.ctx)
+func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, error) {
+	saved, err := p.GetPrescriptionClient().
+		Create().
+		SetUserID(prescription.UserId).
+		SetPrescriptionName(prescription.PrescriptionName).
+		SetHospitalName(prescription.HospitalName).
+		SetTakeDays(prescription.TakeDays).
+		SetStartedAt(prescription.StartedAt).
+		SetFinishedAt(prescription.FinishedAt).
+		SetCreatedAt(prescription.CreatedAt).
+		Save(p.GetCtx())
 	if err != nil {
 		return nil, err
 	}
 
-	return toDomainItems(foundItemList), nil
-}
-
-func (p prescriptionRepository) GetItemListBySearch(search *SearchCondition) ([]*PrescriptionItem, error) {
-	found, err := p.root.Debug().PrescriptionItem.
-		Query().
-		All(p.ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return toDomainItems(found), nil
+	return toDomain(saved), nil
 }
 
 func (p prescriptionRepository) Update(prescription *Prescription) (int, error) {
-	saved, err := p.client.
+	saved, err := p.GetPrescriptionClient().
 		Update().
 		SetPrescriptionName(prescription.PrescriptionName).
 		SetHospitalName(prescription.HospitalName).
 		SetTakeDays(prescription.TakeDays).
 		SetStartedAt(prescription.StartedAt).
 		SetFinishedAt(prescription.FinishedAt).
-		SetMemo(prescription.Memo).
 		SetUpdatedAt(time.Now()).
 		Where(
-			schema.ID(prescription.ID),
+			pscSchema.ID(prescription.ID),
 		).
-		Save(p.ctx)
-	if err != nil {
-		return 0, err
-	}
-
-	return saved, nil
-}
-
-func (p prescriptionRepository) UpdateTx(prescription *Prescription, tx *ent.Tx) (int, error) {
-	saved, err := tx.Prescription.
-		Update().
-		SetPrescriptionName(prescription.PrescriptionName).
-		SetHospitalName(prescription.HospitalName).
-		SetTakeDays(prescription.TakeDays).
-		SetStartedAt(prescription.StartedAt).
-		SetFinishedAt(prescription.FinishedAt).
-		SetMemo(prescription.Memo).
-		SetUpdatedAt(time.Now()).
-		Where(
-			schema.ID(prescription.ID),
-		).
-		Save(p.ctx)
+		Save(p.GetCtx())
 	if err != nil {
 		return 0, err
 	}
@@ -214,10 +136,10 @@ func (p prescriptionRepository) UpdateTx(prescription *Prescription, tx *ent.Tx)
 }
 
 func (p prescriptionRepository) Delete(id uuid.UUID) (bool, error) {
-	_, err := p.client.
+	_, err := p.GetPrescriptionClient().
 		Delete().
-		Where(schema.ID(id)).
-		Exec(p.ctx)
+		Where(pscSchema.ID(id)).
+		Exec(p.GetCtx())
 	if err != nil {
 		return false, err
 	}
@@ -225,25 +147,27 @@ func (p prescriptionRepository) Delete(id uuid.UUID) (bool, error) {
 	return true, nil
 }
 
-func (p prescriptionRepository) DeleteTx(id uuid.UUID, tx *ent.Tx) (bool, error) {
-	_, err := tx.Prescription.
-		Delete().
-		Where(schema.ID(id)).
-		Exec(p.ctx)
+func (p prescriptionRepository) GetItemList(prescriptionId uuid.UUID) ([]*PrescriptionItem, error) {
+	foundList, err := p.GetPrescriptionItemClient().
+		Query().
+		Where(
+			pscItmSchema.PrescriptionIDEQ(prescriptionId),
+		).
+		All(p.GetCtx())
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	return true, nil
+	return toDomainItems(foundList), nil
 }
 
 func (p prescriptionRepository) GetItemById(itemId uuid.UUID) (*PrescriptionItem, error) {
-	found, err := p.itemClient.
+	found, err := p.GetPrescriptionItemClient().
 		Query().
 		Where(
-			prescriptionitem.ID(itemId),
+			pscItmSchema.ID(itemId),
 		).
-		Only(p.ctx)
+		Only(p.GetCtx())
 	if err != nil {
 		return nil, err
 	}
@@ -252,38 +176,22 @@ func (p prescriptionRepository) GetItemById(itemId uuid.UUID) (*PrescriptionItem
 }
 
 func (p prescriptionRepository) AddItem(item *PrescriptionItem) (*PrescriptionItem, error) {
-	savedItem, err := p.itemClient.
+	savedItem, err := p.GetPrescriptionItemClient().
 		Create().
-		SetTimezoneLinkID(item.TimeZoneLinkId).
+		SetPrescriptionID(item.PrescriptionId).
+		SetTimezoneID(item.TimeZoneId).
+		SetTimezoneName(item.TimeZoneName).
+		SetMidday(item.Midday).
+		SetHour(item.Hour).
+		SetMinute(item.Minute).
 		SetMedicineID(item.MedicineId).
 		SetMedicineName(item.MedicineName).
 		SetTakeAmount(item.TakeAmount).
-		SetRemainAmount(item.RemainAmount).
 		SetTotalAmount(item.TotalAmount).
 		SetMedicineUnit(item.MedicineUnit).
 		SetMemo(item.Memo).
 		SetCreatedAt(item.CreatedAt).
-		Save(p.ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return toDomainItem(savedItem), nil
-}
-
-func (p prescriptionRepository) AddItemTx(item *PrescriptionItem, tx *ent.Tx) (*PrescriptionItem, error) {
-	savedItem, err := tx.PrescriptionItem.
-		Create().
-		SetTimezoneLinkID(item.TimeZoneLinkId).
-		SetMedicineID(item.MedicineId).
-		SetMedicineName(item.MedicineName).
-		SetTakeAmount(item.TakeAmount).
-		SetRemainAmount(item.RemainAmount).
-		SetTotalAmount(item.TotalAmount).
-		SetMedicineUnit(item.MedicineUnit).
-		SetMemo(item.Memo).
-		SetCreatedAt(item.CreatedAt).
-		Save(p.ctx)
+		Save(p.GetCtx())
 	if err != nil {
 		return nil, err
 	}
@@ -292,16 +200,17 @@ func (p prescriptionRepository) AddItemTx(item *PrescriptionItem, tx *ent.Tx) (*
 }
 
 func (p prescriptionRepository) UpdateItem(prescriptionItem *PrescriptionItem) (int, error) {
-	err := p.itemClient.
+	err := p.GetPrescriptionItemClient().
 		Update().
-		SetTakeAmount(prescriptionItem.TakeAmount).
+		SetTotalAmount(prescriptionItem.TotalAmount).
 		SetRemainAmount(prescriptionItem.RemainAmount).
+		SetTakeAmount(prescriptionItem.TakeAmount).
 		SetMemo(prescriptionItem.Memo).
-		SetUpdatedAt(time.Now().UTC()).
+		SetUpdatedAt(time.Now()).
 		Where(
-			prescriptionitem.ID(prescriptionItem.ID),
+			pscItmSchema.ID(prescriptionItem.ID),
 		).
-		Exec(p.ctx)
+		Exec(p.GetCtx())
 	if err != nil {
 		return 0, err
 	}
@@ -310,7 +219,10 @@ func (p prescriptionRepository) UpdateItem(prescriptionItem *PrescriptionItem) (
 }
 
 func (p prescriptionRepository) DeleteItem(itemId uuid.UUID) (bool, error) {
-	_, err := p.itemClient.Delete().Where(prescriptionitem.ID(itemId)).Exec(p.ctx)
+	_, err := p.GetPrescriptionItemClient().
+		Delete().
+		Where(pscItmSchema.ID(itemId)).
+		Exec(p.GetCtx())
 	if err != nil {
 		return false, err
 	}
@@ -318,15 +230,10 @@ func (p prescriptionRepository) DeleteItem(itemId uuid.UUID) (bool, error) {
 }
 
 func (p prescriptionRepository) DeleteItemByIds(itemIds []uuid.UUID) (bool, error) {
-	_, err := p.itemClient.Delete().Where(prescriptionitem.IDIn(itemIds...)).Exec(p.ctx)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
-}
-
-func (p prescriptionRepository) DeleteItemByIdsTx(itemIds []uuid.UUID, tx *ent.Tx) (bool, error) {
-	_, err := tx.PrescriptionItem.Delete().Where(prescriptionitem.IDIn(itemIds...)).Exec(p.ctx)
+	_, err := p.GetPrescriptionItemClient().
+		Delete().
+		Where(pscItmSchema.IDIn(itemIds...)).
+		Exec(p.GetCtx())
 	if err != nil {
 		return false, err
 	}

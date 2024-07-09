@@ -7,12 +7,10 @@ import (
 	"time"
 )
 
-// User holds the schema definition for the User entity.
 type Medicine struct {
 	ent.Schema
 }
 
-// Fields of the User.
 func (Medicine) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -39,7 +37,6 @@ func (Medicine) Fields() []ent.Field {
 	}
 }
 
-// Edges of the User.
 func (Medicine) Edges() []ent.Edge {
 	return nil
 }

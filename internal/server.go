@@ -40,7 +40,7 @@ type Server struct {
 
 func NewServer(
 	cfg *web.FiberConfig,
-	dbClient *database.DatabaseClient,
+	dbClient database.DatabaseClient,
 	router router.Routable,
 ) *Server {
 
@@ -57,7 +57,7 @@ func NewServer(
 	return &Server{
 		app: app,
 		cfg: cfg,
-		db:  dbClient.Client,
+		db:  dbClient.GetClient(),
 	}
 }
 

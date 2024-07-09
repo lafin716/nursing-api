@@ -12,9 +12,9 @@ type TakePlan struct {
 type Plan struct {
 	// 복용계획
 	TimezoneId uuid.UUID `json:"timezone_id"`
+	PlanName   string    `json:"plan_name"`
 	Hour       int       `json:"hour"`
 	Minute     int       `json:"minute"`
-	PlanName   string    `json:"plan_name"`
 	Timezone   string    `json:"time_zone"`
 	Pills      []Pill    `json:"pills"`
 
@@ -26,9 +26,10 @@ type Plan struct {
 
 type Pill struct {
 	// 복용계획
+	PrescriptionId     uuid.UUID `json:"prescription_id"`
 	PrescriptionItemId uuid.UUID `json:"prescription_item_id"`
-	PillName           string    `json:"pill_name"`
 	MedicineId         uuid.UUID `json:"medicine_id"`
+	PillName           string    `json:"pill_name"`
 	TakeUnit           string    `json:"take_unit"`
 	TakeAmount         float64   `json:"take_amount"`
 	RemainAmount       float64   `json:"remain_amount"`

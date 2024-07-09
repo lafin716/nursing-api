@@ -30,13 +30,32 @@ type Prescription struct {
 	StartedAt time.Time `json:"started_at,omitempty"`
 	// FinishedAt holds the value of the "finished_at" field.
 	FinishedAt time.Time `json:"finished_at,omitempty"`
-	// Memo holds the value of the "memo" field.
-	Memo string `json:"memo,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the PrescriptionQuery when eager-loading is set.
+	Edges        PrescriptionEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// PrescriptionEdges holds the relations/edges for other nodes in the graph.
+type PrescriptionEdges struct {
+	// PrescriptionItems holds the value of the prescription_items edge.
+	PrescriptionItems []*PrescriptionItem `json:"prescription_items,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// PrescriptionItemsOrErr returns the PrescriptionItems value or an error if the edge
+// was not loaded in eager-loading.
+func (e PrescriptionEdges) PrescriptionItemsOrErr() ([]*PrescriptionItem, error) {
+	if e.loadedTypes[0] {
+		return e.PrescriptionItems, nil
+	}
+	return nil, &NotLoadedError{edge: "prescription_items"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -46,7 +65,7 @@ func (*Prescription) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case prescription.FieldTakeDays:
 			values[i] = new(sql.NullInt64)
-		case prescription.FieldPrescriptionName, prescription.FieldHospitalName, prescription.FieldMemo:
+		case prescription.FieldPrescriptionName, prescription.FieldHospitalName:
 			values[i] = new(sql.NullString)
 		case prescription.FieldStartedAt, prescription.FieldFinishedAt, prescription.FieldCreatedAt, prescription.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -109,12 +128,6 @@ func (pr *Prescription) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.FinishedAt = value.Time
 			}
-		case prescription.FieldMemo:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field memo", values[i])
-			} else if value.Valid {
-				pr.Memo = value.String
-			}
 		case prescription.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -138,6 +151,11 @@ func (pr *Prescription) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (pr *Prescription) Value(name string) (ent.Value, error) {
 	return pr.selectValues.Get(name)
+}
+
+// QueryPrescriptionItems queries the "prescription_items" edge of the Prescription entity.
+func (pr *Prescription) QueryPrescriptionItems() *PrescriptionItemQuery {
+	return NewPrescriptionClient(pr.config).QueryPrescriptionItems(pr)
 }
 
 // Update returns a builder for updating this Prescription.
@@ -180,9 +198,6 @@ func (pr *Prescription) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("finished_at=")
 	builder.WriteString(pr.FinishedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("memo=")
-	builder.WriteString(pr.Memo)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))

@@ -4,11 +4,9 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 	"nursing_api/pkg/ent/predicate"
-	"nursing_api/pkg/ent/takehistory"
 	"nursing_api/pkg/ent/timezone"
 
 	"entgo.io/ent/dialect/sql"
@@ -20,11 +18,10 @@ import (
 // TimeZoneQuery is the builder for querying TimeZone entities.
 type TimeZoneQuery struct {
 	config
-	ctx             *QueryContext
-	order           []timezone.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.TimeZone
-	withTakeHistory *TakeHistoryQuery
+	ctx        *QueryContext
+	order      []timezone.OrderOption
+	inters     []Interceptor
+	predicates []predicate.TimeZone
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,28 +56,6 @@ func (tzq *TimeZoneQuery) Unique(unique bool) *TimeZoneQuery {
 func (tzq *TimeZoneQuery) Order(o ...timezone.OrderOption) *TimeZoneQuery {
 	tzq.order = append(tzq.order, o...)
 	return tzq
-}
-
-// QueryTakeHistory chains the current query on the "take_history" edge.
-func (tzq *TimeZoneQuery) QueryTakeHistory() *TakeHistoryQuery {
-	query := (&TakeHistoryClient{config: tzq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tzq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := tzq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(timezone.Table, timezone.FieldID, selector),
-			sqlgraph.To(takehistory.Table, takehistory.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, timezone.TakeHistoryTable, timezone.TakeHistoryColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(tzq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first TimeZone entity from the query.
@@ -270,27 +245,15 @@ func (tzq *TimeZoneQuery) Clone() *TimeZoneQuery {
 		return nil
 	}
 	return &TimeZoneQuery{
-		config:          tzq.config,
-		ctx:             tzq.ctx.Clone(),
-		order:           append([]timezone.OrderOption{}, tzq.order...),
-		inters:          append([]Interceptor{}, tzq.inters...),
-		predicates:      append([]predicate.TimeZone{}, tzq.predicates...),
-		withTakeHistory: tzq.withTakeHistory.Clone(),
+		config:     tzq.config,
+		ctx:        tzq.ctx.Clone(),
+		order:      append([]timezone.OrderOption{}, tzq.order...),
+		inters:     append([]Interceptor{}, tzq.inters...),
+		predicates: append([]predicate.TimeZone{}, tzq.predicates...),
 		// clone intermediate query.
 		sql:  tzq.sql.Clone(),
 		path: tzq.path,
 	}
-}
-
-// WithTakeHistory tells the query-builder to eager-load the nodes that are connected to
-// the "take_history" edge. The optional arguments are used to configure the query builder of the edge.
-func (tzq *TimeZoneQuery) WithTakeHistory(opts ...func(*TakeHistoryQuery)) *TimeZoneQuery {
-	query := (&TakeHistoryClient{config: tzq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	tzq.withTakeHistory = query
-	return tzq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -369,11 +332,8 @@ func (tzq *TimeZoneQuery) prepareQuery(ctx context.Context) error {
 
 func (tzq *TimeZoneQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*TimeZone, error) {
 	var (
-		nodes       = []*TimeZone{}
-		_spec       = tzq.querySpec()
-		loadedTypes = [1]bool{
-			tzq.withTakeHistory != nil,
-		}
+		nodes = []*TimeZone{}
+		_spec = tzq.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*TimeZone).scanValues(nil, columns)
@@ -381,7 +341,6 @@ func (tzq *TimeZoneQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ti
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &TimeZone{config: tzq.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -393,45 +352,7 @@ func (tzq *TimeZoneQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ti
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := tzq.withTakeHistory; query != nil {
-		if err := tzq.loadTakeHistory(ctx, query, nodes,
-			func(n *TimeZone) { n.Edges.TakeHistory = []*TakeHistory{} },
-			func(n *TimeZone, e *TakeHistory) { n.Edges.TakeHistory = append(n.Edges.TakeHistory, e) }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (tzq *TimeZoneQuery) loadTakeHistory(ctx context.Context, query *TakeHistoryQuery, nodes []*TimeZone, init func(*TimeZone), assign func(*TimeZone, *TakeHistory)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*TimeZone)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(takehistory.FieldTimezoneID)
-	}
-	query.Where(predicate.TakeHistory(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(timezone.TakeHistoryColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.TimezoneID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "timezone_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
 }
 
 func (tzq *TimeZoneQuery) sqlCount(ctx context.Context) (int, error) {

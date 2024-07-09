@@ -557,54 +557,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/takehistory": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "복용내역을 조회하는 엔드포인트",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "복용내역 목록",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "targetDate",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "userId",
-                        "in": "query"
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/takehistory/:id": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "복용내역 상세를 조회하는 엔드포인트",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "복용내역 상세",
-                "responses": {}
-            }
-        },
         "/timezone": {
             "get": {
                 "security": [

@@ -21,24 +21,38 @@ type TakeHistoryItem struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
-	// TakeHistoryID holds the value of the "take_history_id" field.
-	TakeHistoryID uuid.UUID `json:"take_history_id,omitempty"`
+	// PrescriptionID holds the value of the "prescription_id" field.
+	PrescriptionID uuid.UUID `json:"prescription_id,omitempty"`
 	// PrescriptionItemID holds the value of the "prescription_item_id" field.
 	PrescriptionItemID uuid.UUID `json:"prescription_item_id,omitempty"`
+	// TimezoneID holds the value of the "timezone_id" field.
+	TimezoneID uuid.UUID `json:"timezone_id,omitempty"`
+	// MedicineID holds the value of the "medicine_id" field.
+	MedicineID uuid.UUID `json:"medicine_id,omitempty"`
+	// MedicineName holds the value of the "medicine_name" field.
+	MedicineName string `json:"medicine_name,omitempty"`
+	// TimezoneName holds the value of the "timezone_name" field.
+	TimezoneName string `json:"timezone_name,omitempty"`
+	// Midday holds the value of the "midday" field.
+	Midday string `json:"midday,omitempty"`
+	// Hour holds the value of the "hour" field.
+	Hour string `json:"hour,omitempty"`
+	// Minute holds the value of the "minute" field.
+	Minute string `json:"minute,omitempty"`
 	// TakeStatus holds the value of the "take_status" field.
 	TakeStatus bool `json:"take_status,omitempty"`
-	// TakeAmount holds the value of the "take_amount" field.
-	TakeAmount float64 `json:"take_amount,omitempty"`
-	// RemainAmount holds the value of the "remain_amount" field.
-	RemainAmount float64 `json:"remain_amount,omitempty"`
 	// TotalAmount holds the value of the "total_amount" field.
 	TotalAmount float64 `json:"total_amount,omitempty"`
+	// RemainAmount holds the value of the "remain_amount" field.
+	RemainAmount float64 `json:"remain_amount,omitempty"`
+	// TakeAmount holds the value of the "take_amount" field.
+	TakeAmount float64 `json:"take_amount,omitempty"`
 	// TakeUnit holds the value of the "take_unit" field.
 	TakeUnit string `json:"take_unit,omitempty"`
-	// Memo holds the value of the "memo" field.
-	Memo string `json:"memo,omitempty"`
 	// TakeDate holds the value of the "take_date" field.
 	TakeDate time.Time `json:"take_date,omitempty"`
+	// TakeTime holds the value of the "take_time" field.
+	TakeTime string `json:"take_time,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -78,13 +92,13 @@ func (*TakeHistoryItem) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case takehistoryitem.FieldTakeStatus:
 			values[i] = new(sql.NullBool)
-		case takehistoryitem.FieldTakeAmount, takehistoryitem.FieldRemainAmount, takehistoryitem.FieldTotalAmount:
+		case takehistoryitem.FieldTotalAmount, takehistoryitem.FieldRemainAmount, takehistoryitem.FieldTakeAmount:
 			values[i] = new(sql.NullFloat64)
-		case takehistoryitem.FieldTakeUnit, takehistoryitem.FieldMemo:
+		case takehistoryitem.FieldMedicineName, takehistoryitem.FieldTimezoneName, takehistoryitem.FieldMidday, takehistoryitem.FieldHour, takehistoryitem.FieldMinute, takehistoryitem.FieldTakeUnit, takehistoryitem.FieldTakeTime:
 			values[i] = new(sql.NullString)
 		case takehistoryitem.FieldTakeDate, takehistoryitem.FieldCreatedAt, takehistoryitem.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case takehistoryitem.FieldID, takehistoryitem.FieldUserID, takehistoryitem.FieldTakeHistoryID, takehistoryitem.FieldPrescriptionItemID:
+		case takehistoryitem.FieldID, takehistoryitem.FieldUserID, takehistoryitem.FieldPrescriptionID, takehistoryitem.FieldPrescriptionItemID, takehistoryitem.FieldTimezoneID, takehistoryitem.FieldMedicineID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -113,11 +127,11 @@ func (thi *TakeHistoryItem) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				thi.UserID = *value
 			}
-		case takehistoryitem.FieldTakeHistoryID:
+		case takehistoryitem.FieldPrescriptionID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field take_history_id", values[i])
+				return fmt.Errorf("unexpected type %T for field prescription_id", values[i])
 			} else if value != nil {
-				thi.TakeHistoryID = *value
+				thi.PrescriptionID = *value
 			}
 		case takehistoryitem.FieldPrescriptionItemID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -125,23 +139,53 @@ func (thi *TakeHistoryItem) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				thi.PrescriptionItemID = *value
 			}
+		case takehistoryitem.FieldTimezoneID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone_id", values[i])
+			} else if value != nil {
+				thi.TimezoneID = *value
+			}
+		case takehistoryitem.FieldMedicineID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field medicine_id", values[i])
+			} else if value != nil {
+				thi.MedicineID = *value
+			}
+		case takehistoryitem.FieldMedicineName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field medicine_name", values[i])
+			} else if value.Valid {
+				thi.MedicineName = value.String
+			}
+		case takehistoryitem.FieldTimezoneName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone_name", values[i])
+			} else if value.Valid {
+				thi.TimezoneName = value.String
+			}
+		case takehistoryitem.FieldMidday:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field midday", values[i])
+			} else if value.Valid {
+				thi.Midday = value.String
+			}
+		case takehistoryitem.FieldHour:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hour", values[i])
+			} else if value.Valid {
+				thi.Hour = value.String
+			}
+		case takehistoryitem.FieldMinute:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field minute", values[i])
+			} else if value.Valid {
+				thi.Minute = value.String
+			}
 		case takehistoryitem.FieldTakeStatus:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field take_status", values[i])
 			} else if value.Valid {
 				thi.TakeStatus = value.Bool
-			}
-		case takehistoryitem.FieldTakeAmount:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field take_amount", values[i])
-			} else if value.Valid {
-				thi.TakeAmount = value.Float64
-			}
-		case takehistoryitem.FieldRemainAmount:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field remain_amount", values[i])
-			} else if value.Valid {
-				thi.RemainAmount = value.Float64
 			}
 		case takehistoryitem.FieldTotalAmount:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -149,23 +193,35 @@ func (thi *TakeHistoryItem) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				thi.TotalAmount = value.Float64
 			}
+		case takehistoryitem.FieldRemainAmount:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field remain_amount", values[i])
+			} else if value.Valid {
+				thi.RemainAmount = value.Float64
+			}
+		case takehistoryitem.FieldTakeAmount:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field take_amount", values[i])
+			} else if value.Valid {
+				thi.TakeAmount = value.Float64
+			}
 		case takehistoryitem.FieldTakeUnit:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field take_unit", values[i])
 			} else if value.Valid {
 				thi.TakeUnit = value.String
 			}
-		case takehistoryitem.FieldMemo:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field memo", values[i])
-			} else if value.Valid {
-				thi.Memo = value.String
-			}
 		case takehistoryitem.FieldTakeDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field take_date", values[i])
 			} else if value.Valid {
 				thi.TakeDate = value.Time
+			}
+		case takehistoryitem.FieldTakeTime:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field take_time", values[i])
+			} else if value.Valid {
+				thi.TakeTime = value.String
 			}
 		case takehistoryitem.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -223,32 +279,53 @@ func (thi *TakeHistoryItem) String() string {
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", thi.UserID))
 	builder.WriteString(", ")
-	builder.WriteString("take_history_id=")
-	builder.WriteString(fmt.Sprintf("%v", thi.TakeHistoryID))
+	builder.WriteString("prescription_id=")
+	builder.WriteString(fmt.Sprintf("%v", thi.PrescriptionID))
 	builder.WriteString(", ")
 	builder.WriteString("prescription_item_id=")
 	builder.WriteString(fmt.Sprintf("%v", thi.PrescriptionItemID))
 	builder.WriteString(", ")
+	builder.WriteString("timezone_id=")
+	builder.WriteString(fmt.Sprintf("%v", thi.TimezoneID))
+	builder.WriteString(", ")
+	builder.WriteString("medicine_id=")
+	builder.WriteString(fmt.Sprintf("%v", thi.MedicineID))
+	builder.WriteString(", ")
+	builder.WriteString("medicine_name=")
+	builder.WriteString(thi.MedicineName)
+	builder.WriteString(", ")
+	builder.WriteString("timezone_name=")
+	builder.WriteString(thi.TimezoneName)
+	builder.WriteString(", ")
+	builder.WriteString("midday=")
+	builder.WriteString(thi.Midday)
+	builder.WriteString(", ")
+	builder.WriteString("hour=")
+	builder.WriteString(thi.Hour)
+	builder.WriteString(", ")
+	builder.WriteString("minute=")
+	builder.WriteString(thi.Minute)
+	builder.WriteString(", ")
 	builder.WriteString("take_status=")
 	builder.WriteString(fmt.Sprintf("%v", thi.TakeStatus))
-	builder.WriteString(", ")
-	builder.WriteString("take_amount=")
-	builder.WriteString(fmt.Sprintf("%v", thi.TakeAmount))
-	builder.WriteString(", ")
-	builder.WriteString("remain_amount=")
-	builder.WriteString(fmt.Sprintf("%v", thi.RemainAmount))
 	builder.WriteString(", ")
 	builder.WriteString("total_amount=")
 	builder.WriteString(fmt.Sprintf("%v", thi.TotalAmount))
 	builder.WriteString(", ")
+	builder.WriteString("remain_amount=")
+	builder.WriteString(fmt.Sprintf("%v", thi.RemainAmount))
+	builder.WriteString(", ")
+	builder.WriteString("take_amount=")
+	builder.WriteString(fmt.Sprintf("%v", thi.TakeAmount))
+	builder.WriteString(", ")
 	builder.WriteString("take_unit=")
 	builder.WriteString(thi.TakeUnit)
 	builder.WriteString(", ")
-	builder.WriteString("memo=")
-	builder.WriteString(thi.Memo)
-	builder.WriteString(", ")
 	builder.WriteString("take_date=")
 	builder.WriteString(thi.TakeDate.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("take_time=")
+	builder.WriteString(thi.TakeTime)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(thi.CreatedAt.Format(time.ANSIC))

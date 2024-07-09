@@ -74,7 +74,7 @@ func (thiq *TakeHistoryItemQuery) QueryPrescriptionItem() *PrescriptionItemQuery
 		step := sqlgraph.NewStep(
 			sqlgraph.From(takehistoryitem.Table, takehistoryitem.FieldID, selector),
 			sqlgraph.To(prescriptionitem.Table, prescriptionitem.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, takehistoryitem.PrescriptionItemTable, takehistoryitem.PrescriptionItemColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, takehistoryitem.PrescriptionItemTable, takehistoryitem.PrescriptionItemColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(thiq.driver.Dialect(), step)
 		return fromU, nil

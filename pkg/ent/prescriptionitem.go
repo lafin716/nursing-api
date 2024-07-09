@@ -4,7 +4,9 @@ package ent
 
 import (
 	"fmt"
+	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
+	"nursing_api/pkg/ent/takehistoryitem"
 	"strings"
 	"time"
 
@@ -18,18 +20,28 @@ type PrescriptionItem struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// TimezoneLinkID holds the value of the "timezone_link_id" field.
-	TimezoneLinkID uuid.UUID `json:"timezone_link_id,omitempty"`
+	// PrescriptionID holds the value of the "prescription_id" field.
+	PrescriptionID uuid.UUID `json:"prescription_id,omitempty"`
+	// TimezoneID holds the value of the "timezone_id" field.
+	TimezoneID uuid.UUID `json:"timezone_id,omitempty"`
 	// MedicineID holds the value of the "medicine_id" field.
 	MedicineID uuid.UUID `json:"medicine_id,omitempty"`
 	// MedicineName holds the value of the "medicine_name" field.
 	MedicineName string `json:"medicine_name,omitempty"`
-	// TakeAmount holds the value of the "take_amount" field.
-	TakeAmount float64 `json:"take_amount,omitempty"`
-	// RemainAmount holds the value of the "remain_amount" field.
-	RemainAmount float64 `json:"remain_amount,omitempty"`
+	// TimezoneName holds the value of the "timezone_name" field.
+	TimezoneName string `json:"timezone_name,omitempty"`
+	// Midday holds the value of the "midday" field.
+	Midday string `json:"midday,omitempty"`
+	// Hour holds the value of the "hour" field.
+	Hour string `json:"hour,omitempty"`
+	// Minute holds the value of the "minute" field.
+	Minute string `json:"minute,omitempty"`
 	// TotalAmount holds the value of the "total_amount" field.
 	TotalAmount float64 `json:"total_amount,omitempty"`
+	// RemainAmount holds the value of the "remain_amount" field.
+	RemainAmount float64 `json:"remain_amount,omitempty"`
+	// TakeAmount holds the value of the "take_amount" field.
+	TakeAmount float64 `json:"take_amount,omitempty"`
 	// MedicineUnit holds the value of the "medicine_unit" field.
 	MedicineUnit string `json:"medicine_unit,omitempty"`
 	// Memo holds the value of the "memo" field.
@@ -46,17 +58,36 @@ type PrescriptionItem struct {
 
 // PrescriptionItemEdges holds the relations/edges for other nodes in the graph.
 type PrescriptionItemEdges struct {
+	// Prescription holds the value of the prescription edge.
+	Prescription *Prescription `json:"prescription,omitempty"`
 	// TakeHistoryItem holds the value of the take_history_item edge.
-	TakeHistoryItem []*TakeHistoryItem `json:"take_history_item,omitempty"`
+	TakeHistoryItem *TakeHistoryItem `json:"take_history_item,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// PrescriptionOrErr returns the Prescription value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PrescriptionItemEdges) PrescriptionOrErr() (*Prescription, error) {
+	if e.loadedTypes[0] {
+		if e.Prescription == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: prescription.Label}
+		}
+		return e.Prescription, nil
+	}
+	return nil, &NotLoadedError{edge: "prescription"}
 }
 
 // TakeHistoryItemOrErr returns the TakeHistoryItem value or an error if the edge
-// was not loaded in eager-loading.
-func (e PrescriptionItemEdges) TakeHistoryItemOrErr() ([]*TakeHistoryItem, error) {
-	if e.loadedTypes[0] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PrescriptionItemEdges) TakeHistoryItemOrErr() (*TakeHistoryItem, error) {
+	if e.loadedTypes[1] {
+		if e.TakeHistoryItem == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: takehistoryitem.Label}
+		}
 		return e.TakeHistoryItem, nil
 	}
 	return nil, &NotLoadedError{edge: "take_history_item"}
@@ -67,13 +98,13 @@ func (*PrescriptionItem) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case prescriptionitem.FieldTakeAmount, prescriptionitem.FieldRemainAmount, prescriptionitem.FieldTotalAmount:
+		case prescriptionitem.FieldTotalAmount, prescriptionitem.FieldRemainAmount, prescriptionitem.FieldTakeAmount:
 			values[i] = new(sql.NullFloat64)
-		case prescriptionitem.FieldMedicineName, prescriptionitem.FieldMedicineUnit, prescriptionitem.FieldMemo:
+		case prescriptionitem.FieldMedicineName, prescriptionitem.FieldTimezoneName, prescriptionitem.FieldMidday, prescriptionitem.FieldHour, prescriptionitem.FieldMinute, prescriptionitem.FieldMedicineUnit, prescriptionitem.FieldMemo:
 			values[i] = new(sql.NullString)
 		case prescriptionitem.FieldCreatedAt, prescriptionitem.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case prescriptionitem.FieldID, prescriptionitem.FieldTimezoneLinkID, prescriptionitem.FieldMedicineID:
+		case prescriptionitem.FieldID, prescriptionitem.FieldPrescriptionID, prescriptionitem.FieldTimezoneID, prescriptionitem.FieldMedicineID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -96,11 +127,17 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				pi.ID = *value
 			}
-		case prescriptionitem.FieldTimezoneLinkID:
+		case prescriptionitem.FieldPrescriptionID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field timezone_link_id", values[i])
+				return fmt.Errorf("unexpected type %T for field prescription_id", values[i])
 			} else if value != nil {
-				pi.TimezoneLinkID = *value
+				pi.PrescriptionID = *value
+			}
+		case prescriptionitem.FieldTimezoneID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone_id", values[i])
+			} else if value != nil {
+				pi.TimezoneID = *value
 			}
 		case prescriptionitem.FieldMedicineID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -114,11 +151,35 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pi.MedicineName = value.String
 			}
-		case prescriptionitem.FieldTakeAmount:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field take_amount", values[i])
+		case prescriptionitem.FieldTimezoneName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field timezone_name", values[i])
 			} else if value.Valid {
-				pi.TakeAmount = value.Float64
+				pi.TimezoneName = value.String
+			}
+		case prescriptionitem.FieldMidday:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field midday", values[i])
+			} else if value.Valid {
+				pi.Midday = value.String
+			}
+		case prescriptionitem.FieldHour:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hour", values[i])
+			} else if value.Valid {
+				pi.Hour = value.String
+			}
+		case prescriptionitem.FieldMinute:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field minute", values[i])
+			} else if value.Valid {
+				pi.Minute = value.String
+			}
+		case prescriptionitem.FieldTotalAmount:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field total_amount", values[i])
+			} else if value.Valid {
+				pi.TotalAmount = value.Float64
 			}
 		case prescriptionitem.FieldRemainAmount:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -126,11 +187,11 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pi.RemainAmount = value.Float64
 			}
-		case prescriptionitem.FieldTotalAmount:
+		case prescriptionitem.FieldTakeAmount:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field total_amount", values[i])
+				return fmt.Errorf("unexpected type %T for field take_amount", values[i])
 			} else if value.Valid {
-				pi.TotalAmount = value.Float64
+				pi.TakeAmount = value.Float64
 			}
 		case prescriptionitem.FieldMedicineUnit:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -169,6 +230,11 @@ func (pi *PrescriptionItem) Value(name string) (ent.Value, error) {
 	return pi.selectValues.Get(name)
 }
 
+// QueryPrescription queries the "prescription" edge of the PrescriptionItem entity.
+func (pi *PrescriptionItem) QueryPrescription() *PrescriptionQuery {
+	return NewPrescriptionItemClient(pi.config).QueryPrescription(pi)
+}
+
 // QueryTakeHistoryItem queries the "take_history_item" edge of the PrescriptionItem entity.
 func (pi *PrescriptionItem) QueryTakeHistoryItem() *TakeHistoryItemQuery {
 	return NewPrescriptionItemClient(pi.config).QueryTakeHistoryItem(pi)
@@ -197,8 +263,11 @@ func (pi *PrescriptionItem) String() string {
 	var builder strings.Builder
 	builder.WriteString("PrescriptionItem(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pi.ID))
-	builder.WriteString("timezone_link_id=")
-	builder.WriteString(fmt.Sprintf("%v", pi.TimezoneLinkID))
+	builder.WriteString("prescription_id=")
+	builder.WriteString(fmt.Sprintf("%v", pi.PrescriptionID))
+	builder.WriteString(", ")
+	builder.WriteString("timezone_id=")
+	builder.WriteString(fmt.Sprintf("%v", pi.TimezoneID))
 	builder.WriteString(", ")
 	builder.WriteString("medicine_id=")
 	builder.WriteString(fmt.Sprintf("%v", pi.MedicineID))
@@ -206,14 +275,26 @@ func (pi *PrescriptionItem) String() string {
 	builder.WriteString("medicine_name=")
 	builder.WriteString(pi.MedicineName)
 	builder.WriteString(", ")
-	builder.WriteString("take_amount=")
-	builder.WriteString(fmt.Sprintf("%v", pi.TakeAmount))
+	builder.WriteString("timezone_name=")
+	builder.WriteString(pi.TimezoneName)
+	builder.WriteString(", ")
+	builder.WriteString("midday=")
+	builder.WriteString(pi.Midday)
+	builder.WriteString(", ")
+	builder.WriteString("hour=")
+	builder.WriteString(pi.Hour)
+	builder.WriteString(", ")
+	builder.WriteString("minute=")
+	builder.WriteString(pi.Minute)
+	builder.WriteString(", ")
+	builder.WriteString("total_amount=")
+	builder.WriteString(fmt.Sprintf("%v", pi.TotalAmount))
 	builder.WriteString(", ")
 	builder.WriteString("remain_amount=")
 	builder.WriteString(fmt.Sprintf("%v", pi.RemainAmount))
 	builder.WriteString(", ")
-	builder.WriteString("total_amount=")
-	builder.WriteString(fmt.Sprintf("%v", pi.TotalAmount))
+	builder.WriteString("take_amount=")
+	builder.WriteString(fmt.Sprintf("%v", pi.TakeAmount))
 	builder.WriteString(", ")
 	builder.WriteString("medicine_unit=")
 	builder.WriteString(pi.MedicineUnit)
