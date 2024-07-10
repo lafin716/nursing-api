@@ -15,6 +15,7 @@ type PrescriptionItem struct {
 func (PrescriptionItem) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("prescription_id", uuid.UUID{}),
 		field.UUID("timezone_id", uuid.UUID{}),
 		field.UUID("medicine_id", uuid.UUID{}),
@@ -40,7 +41,6 @@ func (PrescriptionItem) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("prescription_id"),
-		edge.To("take_history_item", TakeHistoryItem.Type).
-			Unique(),
+		edge.To("take_history_item", TakeHistoryItem.Type),
 	}
 }

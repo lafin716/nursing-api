@@ -139,8 +139,16 @@ func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 			// 처방전 아이템 총 수량 남은 수량 계산
 			subMedicine.TotalAmount = float64(ps.TakeDays) * subMedicine.TakeAmount
 			subMedicine.RemainAmount = float64(ps.TakeDays) * subMedicine.TakeAmount
+
+			// 의약품 조회
+			med, err := p.repo.GetMedicine(subMedicine.MedicineId)
+			if err != nil {
+				_ = tx.RollbackTx()
+				return dto.Fail[any](response.CODE_NOT_FOUND_MEDICINE, err)
+			}
+
 			// 처방전 아이템 생성
-			_, err := p.repo.AddPrescriptionItems(ps.ID, tz, subMedicine)
+			_, err = p.repo.AddPrescriptionItems(ps, tz, med, subMedicine)
 			if err != nil {
 				_ = tx.RollbackTx()
 				return dto.Fail[any](response.CODE_FAIL_ADDITEM_PRESCRIPTION, err)
@@ -228,10 +236,9 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 			remainAmount := item.RemainAmount
 
 			// 복용 내역이 존재하는지 확인
-			tkhItem, err := item.Edges.TakeHistoryItemOrErr()
+			tkhItem, err := p.repo.GetTakeHistoryItemFromPrescriptionItemByDate(item.ID, dateTime)
 			if err != nil || tkhItem == nil {
-				// 존재하지 않는 경우 새로 생성
-				tkhItem, err = p.repo.AddTakeHistoryItemFromPrescriptionItem(item)
+				tkhItem, err = p.repo.AddTakeHistoryItemFromPrescriptionItemWithDate(item, dateTime)
 				if err != nil {
 					_ = tx.RollbackTx()
 					return dto.Fail[bool](response.CODE_FAIL_ADD_TAKE_HISTORY_ITEM, err)
@@ -283,10 +290,11 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 				return dto.Fail[bool](response.CODE_TOO_MUCH_TAKE_AMOUNT, err)
 			}
 			item.RemainAmount = item.RemainAmount - item.TakeAmount
-			item.TakeDate = time.Now()
+			item.TakeDate = p.mono.Date.GetDate(time.Now())
+			item.TakeTime = p.mono.Date.GetTime(time.Now())
 		} else {
 			item.RemainAmount = item.RemainAmount + item.TakeAmount
-			item.TakeDate = time.Time{}
+			item.TakeTime = ""
 		}
 
 		// 복용내역 업데이트
@@ -329,7 +337,7 @@ func (p *planService) PillToggle(req *PillToggleRequest) dto.BaseResponse[bool] 
 	}
 
 	// 복용내역이 없는 경우 복용내역 생성
-	tkhItem, err := psItem.Edges.TakeHistoryItemOrErr()
+	tkhItem, err := p.repo.GetTodayTakeHistoryItemFromPrescriptionItem(psItem.ID)
 	if err != nil || tkhItem == nil {
 		tkhItem, err = p.repo.AddTakeHistoryItemFromPrescriptionItem(psItem)
 		if err != nil {
@@ -345,11 +353,12 @@ func (p *planService) PillToggle(req *PillToggleRequest) dto.BaseResponse[bool] 
 			_ = tx.RollbackTx()
 			return dto.Fail[bool](response.CODE_TOO_MUCH_TAKE_AMOUNT, err)
 		}
-		tkhItem.TakeDate = time.Now()
 		tkhItem.RemainAmount = tkhItem.RemainAmount - tkhItem.TakeAmount
+		tkhItem.TakeDate = p.mono.Date.GetDate(time.Now())
+		tkhItem.TakeTime = p.mono.Date.GetTime(time.Now())
 	} else {
-		tkhItem.TakeDate = time.Time{}
 		tkhItem.RemainAmount = tkhItem.RemainAmount + tkhItem.TakeAmount
+		tkhItem.TakeTime = ""
 	}
 
 	// 복용내역 업데이트
@@ -377,7 +386,8 @@ func (p *planService) UpdateMemo(req *UpdateMemoRequest) dto.BaseResponse[any] {
 		return dto.Fail[any](response.CODE_NOT_AVAILABLE_DATE, err)
 	}
 
-	p.repo.UpdateTakeHistoryMemo(req.UserId, dateTime, req.TimezoneId, req.Memo)
+	// 메모 업데이트
+	_ = p.repo.UpdateTakeHistoryMemo(req.UserId, dateTime, req.TimezoneId, req.Memo)
 
 	return dto.Ok[any](response.CODE_SUCCESS, nil)
 }
@@ -404,7 +414,7 @@ func (p *planService) PillTakeAmountUpdate(req *PillTakeAmountUpdateRequest) dto
 	}
 
 	// 복용내역이 없는 경우 복용내역 생성
-	tkhItem, err := psItem.Edges.TakeHistoryItemOrErr()
+	tkhItem, err := p.repo.GetTodayTakeHistoryItemFromPrescriptionItem(psItem.ID)
 	if err != nil || tkhItem == nil {
 		tkhItem, err = p.repo.AddTakeHistoryItemFromPrescriptionItem(psItem)
 		if err != nil {
@@ -432,13 +442,6 @@ func (p *planService) PillTakeAmountUpdate(req *PillTakeAmountUpdateRequest) dto
 			_ = tx.RollbackTx()
 			return dto.Fail[bool](response.CODE_REMAIN_AMOUNT_CANNOT_BE_NEGATIVE, err)
 		}
-
-		// 복용상태일때만 처방전 아이템 업데이트
-		err = p.repo.UpdatePrescriptionItemFromTakeHistoryItem(tkhItem)
-		if err != nil {
-			_ = tx.RollbackTx()
-			return dto.Fail[bool](response.CODE_FAIL_UPDATE_PRESCRIPTION, err)
-		}
 	} else {
 		// 복용량이 남은량보다 많은 경우
 		if tkhItem.RemainAmount < tkhItem.TakeAmount {
@@ -452,6 +455,13 @@ func (p *planService) PillTakeAmountUpdate(req *PillTakeAmountUpdateRequest) dto
 	if err != nil {
 		_ = tx.RollbackTx()
 		return dto.Fail[bool](response.CODE_FAIL_UPDATE_TAKEHISTORY, err)
+	}
+
+	// 처방전 아이템 업데이트
+	err = p.repo.UpdatePrescriptionItemFromTakeHistoryItem(tkhItem)
+	if err != nil {
+		_ = tx.RollbackTx()
+		return dto.Fail[bool](response.CODE_FAIL_UPDATE_PRESCRIPTION, err)
 	}
 
 	// 커밋 처리

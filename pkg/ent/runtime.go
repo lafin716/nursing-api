@@ -56,23 +56,23 @@ func init() {
 	prescriptionitemFields := schema.PrescriptionItem{}.Fields()
 	_ = prescriptionitemFields
 	// prescriptionitemDescTotalAmount is the schema descriptor for total_amount field.
-	prescriptionitemDescTotalAmount := prescriptionitemFields[9].Descriptor()
+	prescriptionitemDescTotalAmount := prescriptionitemFields[10].Descriptor()
 	// prescriptionitem.DefaultTotalAmount holds the default value on creation for the total_amount field.
 	prescriptionitem.DefaultTotalAmount = prescriptionitemDescTotalAmount.Default.(float64)
 	// prescriptionitemDescRemainAmount is the schema descriptor for remain_amount field.
-	prescriptionitemDescRemainAmount := prescriptionitemFields[10].Descriptor()
+	prescriptionitemDescRemainAmount := prescriptionitemFields[11].Descriptor()
 	// prescriptionitem.DefaultRemainAmount holds the default value on creation for the remain_amount field.
 	prescriptionitem.DefaultRemainAmount = prescriptionitemDescRemainAmount.Default.(float64)
 	// prescriptionitemDescTakeAmount is the schema descriptor for take_amount field.
-	prescriptionitemDescTakeAmount := prescriptionitemFields[11].Descriptor()
+	prescriptionitemDescTakeAmount := prescriptionitemFields[12].Descriptor()
 	// prescriptionitem.DefaultTakeAmount holds the default value on creation for the take_amount field.
 	prescriptionitem.DefaultTakeAmount = prescriptionitemDescTakeAmount.Default.(float64)
 	// prescriptionitemDescMedicineUnit is the schema descriptor for medicine_unit field.
-	prescriptionitemDescMedicineUnit := prescriptionitemFields[12].Descriptor()
+	prescriptionitemDescMedicineUnit := prescriptionitemFields[13].Descriptor()
 	// prescriptionitem.DefaultMedicineUnit holds the default value on creation for the medicine_unit field.
 	prescriptionitem.DefaultMedicineUnit = prescriptionitemDescMedicineUnit.Default.(string)
 	// prescriptionitemDescCreatedAt is the schema descriptor for created_at field.
-	prescriptionitemDescCreatedAt := prescriptionitemFields[14].Descriptor()
+	prescriptionitemDescCreatedAt := prescriptionitemFields[15].Descriptor()
 	// prescriptionitem.DefaultCreatedAt holds the default value on creation for the created_at field.
 	prescriptionitem.DefaultCreatedAt = prescriptionitemDescCreatedAt.Default.(func() time.Time)
 	// prescriptionitemDescID is the schema descriptor for id field.

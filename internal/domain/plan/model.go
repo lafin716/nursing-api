@@ -39,6 +39,7 @@ type Pill struct {
 	TakeHistoryItemId uuid.UUID `json:"take_history_item_id,omitempty"`
 	TakeStatus        bool      `json:"take_status"`
 	TakeDate          string    `json:"take_date,omitempty"`
+	TakeTime          string    `json:"take_time,omitempty"`
 }
 
 type Summary struct {

@@ -31,6 +31,20 @@ func (piu *PrescriptionItemUpdate) Where(ps ...predicate.PrescriptionItem) *Pres
 	return piu
 }
 
+// SetUserID sets the "user_id" field.
+func (piu *PrescriptionItemUpdate) SetUserID(u uuid.UUID) *PrescriptionItemUpdate {
+	piu.mutation.SetUserID(u)
+	return piu
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (piu *PrescriptionItemUpdate) SetNillableUserID(u *uuid.UUID) *PrescriptionItemUpdate {
+	if u != nil {
+		piu.SetUserID(*u)
+	}
+	return piu
+}
+
 // SetPrescriptionID sets the "prescription_id" field.
 func (piu *PrescriptionItemUpdate) SetPrescriptionID(u uuid.UUID) *PrescriptionItemUpdate {
 	piu.mutation.SetPrescriptionID(u)
@@ -291,23 +305,19 @@ func (piu *PrescriptionItemUpdate) SetPrescription(p *Prescription) *Prescriptio
 	return piu.SetPrescriptionID(p.ID)
 }
 
-// SetTakeHistoryItemID sets the "take_history_item" edge to the TakeHistoryItem entity by ID.
-func (piu *PrescriptionItemUpdate) SetTakeHistoryItemID(id uuid.UUID) *PrescriptionItemUpdate {
-	piu.mutation.SetTakeHistoryItemID(id)
+// AddTakeHistoryItemIDs adds the "take_history_item" edge to the TakeHistoryItem entity by IDs.
+func (piu *PrescriptionItemUpdate) AddTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemUpdate {
+	piu.mutation.AddTakeHistoryItemIDs(ids...)
 	return piu
 }
 
-// SetNillableTakeHistoryItemID sets the "take_history_item" edge to the TakeHistoryItem entity by ID if the given value is not nil.
-func (piu *PrescriptionItemUpdate) SetNillableTakeHistoryItemID(id *uuid.UUID) *PrescriptionItemUpdate {
-	if id != nil {
-		piu = piu.SetTakeHistoryItemID(*id)
+// AddTakeHistoryItem adds the "take_history_item" edges to the TakeHistoryItem entity.
+func (piu *PrescriptionItemUpdate) AddTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
 	}
-	return piu
-}
-
-// SetTakeHistoryItem sets the "take_history_item" edge to the TakeHistoryItem entity.
-func (piu *PrescriptionItemUpdate) SetTakeHistoryItem(t *TakeHistoryItem) *PrescriptionItemUpdate {
-	return piu.SetTakeHistoryItemID(t.ID)
+	return piu.AddTakeHistoryItemIDs(ids...)
 }
 
 // Mutation returns the PrescriptionItemMutation object of the builder.
@@ -321,10 +331,25 @@ func (piu *PrescriptionItemUpdate) ClearPrescription() *PrescriptionItemUpdate {
 	return piu
 }
 
-// ClearTakeHistoryItem clears the "take_history_item" edge to the TakeHistoryItem entity.
+// ClearTakeHistoryItem clears all "take_history_item" edges to the TakeHistoryItem entity.
 func (piu *PrescriptionItemUpdate) ClearTakeHistoryItem() *PrescriptionItemUpdate {
 	piu.mutation.ClearTakeHistoryItem()
 	return piu
+}
+
+// RemoveTakeHistoryItemIDs removes the "take_history_item" edge to TakeHistoryItem entities by IDs.
+func (piu *PrescriptionItemUpdate) RemoveTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemUpdate {
+	piu.mutation.RemoveTakeHistoryItemIDs(ids...)
+	return piu
+}
+
+// RemoveTakeHistoryItem removes "take_history_item" edges to TakeHistoryItem entities.
+func (piu *PrescriptionItemUpdate) RemoveTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return piu.RemoveTakeHistoryItemIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -373,6 +398,9 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := piu.mutation.UserID(); ok {
+		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
 	}
 	if value, ok := piu.mutation.TimezoneID(); ok {
 		_spec.SetField(prescriptionitem.FieldTimezoneID, field.TypeUUID, value)
@@ -468,7 +496,7 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if piu.mutation.TakeHistoryItemCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   prescriptionitem.TakeHistoryItemTable,
 			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
@@ -479,9 +507,25 @@ func (piu *PrescriptionItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
+	if nodes := piu.mutation.RemovedTakeHistoryItemIDs(); len(nodes) > 0 && !piu.mutation.TakeHistoryItemCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescriptionitem.TakeHistoryItemTable,
+			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
 	if nodes := piu.mutation.TakeHistoryItemIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   prescriptionitem.TakeHistoryItemTable,
 			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
@@ -513,6 +557,20 @@ type PrescriptionItemUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *PrescriptionItemMutation
+}
+
+// SetUserID sets the "user_id" field.
+func (piuo *PrescriptionItemUpdateOne) SetUserID(u uuid.UUID) *PrescriptionItemUpdateOne {
+	piuo.mutation.SetUserID(u)
+	return piuo
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (piuo *PrescriptionItemUpdateOne) SetNillableUserID(u *uuid.UUID) *PrescriptionItemUpdateOne {
+	if u != nil {
+		piuo.SetUserID(*u)
+	}
+	return piuo
 }
 
 // SetPrescriptionID sets the "prescription_id" field.
@@ -775,23 +833,19 @@ func (piuo *PrescriptionItemUpdateOne) SetPrescription(p *Prescription) *Prescri
 	return piuo.SetPrescriptionID(p.ID)
 }
 
-// SetTakeHistoryItemID sets the "take_history_item" edge to the TakeHistoryItem entity by ID.
-func (piuo *PrescriptionItemUpdateOne) SetTakeHistoryItemID(id uuid.UUID) *PrescriptionItemUpdateOne {
-	piuo.mutation.SetTakeHistoryItemID(id)
+// AddTakeHistoryItemIDs adds the "take_history_item" edge to the TakeHistoryItem entity by IDs.
+func (piuo *PrescriptionItemUpdateOne) AddTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemUpdateOne {
+	piuo.mutation.AddTakeHistoryItemIDs(ids...)
 	return piuo
 }
 
-// SetNillableTakeHistoryItemID sets the "take_history_item" edge to the TakeHistoryItem entity by ID if the given value is not nil.
-func (piuo *PrescriptionItemUpdateOne) SetNillableTakeHistoryItemID(id *uuid.UUID) *PrescriptionItemUpdateOne {
-	if id != nil {
-		piuo = piuo.SetTakeHistoryItemID(*id)
+// AddTakeHistoryItem adds the "take_history_item" edges to the TakeHistoryItem entity.
+func (piuo *PrescriptionItemUpdateOne) AddTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
 	}
-	return piuo
-}
-
-// SetTakeHistoryItem sets the "take_history_item" edge to the TakeHistoryItem entity.
-func (piuo *PrescriptionItemUpdateOne) SetTakeHistoryItem(t *TakeHistoryItem) *PrescriptionItemUpdateOne {
-	return piuo.SetTakeHistoryItemID(t.ID)
+	return piuo.AddTakeHistoryItemIDs(ids...)
 }
 
 // Mutation returns the PrescriptionItemMutation object of the builder.
@@ -805,10 +859,25 @@ func (piuo *PrescriptionItemUpdateOne) ClearPrescription() *PrescriptionItemUpda
 	return piuo
 }
 
-// ClearTakeHistoryItem clears the "take_history_item" edge to the TakeHistoryItem entity.
+// ClearTakeHistoryItem clears all "take_history_item" edges to the TakeHistoryItem entity.
 func (piuo *PrescriptionItemUpdateOne) ClearTakeHistoryItem() *PrescriptionItemUpdateOne {
 	piuo.mutation.ClearTakeHistoryItem()
 	return piuo
+}
+
+// RemoveTakeHistoryItemIDs removes the "take_history_item" edge to TakeHistoryItem entities by IDs.
+func (piuo *PrescriptionItemUpdateOne) RemoveTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemUpdateOne {
+	piuo.mutation.RemoveTakeHistoryItemIDs(ids...)
+	return piuo
+}
+
+// RemoveTakeHistoryItem removes "take_history_item" edges to TakeHistoryItem entities.
+func (piuo *PrescriptionItemUpdateOne) RemoveTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return piuo.RemoveTakeHistoryItemIDs(ids...)
 }
 
 // Where appends a list predicates to the PrescriptionItemUpdate builder.
@@ -887,6 +956,9 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := piuo.mutation.UserID(); ok {
+		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
 	}
 	if value, ok := piuo.mutation.TimezoneID(); ok {
 		_spec.SetField(prescriptionitem.FieldTimezoneID, field.TypeUUID, value)
@@ -982,7 +1054,7 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 	}
 	if piuo.mutation.TakeHistoryItemCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   prescriptionitem.TakeHistoryItemTable,
 			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
@@ -993,9 +1065,25 @@ func (piuo *PrescriptionItemUpdateOne) sqlSave(ctx context.Context) (_node *Pres
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
+	if nodes := piuo.mutation.RemovedTakeHistoryItemIDs(); len(nodes) > 0 && !piuo.mutation.TakeHistoryItemCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   prescriptionitem.TakeHistoryItemTable,
+			Columns: []string{prescriptionitem.TakeHistoryItemColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
 	if nodes := piuo.mutation.TakeHistoryItemIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   prescriptionitem.TakeHistoryItemTable,
 			Columns: []string{prescriptionitem.TakeHistoryItemColumn},

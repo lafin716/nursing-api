@@ -34,9 +34,25 @@ func (thic *TakeHistoryItemCreate) SetPrescriptionID(u uuid.UUID) *TakeHistoryIt
 	return thic
 }
 
+// SetNillablePrescriptionID sets the "prescription_id" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillablePrescriptionID(u *uuid.UUID) *TakeHistoryItemCreate {
+	if u != nil {
+		thic.SetPrescriptionID(*u)
+	}
+	return thic
+}
+
 // SetPrescriptionItemID sets the "prescription_item_id" field.
 func (thic *TakeHistoryItemCreate) SetPrescriptionItemID(u uuid.UUID) *TakeHistoryItemCreate {
 	thic.mutation.SetPrescriptionItemID(u)
+	return thic
+}
+
+// SetNillablePrescriptionItemID sets the "prescription_item_id" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillablePrescriptionItemID(u *uuid.UUID) *TakeHistoryItemCreate {
+	if u != nil {
+		thic.SetPrescriptionItemID(*u)
+	}
 	return thic
 }
 
@@ -46,9 +62,25 @@ func (thic *TakeHistoryItemCreate) SetTimezoneID(u uuid.UUID) *TakeHistoryItemCr
 	return thic
 }
 
+// SetNillableTimezoneID sets the "timezone_id" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillableTimezoneID(u *uuid.UUID) *TakeHistoryItemCreate {
+	if u != nil {
+		thic.SetTimezoneID(*u)
+	}
+	return thic
+}
+
 // SetMedicineID sets the "medicine_id" field.
 func (thic *TakeHistoryItemCreate) SetMedicineID(u uuid.UUID) *TakeHistoryItemCreate {
 	thic.mutation.SetMedicineID(u)
+	return thic
+}
+
+// SetNillableMedicineID sets the "medicine_id" field if the given value is not nil.
+func (thic *TakeHistoryItemCreate) SetNillableMedicineID(u *uuid.UUID) *TakeHistoryItemCreate {
+	if u != nil {
+		thic.SetMedicineID(*u)
+	}
 	return thic
 }
 
@@ -153,8 +185,8 @@ func (thic *TakeHistoryItemCreate) SetTakeUnit(s string) *TakeHistoryItemCreate 
 }
 
 // SetTakeDate sets the "take_date" field.
-func (thic *TakeHistoryItemCreate) SetTakeDate(t time.Time) *TakeHistoryItemCreate {
-	thic.mutation.SetTakeDate(t)
+func (thic *TakeHistoryItemCreate) SetTakeDate(s string) *TakeHistoryItemCreate {
+	thic.mutation.SetTakeDate(s)
 	return thic
 }
 
@@ -277,18 +309,6 @@ func (thic *TakeHistoryItemCreate) check() error {
 	if _, ok := thic.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "TakeHistoryItem.user_id"`)}
 	}
-	if _, ok := thic.mutation.PrescriptionID(); !ok {
-		return &ValidationError{Name: "prescription_id", err: errors.New(`ent: missing required field "TakeHistoryItem.prescription_id"`)}
-	}
-	if _, ok := thic.mutation.PrescriptionItemID(); !ok {
-		return &ValidationError{Name: "prescription_item_id", err: errors.New(`ent: missing required field "TakeHistoryItem.prescription_item_id"`)}
-	}
-	if _, ok := thic.mutation.TimezoneID(); !ok {
-		return &ValidationError{Name: "timezone_id", err: errors.New(`ent: missing required field "TakeHistoryItem.timezone_id"`)}
-	}
-	if _, ok := thic.mutation.MedicineID(); !ok {
-		return &ValidationError{Name: "medicine_id", err: errors.New(`ent: missing required field "TakeHistoryItem.medicine_id"`)}
-	}
 	if _, ok := thic.mutation.MedicineName(); !ok {
 		return &ValidationError{Name: "medicine_name", err: errors.New(`ent: missing required field "TakeHistoryItem.medicine_name"`)}
 	}
@@ -324,9 +344,6 @@ func (thic *TakeHistoryItemCreate) check() error {
 	}
 	if _, ok := thic.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "TakeHistoryItem.created_at"`)}
-	}
-	if _, ok := thic.mutation.PrescriptionItemID(); !ok {
-		return &ValidationError{Name: "prescription_item", err: errors.New(`ent: missing required edge "TakeHistoryItem.prescription_item"`)}
 	}
 	return nil
 }
@@ -420,7 +437,7 @@ func (thic *TakeHistoryItemCreate) createSpec() (*TakeHistoryItem, *sqlgraph.Cre
 		_node.TakeUnit = value
 	}
 	if value, ok := thic.mutation.TakeDate(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeDate, field.TypeTime, value)
+		_spec.SetField(takehistoryitem.FieldTakeDate, field.TypeString, value)
 		_node.TakeDate = value
 	}
 	if value, ok := thic.mutation.TakeTime(); ok {
@@ -437,7 +454,7 @@ func (thic *TakeHistoryItemCreate) createSpec() (*TakeHistoryItem, *sqlgraph.Cre
 	}
 	if nodes := thic.mutation.PrescriptionItemIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   takehistoryitem.PrescriptionItemTable,
 			Columns: []string{takehistoryitem.PrescriptionItemColumn},

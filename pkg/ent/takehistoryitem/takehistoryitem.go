@@ -228,6 +228,6 @@ func newPrescriptionItemStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PrescriptionItemInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, true, PrescriptionItemTable, PrescriptionItemColumn),
+		sqlgraph.Edge(sqlgraph.M2O, true, PrescriptionItemTable, PrescriptionItemColumn),
 	)
 }

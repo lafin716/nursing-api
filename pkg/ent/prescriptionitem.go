@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"nursing_api/pkg/ent/prescription"
 	"nursing_api/pkg/ent/prescriptionitem"
-	"nursing_api/pkg/ent/takehistoryitem"
 	"strings"
 	"time"
 
@@ -20,6 +19,8 @@ type PrescriptionItem struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// PrescriptionID holds the value of the "prescription_id" field.
 	PrescriptionID uuid.UUID `json:"prescription_id,omitempty"`
 	// TimezoneID holds the value of the "timezone_id" field.
@@ -61,7 +62,7 @@ type PrescriptionItemEdges struct {
 	// Prescription holds the value of the prescription edge.
 	Prescription *Prescription `json:"prescription,omitempty"`
 	// TakeHistoryItem holds the value of the take_history_item edge.
-	TakeHistoryItem *TakeHistoryItem `json:"take_history_item,omitempty"`
+	TakeHistoryItem []*TakeHistoryItem `json:"take_history_item,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -81,13 +82,9 @@ func (e PrescriptionItemEdges) PrescriptionOrErr() (*Prescription, error) {
 }
 
 // TakeHistoryItemOrErr returns the TakeHistoryItem value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e PrescriptionItemEdges) TakeHistoryItemOrErr() (*TakeHistoryItem, error) {
+// was not loaded in eager-loading.
+func (e PrescriptionItemEdges) TakeHistoryItemOrErr() ([]*TakeHistoryItem, error) {
 	if e.loadedTypes[1] {
-		if e.TakeHistoryItem == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: takehistoryitem.Label}
-		}
 		return e.TakeHistoryItem, nil
 	}
 	return nil, &NotLoadedError{edge: "take_history_item"}
@@ -104,7 +101,7 @@ func (*PrescriptionItem) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case prescriptionitem.FieldCreatedAt, prescriptionitem.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case prescriptionitem.FieldID, prescriptionitem.FieldPrescriptionID, prescriptionitem.FieldTimezoneID, prescriptionitem.FieldMedicineID:
+		case prescriptionitem.FieldID, prescriptionitem.FieldUserID, prescriptionitem.FieldPrescriptionID, prescriptionitem.FieldTimezoneID, prescriptionitem.FieldMedicineID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -126,6 +123,12 @@ func (pi *PrescriptionItem) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				pi.ID = *value
+			}
+		case prescriptionitem.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				pi.UserID = *value
 			}
 		case prescriptionitem.FieldPrescriptionID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -263,6 +266,9 @@ func (pi *PrescriptionItem) String() string {
 	var builder strings.Builder
 	builder.WriteString("PrescriptionItem(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pi.ID))
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", pi.UserID))
+	builder.WriteString(", ")
 	builder.WriteString("prescription_id=")
 	builder.WriteString(fmt.Sprintf("%v", pi.PrescriptionID))
 	builder.WriteString(", ")

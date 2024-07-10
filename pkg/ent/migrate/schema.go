@@ -59,6 +59,7 @@ var (
 	// PrescriptionItemsColumns holds the columns for the "prescription_items" table.
 	PrescriptionItemsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "timezone_id", Type: field.TypeUUID},
 		{Name: "medicine_id", Type: field.TypeUUID},
 		{Name: "medicine_name", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(50)"}},
@@ -83,7 +84,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "prescription_items_prescriptions_prescription_items",
-				Columns:    []*schema.Column{PrescriptionItemsColumns[15]},
+				Columns:    []*schema.Column{PrescriptionItemsColumns[16]},
 				RefColumns: []*schema.Column{PrescriptionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -93,9 +94,9 @@ var (
 	TakeHistoryItemsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "prescription_id", Type: field.TypeUUID},
-		{Name: "timezone_id", Type: field.TypeUUID},
-		{Name: "medicine_id", Type: field.TypeUUID},
+		{Name: "prescription_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "timezone_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "medicine_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "medicine_name", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(50)"}},
 		{Name: "timezone_name", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "varchar(50)"}},
 		{Name: "midday", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
@@ -106,11 +107,11 @@ var (
 		{Name: "remain_amount", Type: field.TypeFloat64, Default: 0},
 		{Name: "take_amount", Type: field.TypeFloat64, Default: 0},
 		{Name: "take_unit", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(2)"}},
-		{Name: "take_date", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
-		{Name: "take_time", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(5)"}},
+		{Name: "take_date", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(10)"}},
+		{Name: "take_time", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(8)"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},
-		{Name: "prescription_item_id", Type: field.TypeUUID, Unique: true},
+		{Name: "prescription_item_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// TakeHistoryItemsTable holds the schema information for the "take_history_items" table.
 	TakeHistoryItemsTable = &schema.Table{
@@ -122,7 +123,14 @@ var (
 				Symbol:     "take_history_items_prescription_items_take_history_item",
 				Columns:    []*schema.Column{TakeHistoryItemsColumns[19]},
 				RefColumns: []*schema.Column{PrescriptionItemsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "takehistoryitem_take_date_prescription_item_id",
+				Unique:  false,
+				Columns: []*schema.Column{TakeHistoryItemsColumns[15], TakeHistoryItemsColumns[19]},
 			},
 		},
 	}
@@ -131,7 +139,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "timezone_id", Type: field.TypeUUID},
-		{Name: "take_date", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "date"}},
+		{Name: "take_date", Type: field.TypeString, SchemaType: map[string]string{"postgres": "varchar(10)"}},
 		{Name: "memo", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"postgres": "text"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime, Nullable: true},

@@ -23,6 +23,12 @@ type PrescriptionItemCreate struct {
 	hooks    []Hook
 }
 
+// SetUserID sets the "user_id" field.
+func (pic *PrescriptionItemCreate) SetUserID(u uuid.UUID) *PrescriptionItemCreate {
+	pic.mutation.SetUserID(u)
+	return pic
+}
+
 // SetPrescriptionID sets the "prescription_id" field.
 func (pic *PrescriptionItemCreate) SetPrescriptionID(u uuid.UUID) *PrescriptionItemCreate {
 	pic.mutation.SetPrescriptionID(u)
@@ -196,23 +202,19 @@ func (pic *PrescriptionItemCreate) SetPrescription(p *Prescription) *Prescriptio
 	return pic.SetPrescriptionID(p.ID)
 }
 
-// SetTakeHistoryItemID sets the "take_history_item" edge to the TakeHistoryItem entity by ID.
-func (pic *PrescriptionItemCreate) SetTakeHistoryItemID(id uuid.UUID) *PrescriptionItemCreate {
-	pic.mutation.SetTakeHistoryItemID(id)
+// AddTakeHistoryItemIDs adds the "take_history_item" edge to the TakeHistoryItem entity by IDs.
+func (pic *PrescriptionItemCreate) AddTakeHistoryItemIDs(ids ...uuid.UUID) *PrescriptionItemCreate {
+	pic.mutation.AddTakeHistoryItemIDs(ids...)
 	return pic
 }
 
-// SetNillableTakeHistoryItemID sets the "take_history_item" edge to the TakeHistoryItem entity by ID if the given value is not nil.
-func (pic *PrescriptionItemCreate) SetNillableTakeHistoryItemID(id *uuid.UUID) *PrescriptionItemCreate {
-	if id != nil {
-		pic = pic.SetTakeHistoryItemID(*id)
+// AddTakeHistoryItem adds the "take_history_item" edges to the TakeHistoryItem entity.
+func (pic *PrescriptionItemCreate) AddTakeHistoryItem(t ...*TakeHistoryItem) *PrescriptionItemCreate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
 	}
-	return pic
-}
-
-// SetTakeHistoryItem sets the "take_history_item" edge to the TakeHistoryItem entity.
-func (pic *PrescriptionItemCreate) SetTakeHistoryItem(t *TakeHistoryItem) *PrescriptionItemCreate {
-	return pic.SetTakeHistoryItemID(t.ID)
+	return pic.AddTakeHistoryItemIDs(ids...)
 }
 
 // Mutation returns the PrescriptionItemMutation object of the builder.
@@ -278,6 +280,9 @@ func (pic *PrescriptionItemCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (pic *PrescriptionItemCreate) check() error {
+	if _, ok := pic.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "PrescriptionItem.user_id"`)}
+	}
 	if _, ok := pic.mutation.PrescriptionID(); !ok {
 		return &ValidationError{Name: "prescription_id", err: errors.New(`ent: missing required field "PrescriptionItem.prescription_id"`)}
 	}
@@ -348,6 +353,10 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 	if id, ok := pic.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := pic.mutation.UserID(); ok {
+		_spec.SetField(prescriptionitem.FieldUserID, field.TypeUUID, value)
+		_node.UserID = value
 	}
 	if value, ok := pic.mutation.TimezoneID(); ok {
 		_spec.SetField(prescriptionitem.FieldTimezoneID, field.TypeUUID, value)
@@ -424,7 +433,7 @@ func (pic *PrescriptionItemCreate) createSpec() (*PrescriptionItem, *sqlgraph.Cr
 	}
 	if nodes := pic.mutation.TakeHistoryItemIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   prescriptionitem.TakeHistoryItemTable,
 			Columns: []string{prescriptionitem.TakeHistoryItemColumn},

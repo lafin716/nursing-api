@@ -99,7 +99,7 @@ func (piq *PrescriptionItemQuery) QueryTakeHistoryItem() *TakeHistoryItemQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(prescriptionitem.Table, prescriptionitem.FieldID, selector),
 			sqlgraph.To(takehistoryitem.Table, takehistoryitem.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, prescriptionitem.TakeHistoryItemTable, prescriptionitem.TakeHistoryItemColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, prescriptionitem.TakeHistoryItemTable, prescriptionitem.TakeHistoryItemColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(piq.driver.Dialect(), step)
 		return fromU, nil
@@ -335,12 +335,12 @@ func (piq *PrescriptionItemQuery) WithTakeHistoryItem(opts ...func(*TakeHistoryI
 // Example:
 //
 //	var v []struct {
-//		PrescriptionID uuid.UUID `json:"prescription_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.PrescriptionItem.Query().
-//		GroupBy(prescriptionitem.FieldPrescriptionID).
+//		GroupBy(prescriptionitem.FieldUserID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (piq *PrescriptionItemQuery) GroupBy(field string, fields ...string) *PrescriptionItemGroupBy {
@@ -358,11 +358,11 @@ func (piq *PrescriptionItemQuery) GroupBy(field string, fields ...string) *Presc
 // Example:
 //
 //	var v []struct {
-//		PrescriptionID uuid.UUID `json:"prescription_id,omitempty"`
+//		UserID uuid.UUID `json:"user_id,omitempty"`
 //	}
 //
 //	client.PrescriptionItem.Query().
-//		Select(prescriptionitem.FieldPrescriptionID).
+//		Select(prescriptionitem.FieldUserID).
 //		Scan(ctx, &v)
 func (piq *PrescriptionItemQuery) Select(fields ...string) *PrescriptionItemSelect {
 	piq.ctx.Fields = append(piq.ctx.Fields, fields...)
@@ -437,8 +437,11 @@ func (piq *PrescriptionItemQuery) sqlAll(ctx context.Context, hooks ...queryHook
 		}
 	}
 	if query := piq.withTakeHistoryItem; query != nil {
-		if err := piq.loadTakeHistoryItem(ctx, query, nodes, nil,
-			func(n *PrescriptionItem, e *TakeHistoryItem) { n.Edges.TakeHistoryItem = e }); err != nil {
+		if err := piq.loadTakeHistoryItem(ctx, query, nodes,
+			func(n *PrescriptionItem) { n.Edges.TakeHistoryItem = []*TakeHistoryItem{} },
+			func(n *PrescriptionItem, e *TakeHistoryItem) {
+				n.Edges.TakeHistoryItem = append(n.Edges.TakeHistoryItem, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -480,6 +483,9 @@ func (piq *PrescriptionItemQuery) loadTakeHistoryItem(ctx context.Context, query
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
 	}
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(takehistoryitem.FieldPrescriptionItemID)

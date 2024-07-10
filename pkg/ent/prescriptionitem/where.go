@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldLTE(FieldID, id))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldUserID, v))
+}
+
 // PrescriptionID applies equality check predicate on the "prescription_id" field. It's identical to PrescriptionIDEQ.
 func PrescriptionID(v uuid.UUID) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldEQ(FieldPrescriptionID, v))
@@ -129,6 +134,46 @@ func CreatedAt(v time.Time) predicate.PrescriptionItem {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// UserIDGT applies the GT predicate on the "user_id" field.
+func UserIDGT(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGT(FieldUserID, v))
+}
+
+// UserIDGTE applies the GTE predicate on the "user_id" field.
+func UserIDGTE(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldGTE(FieldUserID, v))
+}
+
+// UserIDLT applies the LT predicate on the "user_id" field.
+func UserIDLT(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLT(FieldUserID, v))
+}
+
+// UserIDLTE applies the LTE predicate on the "user_id" field.
+func UserIDLTE(v uuid.UUID) predicate.PrescriptionItem {
+	return predicate.PrescriptionItem(sql.FieldLTE(FieldUserID, v))
 }
 
 // PrescriptionIDEQ applies the EQ predicate on the "prescription_id" field.
@@ -954,7 +999,7 @@ func HasTakeHistoryItem() predicate.PrescriptionItem {
 	return predicate.PrescriptionItem(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, TakeHistoryItemTable, TakeHistoryItemColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, TakeHistoryItemTable, TakeHistoryItemColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

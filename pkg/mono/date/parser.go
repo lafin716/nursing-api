@@ -36,7 +36,6 @@ func (d parser) Parse(layout string, value string) (time.Time, error) {
 	replaced := ReplaceLayout(layout)
 	t, err := time.Parse(replaced, value)
 	if err != nil {
-		log.Println("날짜 파싱에 실패하였습니다. 기본값으로 오늘날짜를 반환합니다.", err)
 		return d.getToday(layout)
 	}
 

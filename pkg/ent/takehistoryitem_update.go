@@ -58,6 +58,12 @@ func (thiu *TakeHistoryItemUpdate) SetNillablePrescriptionID(u *uuid.UUID) *Take
 	return thiu
 }
 
+// ClearPrescriptionID clears the value of the "prescription_id" field.
+func (thiu *TakeHistoryItemUpdate) ClearPrescriptionID() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearPrescriptionID()
+	return thiu
+}
+
 // SetPrescriptionItemID sets the "prescription_item_id" field.
 func (thiu *TakeHistoryItemUpdate) SetPrescriptionItemID(u uuid.UUID) *TakeHistoryItemUpdate {
 	thiu.mutation.SetPrescriptionItemID(u)
@@ -69,6 +75,12 @@ func (thiu *TakeHistoryItemUpdate) SetNillablePrescriptionItemID(u *uuid.UUID) *
 	if u != nil {
 		thiu.SetPrescriptionItemID(*u)
 	}
+	return thiu
+}
+
+// ClearPrescriptionItemID clears the value of the "prescription_item_id" field.
+func (thiu *TakeHistoryItemUpdate) ClearPrescriptionItemID() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearPrescriptionItemID()
 	return thiu
 }
 
@@ -86,6 +98,12 @@ func (thiu *TakeHistoryItemUpdate) SetNillableTimezoneID(u *uuid.UUID) *TakeHist
 	return thiu
 }
 
+// ClearTimezoneID clears the value of the "timezone_id" field.
+func (thiu *TakeHistoryItemUpdate) ClearTimezoneID() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearTimezoneID()
+	return thiu
+}
+
 // SetMedicineID sets the "medicine_id" field.
 func (thiu *TakeHistoryItemUpdate) SetMedicineID(u uuid.UUID) *TakeHistoryItemUpdate {
 	thiu.mutation.SetMedicineID(u)
@@ -97,6 +115,12 @@ func (thiu *TakeHistoryItemUpdate) SetNillableMedicineID(u *uuid.UUID) *TakeHist
 	if u != nil {
 		thiu.SetMedicineID(*u)
 	}
+	return thiu
+}
+
+// ClearMedicineID clears the value of the "medicine_id" field.
+func (thiu *TakeHistoryItemUpdate) ClearMedicineID() *TakeHistoryItemUpdate {
+	thiu.mutation.ClearMedicineID()
 	return thiu
 }
 
@@ -268,15 +292,15 @@ func (thiu *TakeHistoryItemUpdate) SetNillableTakeUnit(s *string) *TakeHistoryIt
 }
 
 // SetTakeDate sets the "take_date" field.
-func (thiu *TakeHistoryItemUpdate) SetTakeDate(t time.Time) *TakeHistoryItemUpdate {
-	thiu.mutation.SetTakeDate(t)
+func (thiu *TakeHistoryItemUpdate) SetTakeDate(s string) *TakeHistoryItemUpdate {
+	thiu.mutation.SetTakeDate(s)
 	return thiu
 }
 
 // SetNillableTakeDate sets the "take_date" field if the given value is not nil.
-func (thiu *TakeHistoryItemUpdate) SetNillableTakeDate(t *time.Time) *TakeHistoryItemUpdate {
-	if t != nil {
-		thiu.SetTakeDate(*t)
+func (thiu *TakeHistoryItemUpdate) SetNillableTakeDate(s *string) *TakeHistoryItemUpdate {
+	if s != nil {
+		thiu.SetTakeDate(*s)
 	}
 	return thiu
 }
@@ -372,18 +396,7 @@ func (thiu *TakeHistoryItemUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (thiu *TakeHistoryItemUpdate) check() error {
-	if _, ok := thiu.mutation.PrescriptionItemID(); thiu.mutation.PrescriptionItemCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "TakeHistoryItem.prescription_item"`)
-	}
-	return nil
-}
-
 func (thiu *TakeHistoryItemUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := thiu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(takehistoryitem.Table, takehistoryitem.Columns, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID))
 	if ps := thiu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -398,11 +411,20 @@ func (thiu *TakeHistoryItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	if value, ok := thiu.mutation.PrescriptionID(); ok {
 		_spec.SetField(takehistoryitem.FieldPrescriptionID, field.TypeUUID, value)
 	}
+	if thiu.mutation.PrescriptionIDCleared() {
+		_spec.ClearField(takehistoryitem.FieldPrescriptionID, field.TypeUUID)
+	}
 	if value, ok := thiu.mutation.TimezoneID(); ok {
 		_spec.SetField(takehistoryitem.FieldTimezoneID, field.TypeUUID, value)
 	}
+	if thiu.mutation.TimezoneIDCleared() {
+		_spec.ClearField(takehistoryitem.FieldTimezoneID, field.TypeUUID)
+	}
 	if value, ok := thiu.mutation.MedicineID(); ok {
 		_spec.SetField(takehistoryitem.FieldMedicineID, field.TypeUUID, value)
+	}
+	if thiu.mutation.MedicineIDCleared() {
+		_spec.ClearField(takehistoryitem.FieldMedicineID, field.TypeUUID)
 	}
 	if value, ok := thiu.mutation.MedicineName(); ok {
 		_spec.SetField(takehistoryitem.FieldMedicineName, field.TypeString, value)
@@ -447,7 +469,7 @@ func (thiu *TakeHistoryItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 		_spec.SetField(takehistoryitem.FieldTakeUnit, field.TypeString, value)
 	}
 	if value, ok := thiu.mutation.TakeDate(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeDate, field.TypeTime, value)
+		_spec.SetField(takehistoryitem.FieldTakeDate, field.TypeString, value)
 	}
 	if value, ok := thiu.mutation.TakeTime(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeTime, field.TypeString, value)
@@ -463,7 +485,7 @@ func (thiu *TakeHistoryItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if thiu.mutation.PrescriptionItemCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   takehistoryitem.PrescriptionItemTable,
 			Columns: []string{takehistoryitem.PrescriptionItemColumn},
@@ -476,7 +498,7 @@ func (thiu *TakeHistoryItemUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if nodes := thiu.mutation.PrescriptionItemIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   takehistoryitem.PrescriptionItemTable,
 			Columns: []string{takehistoryitem.PrescriptionItemColumn},
@@ -538,6 +560,12 @@ func (thiuo *TakeHistoryItemUpdateOne) SetNillablePrescriptionID(u *uuid.UUID) *
 	return thiuo
 }
 
+// ClearPrescriptionID clears the value of the "prescription_id" field.
+func (thiuo *TakeHistoryItemUpdateOne) ClearPrescriptionID() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearPrescriptionID()
+	return thiuo
+}
+
 // SetPrescriptionItemID sets the "prescription_item_id" field.
 func (thiuo *TakeHistoryItemUpdateOne) SetPrescriptionItemID(u uuid.UUID) *TakeHistoryItemUpdateOne {
 	thiuo.mutation.SetPrescriptionItemID(u)
@@ -549,6 +577,12 @@ func (thiuo *TakeHistoryItemUpdateOne) SetNillablePrescriptionItemID(u *uuid.UUI
 	if u != nil {
 		thiuo.SetPrescriptionItemID(*u)
 	}
+	return thiuo
+}
+
+// ClearPrescriptionItemID clears the value of the "prescription_item_id" field.
+func (thiuo *TakeHistoryItemUpdateOne) ClearPrescriptionItemID() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearPrescriptionItemID()
 	return thiuo
 }
 
@@ -566,6 +600,12 @@ func (thiuo *TakeHistoryItemUpdateOne) SetNillableTimezoneID(u *uuid.UUID) *Take
 	return thiuo
 }
 
+// ClearTimezoneID clears the value of the "timezone_id" field.
+func (thiuo *TakeHistoryItemUpdateOne) ClearTimezoneID() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearTimezoneID()
+	return thiuo
+}
+
 // SetMedicineID sets the "medicine_id" field.
 func (thiuo *TakeHistoryItemUpdateOne) SetMedicineID(u uuid.UUID) *TakeHistoryItemUpdateOne {
 	thiuo.mutation.SetMedicineID(u)
@@ -577,6 +617,12 @@ func (thiuo *TakeHistoryItemUpdateOne) SetNillableMedicineID(u *uuid.UUID) *Take
 	if u != nil {
 		thiuo.SetMedicineID(*u)
 	}
+	return thiuo
+}
+
+// ClearMedicineID clears the value of the "medicine_id" field.
+func (thiuo *TakeHistoryItemUpdateOne) ClearMedicineID() *TakeHistoryItemUpdateOne {
+	thiuo.mutation.ClearMedicineID()
 	return thiuo
 }
 
@@ -748,15 +794,15 @@ func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeUnit(s *string) *TakeHisto
 }
 
 // SetTakeDate sets the "take_date" field.
-func (thiuo *TakeHistoryItemUpdateOne) SetTakeDate(t time.Time) *TakeHistoryItemUpdateOne {
-	thiuo.mutation.SetTakeDate(t)
+func (thiuo *TakeHistoryItemUpdateOne) SetTakeDate(s string) *TakeHistoryItemUpdateOne {
+	thiuo.mutation.SetTakeDate(s)
 	return thiuo
 }
 
 // SetNillableTakeDate sets the "take_date" field if the given value is not nil.
-func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeDate(t *time.Time) *TakeHistoryItemUpdateOne {
-	if t != nil {
-		thiuo.SetTakeDate(*t)
+func (thiuo *TakeHistoryItemUpdateOne) SetNillableTakeDate(s *string) *TakeHistoryItemUpdateOne {
+	if s != nil {
+		thiuo.SetTakeDate(*s)
 	}
 	return thiuo
 }
@@ -865,18 +911,7 @@ func (thiuo *TakeHistoryItemUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (thiuo *TakeHistoryItemUpdateOne) check() error {
-	if _, ok := thiuo.mutation.PrescriptionItemID(); thiuo.mutation.PrescriptionItemCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "TakeHistoryItem.prescription_item"`)
-	}
-	return nil
-}
-
 func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *TakeHistoryItem, err error) {
-	if err := thiuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(takehistoryitem.Table, takehistoryitem.Columns, sqlgraph.NewFieldSpec(takehistoryitem.FieldID, field.TypeUUID))
 	id, ok := thiuo.mutation.ID()
 	if !ok {
@@ -908,11 +943,20 @@ func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *Take
 	if value, ok := thiuo.mutation.PrescriptionID(); ok {
 		_spec.SetField(takehistoryitem.FieldPrescriptionID, field.TypeUUID, value)
 	}
+	if thiuo.mutation.PrescriptionIDCleared() {
+		_spec.ClearField(takehistoryitem.FieldPrescriptionID, field.TypeUUID)
+	}
 	if value, ok := thiuo.mutation.TimezoneID(); ok {
 		_spec.SetField(takehistoryitem.FieldTimezoneID, field.TypeUUID, value)
 	}
+	if thiuo.mutation.TimezoneIDCleared() {
+		_spec.ClearField(takehistoryitem.FieldTimezoneID, field.TypeUUID)
+	}
 	if value, ok := thiuo.mutation.MedicineID(); ok {
 		_spec.SetField(takehistoryitem.FieldMedicineID, field.TypeUUID, value)
+	}
+	if thiuo.mutation.MedicineIDCleared() {
+		_spec.ClearField(takehistoryitem.FieldMedicineID, field.TypeUUID)
 	}
 	if value, ok := thiuo.mutation.MedicineName(); ok {
 		_spec.SetField(takehistoryitem.FieldMedicineName, field.TypeString, value)
@@ -957,7 +1001,7 @@ func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *Take
 		_spec.SetField(takehistoryitem.FieldTakeUnit, field.TypeString, value)
 	}
 	if value, ok := thiuo.mutation.TakeDate(); ok {
-		_spec.SetField(takehistoryitem.FieldTakeDate, field.TypeTime, value)
+		_spec.SetField(takehistoryitem.FieldTakeDate, field.TypeString, value)
 	}
 	if value, ok := thiuo.mutation.TakeTime(); ok {
 		_spec.SetField(takehistoryitem.FieldTakeTime, field.TypeString, value)
@@ -973,7 +1017,7 @@ func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *Take
 	}
 	if thiuo.mutation.PrescriptionItemCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   takehistoryitem.PrescriptionItemTable,
 			Columns: []string{takehistoryitem.PrescriptionItemColumn},
@@ -986,7 +1030,7 @@ func (thiuo *TakeHistoryItemUpdateOne) sqlSave(ctx context.Context) (_node *Take
 	}
 	if nodes := thiuo.mutation.PrescriptionItemIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   takehistoryitem.PrescriptionItemTable,
 			Columns: []string{takehistoryitem.PrescriptionItemColumn},

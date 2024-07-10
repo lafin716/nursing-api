@@ -132,7 +132,7 @@ func TakeUnit(v string) predicate.TakeHistoryItem {
 }
 
 // TakeDate applies equality check predicate on the "take_date" field. It's identical to TakeDateEQ.
-func TakeDate(v time.Time) predicate.TakeHistoryItem {
+func TakeDate(v string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeDate, v))
 }
 
@@ -231,6 +231,16 @@ func PrescriptionIDLTE(v uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldLTE(FieldPrescriptionID, v))
 }
 
+// PrescriptionIDIsNil applies the IsNil predicate on the "prescription_id" field.
+func PrescriptionIDIsNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIsNull(FieldPrescriptionID))
+}
+
+// PrescriptionIDNotNil applies the NotNil predicate on the "prescription_id" field.
+func PrescriptionIDNotNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldPrescriptionID))
+}
+
 // PrescriptionItemIDEQ applies the EQ predicate on the "prescription_item_id" field.
 func PrescriptionItemIDEQ(v uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldPrescriptionItemID, v))
@@ -249,6 +259,16 @@ func PrescriptionItemIDIn(vs ...uuid.UUID) predicate.TakeHistoryItem {
 // PrescriptionItemIDNotIn applies the NotIn predicate on the "prescription_item_id" field.
 func PrescriptionItemIDNotIn(vs ...uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldPrescriptionItemID, vs...))
+}
+
+// PrescriptionItemIDIsNil applies the IsNil predicate on the "prescription_item_id" field.
+func PrescriptionItemIDIsNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIsNull(FieldPrescriptionItemID))
+}
+
+// PrescriptionItemIDNotNil applies the NotNil predicate on the "prescription_item_id" field.
+func PrescriptionItemIDNotNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldPrescriptionItemID))
 }
 
 // TimezoneIDEQ applies the EQ predicate on the "timezone_id" field.
@@ -291,6 +311,16 @@ func TimezoneIDLTE(v uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTimezoneID, v))
 }
 
+// TimezoneIDIsNil applies the IsNil predicate on the "timezone_id" field.
+func TimezoneIDIsNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIsNull(FieldTimezoneID))
+}
+
+// TimezoneIDNotNil applies the NotNil predicate on the "timezone_id" field.
+func TimezoneIDNotNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldTimezoneID))
+}
+
 // MedicineIDEQ applies the EQ predicate on the "medicine_id" field.
 func MedicineIDEQ(v uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldMedicineID, v))
@@ -329,6 +359,16 @@ func MedicineIDLT(v uuid.UUID) predicate.TakeHistoryItem {
 // MedicineIDLTE applies the LTE predicate on the "medicine_id" field.
 func MedicineIDLTE(v uuid.UUID) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldLTE(FieldMedicineID, v))
+}
+
+// MedicineIDIsNil applies the IsNil predicate on the "medicine_id" field.
+func MedicineIDIsNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldIsNull(FieldMedicineID))
+}
+
+// MedicineIDNotNil applies the NotNil predicate on the "medicine_id" field.
+func MedicineIDNotNil() predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldNotNull(FieldMedicineID))
 }
 
 // MedicineNameEQ applies the EQ predicate on the "medicine_name" field.
@@ -862,43 +902,68 @@ func TakeUnitContainsFold(v string) predicate.TakeHistoryItem {
 }
 
 // TakeDateEQ applies the EQ predicate on the "take_date" field.
-func TakeDateEQ(v time.Time) predicate.TakeHistoryItem {
+func TakeDateEQ(v string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldEQ(FieldTakeDate, v))
 }
 
 // TakeDateNEQ applies the NEQ predicate on the "take_date" field.
-func TakeDateNEQ(v time.Time) predicate.TakeHistoryItem {
+func TakeDateNEQ(v string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldNEQ(FieldTakeDate, v))
 }
 
 // TakeDateIn applies the In predicate on the "take_date" field.
-func TakeDateIn(vs ...time.Time) predicate.TakeHistoryItem {
+func TakeDateIn(vs ...string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldIn(FieldTakeDate, vs...))
 }
 
 // TakeDateNotIn applies the NotIn predicate on the "take_date" field.
-func TakeDateNotIn(vs ...time.Time) predicate.TakeHistoryItem {
+func TakeDateNotIn(vs ...string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldNotIn(FieldTakeDate, vs...))
 }
 
 // TakeDateGT applies the GT predicate on the "take_date" field.
-func TakeDateGT(v time.Time) predicate.TakeHistoryItem {
+func TakeDateGT(v string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldGT(FieldTakeDate, v))
 }
 
 // TakeDateGTE applies the GTE predicate on the "take_date" field.
-func TakeDateGTE(v time.Time) predicate.TakeHistoryItem {
+func TakeDateGTE(v string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldGTE(FieldTakeDate, v))
 }
 
 // TakeDateLT applies the LT predicate on the "take_date" field.
-func TakeDateLT(v time.Time) predicate.TakeHistoryItem {
+func TakeDateLT(v string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldLT(FieldTakeDate, v))
 }
 
 // TakeDateLTE applies the LTE predicate on the "take_date" field.
-func TakeDateLTE(v time.Time) predicate.TakeHistoryItem {
+func TakeDateLTE(v string) predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(sql.FieldLTE(FieldTakeDate, v))
+}
+
+// TakeDateContains applies the Contains predicate on the "take_date" field.
+func TakeDateContains(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContains(FieldTakeDate, v))
+}
+
+// TakeDateHasPrefix applies the HasPrefix predicate on the "take_date" field.
+func TakeDateHasPrefix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasPrefix(FieldTakeDate, v))
+}
+
+// TakeDateHasSuffix applies the HasSuffix predicate on the "take_date" field.
+func TakeDateHasSuffix(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldHasSuffix(FieldTakeDate, v))
+}
+
+// TakeDateEqualFold applies the EqualFold predicate on the "take_date" field.
+func TakeDateEqualFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldEqualFold(FieldTakeDate, v))
+}
+
+// TakeDateContainsFold applies the ContainsFold predicate on the "take_date" field.
+func TakeDateContainsFold(v string) predicate.TakeHistoryItem {
+	return predicate.TakeHistoryItem(sql.FieldContainsFold(FieldTakeDate, v))
 }
 
 // TakeTimeEQ applies the EQ predicate on the "take_time" field.
@@ -1061,7 +1126,7 @@ func HasPrescriptionItem() predicate.TakeHistoryItem {
 	return predicate.TakeHistoryItem(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, PrescriptionItemTable, PrescriptionItemColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, PrescriptionItemTable, PrescriptionItemColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

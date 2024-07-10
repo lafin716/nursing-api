@@ -50,7 +50,7 @@ type TakeHistoryItem struct {
 	// TakeUnit holds the value of the "take_unit" field.
 	TakeUnit string `json:"take_unit,omitempty"`
 	// TakeDate holds the value of the "take_date" field.
-	TakeDate time.Time `json:"take_date,omitempty"`
+	TakeDate string `json:"take_date,omitempty"`
 	// TakeTime holds the value of the "take_time" field.
 	TakeTime string `json:"take_time,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -94,9 +94,9 @@ func (*TakeHistoryItem) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case takehistoryitem.FieldTotalAmount, takehistoryitem.FieldRemainAmount, takehistoryitem.FieldTakeAmount:
 			values[i] = new(sql.NullFloat64)
-		case takehistoryitem.FieldMedicineName, takehistoryitem.FieldTimezoneName, takehistoryitem.FieldMidday, takehistoryitem.FieldHour, takehistoryitem.FieldMinute, takehistoryitem.FieldTakeUnit, takehistoryitem.FieldTakeTime:
+		case takehistoryitem.FieldMedicineName, takehistoryitem.FieldTimezoneName, takehistoryitem.FieldMidday, takehistoryitem.FieldHour, takehistoryitem.FieldMinute, takehistoryitem.FieldTakeUnit, takehistoryitem.FieldTakeDate, takehistoryitem.FieldTakeTime:
 			values[i] = new(sql.NullString)
-		case takehistoryitem.FieldTakeDate, takehistoryitem.FieldCreatedAt, takehistoryitem.FieldUpdatedAt:
+		case takehistoryitem.FieldCreatedAt, takehistoryitem.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case takehistoryitem.FieldID, takehistoryitem.FieldUserID, takehistoryitem.FieldPrescriptionID, takehistoryitem.FieldPrescriptionItemID, takehistoryitem.FieldTimezoneID, takehistoryitem.FieldMedicineID:
 			values[i] = new(uuid.UUID)
@@ -212,10 +212,10 @@ func (thi *TakeHistoryItem) assignValues(columns []string, values []any) error {
 				thi.TakeUnit = value.String
 			}
 		case takehistoryitem.FieldTakeDate:
-			if value, ok := values[i].(*sql.NullTime); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field take_date", values[i])
 			} else if value.Valid {
-				thi.TakeDate = value.Time
+				thi.TakeDate = value.String
 			}
 		case takehistoryitem.FieldTakeTime:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -322,7 +322,7 @@ func (thi *TakeHistoryItem) String() string {
 	builder.WriteString(thi.TakeUnit)
 	builder.WriteString(", ")
 	builder.WriteString("take_date=")
-	builder.WriteString(thi.TakeDate.Format(time.ANSIC))
+	builder.WriteString(thi.TakeDate)
 	builder.WriteString(", ")
 	builder.WriteString("take_time=")
 	builder.WriteString(thi.TakeTime)

@@ -679,7 +679,7 @@ func (c *PrescriptionItemClient) QueryTakeHistoryItem(pi *PrescriptionItem) *Tak
 		step := sqlgraph.NewStep(
 			sqlgraph.From(prescriptionitem.Table, prescriptionitem.FieldID, id),
 			sqlgraph.To(takehistoryitem.Table, takehistoryitem.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, prescriptionitem.TakeHistoryItemTable, prescriptionitem.TakeHistoryItemColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, prescriptionitem.TakeHistoryItemTable, prescriptionitem.TakeHistoryItemColumn),
 		)
 		fromV = sqlgraph.Neighbors(pi.driver.Dialect(), step)
 		return fromV, nil
@@ -828,7 +828,7 @@ func (c *TakeHistoryItemClient) QueryPrescriptionItem(thi *TakeHistoryItem) *Pre
 		step := sqlgraph.NewStep(
 			sqlgraph.From(takehistoryitem.Table, takehistoryitem.FieldID, id),
 			sqlgraph.To(prescriptionitem.Table, prescriptionitem.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, takehistoryitem.PrescriptionItemTable, takehistoryitem.PrescriptionItemColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, takehistoryitem.PrescriptionItemTable, takehistoryitem.PrescriptionItemColumn),
 		)
 		fromV = sqlgraph.Neighbors(thi.driver.Dialect(), step)
 		return fromV, nil

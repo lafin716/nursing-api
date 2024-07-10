@@ -15,6 +15,8 @@ const (
 	Label = "prescription_item"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldPrescriptionID holds the string denoting the prescription_id field in the database.
 	FieldPrescriptionID = "prescription_id"
 	// FieldTimezoneID holds the string denoting the timezone_id field in the database.
@@ -70,6 +72,7 @@ const (
 // Columns holds all SQL columns for prescriptionitem fields.
 var Columns = []string{
 	FieldID,
+	FieldUserID,
 	FieldPrescriptionID,
 	FieldTimezoneID,
 	FieldMedicineID,
@@ -118,6 +121,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByPrescriptionID orders the results by the prescription_id field.
@@ -202,10 +210,17 @@ func ByPrescriptionField(field string, opts ...sql.OrderTermOption) OrderOption 
 	}
 }
 
-// ByTakeHistoryItemField orders the results by take_history_item field.
-func ByTakeHistoryItemField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByTakeHistoryItemCount orders the results by take_history_item count.
+func ByTakeHistoryItemCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTakeHistoryItemStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newTakeHistoryItemStep(), opts...)
+	}
+}
+
+// ByTakeHistoryItem orders the results by take_history_item terms.
+func ByTakeHistoryItem(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTakeHistoryItemStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newPrescriptionStep() *sqlgraph.Step {
@@ -219,6 +234,6 @@ func newTakeHistoryItemStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TakeHistoryItemInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, TakeHistoryItemTable, TakeHistoryItemColumn),
+		sqlgraph.Edge(sqlgraph.O2M, false, TakeHistoryItemTable, TakeHistoryItemColumn),
 	)
 }

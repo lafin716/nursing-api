@@ -6,12 +6,14 @@ import (
 	"github.com/google/uuid"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
+	mdSchema "nursing_api/pkg/ent/medicine"
 	pscSchema "nursing_api/pkg/ent/prescription"
 	pscItmSchema "nursing_api/pkg/ent/prescriptionitem"
 	tkhItmSchema "nursing_api/pkg/ent/takehistoryitem"
 	tkhMemoSchema "nursing_api/pkg/ent/takehistorymemo"
 	tzSchema "nursing_api/pkg/ent/timezone"
 	"nursing_api/pkg/mono"
+	"strconv"
 	"time"
 )
 
@@ -25,10 +27,14 @@ type Repository interface {
 	GetPrescriptionItem(id uuid.UUID) (*ent.PrescriptionItem, error)
 	GetTimeZone(id uuid.UUID) (*ent.TimeZone, error)
 	GetTakeHistoryItem(takeHistoryItemId uuid.UUID) (*ent.TakeHistoryItem, error)
+	GetTodayTakeHistoryItemFromPrescriptionItem(prescriptionItemId uuid.UUID) (*ent.TakeHistoryItem, error)
+	GetTakeHistoryItemFromPrescriptionItemByDate(prescriptionItemId uuid.UUID, date time.Time) (*ent.TakeHistoryItem, error)
+	GetMedicine(id uuid.UUID) (*ent.Medicine, error)
 
 	AddPrescription(plan AddPlanRequest) (*ent.Prescription, error)
-	AddPrescriptionItems(prescriptionId uuid.UUID, tz *ent.TimeZone, medicine AddMedicineRequest) (*ent.PrescriptionItem, error)
+	AddPrescriptionItems(prescription *ent.Prescription, tz *ent.TimeZone, medicine *ent.Medicine, subMedicine AddMedicineRequest) (*ent.PrescriptionItem, error)
 	AddTakeHistoryItemFromPrescriptionItem(prescriptionItem *ent.PrescriptionItem) (*ent.TakeHistoryItem, error)
+	AddTakeHistoryItemFromPrescriptionItemWithDate(prescriptionItem *ent.PrescriptionItem, date time.Time) (*ent.TakeHistoryItem, error)
 	UpdateTakeHistoryItem(takeHistoryItem *ent.TakeHistoryItem) error
 	UpdatePrescriptionItemFromTakeHistoryItem(takeHistoryItem *ent.TakeHistoryItem) error
 	UpdateTakeHistoryMemo(userId uuid.UUID, date time.Time, timezoneId uuid.UUID, memo string) error
@@ -95,8 +101,8 @@ func (r repository) GetPrescriptionInMonth(userId uuid.UUID, year int, month int
 		Query().
 		Where(
 			pscSchema.UserIDEQ(userId),
-			pscSchema.StartedAtGTE(time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Now().Location())),
-			pscSchema.StartedAtLT(time.Date(year, time.Month(month+1), 1, 0, 0, 0, 0, time.Now().Location())),
+			pscSchema.StartedAtLT(r.mono.Date.ToFirstDayOfMonth(year, month+1)),
+			pscSchema.FinishedAtGTE(r.mono.Date.ToFirstDayOfMonth(year, month)),
 		).
 		All(r.GetCtx())
 	if err != nil {
@@ -137,7 +143,7 @@ func (r repository) GetPrescriptionInDateByTimeZoneId(
 func (r repository) GetPrescriptionItem(id uuid.UUID) (*ent.PrescriptionItem, error) {
 	pscItm, err := r.prescriptionItemClient().
 		Query().
-		Where(pscItmSchema.PrescriptionIDEQ(id)).
+		Where(pscItmSchema.IDEQ(id)).
 		Only(r.GetCtx())
 	if err != nil {
 		return nil, err
@@ -172,6 +178,61 @@ func (r repository) GetTakeHistoryItem(takeHistoryItemId uuid.UUID) (*ent.TakeHi
 	return tkhItm, nil
 }
 
+// 오늘 개별 의약품 복용내역 조회
+func (r repository) GetTodayTakeHistoryItemFromPrescriptionItem(
+	prescriptionItemId uuid.UUID,
+) (*ent.TakeHistoryItem, error) {
+	tkhItm, err := r.takeHistoryItemClient().
+		Query().
+		Where(
+			tkhItmSchema.And(
+				tkhItmSchema.TakeDateEQ(r.mono.Date.GetDate(time.Now())),
+				tkhItmSchema.PrescriptionItemIDEQ(prescriptionItemId),
+			),
+		).
+		Only(r.GetCtx())
+	if err != nil {
+		return nil, err
+	}
+
+	return tkhItm, nil
+}
+
+// 날짜별 개별 의약품 복용내역 조회
+func (r repository) GetTakeHistoryItemFromPrescriptionItemByDate(
+	prescriptionItemId uuid.UUID,
+	date time.Time,
+) (*ent.TakeHistoryItem, error) {
+	tkhItm, err := r.takeHistoryItemClient().
+		Query().
+		Where(
+			tkhItmSchema.And(
+				tkhItmSchema.TakeDateEQ(r.mono.Date.GetDate(date)),
+				tkhItmSchema.PrescriptionItemIDEQ(prescriptionItemId),
+			),
+		).
+		Limit(1).
+		Only(r.GetCtx())
+	if err != nil {
+		return nil, err
+	}
+
+	return tkhItm, nil
+}
+
+// 의약품 조회
+func (r repository) GetMedicine(id uuid.UUID) (*ent.Medicine, error) {
+	med, err := r.medicineClient().
+		Query().
+		Where(mdSchema.IDEQ(id)).
+		Only(r.GetCtx())
+	if err != nil {
+		return nil, err
+	}
+
+	return med, nil
+}
+
 // 처방전 생성
 func (r repository) AddPrescription(plan AddPlanRequest) (*ent.Prescription, error) {
 	startedAt := r.mono.Date.ParseForce("Y-m-d", plan.StartedAt)
@@ -194,25 +255,27 @@ func (r repository) AddPrescription(plan AddPlanRequest) (*ent.Prescription, err
 
 // 처방전 아이템 생성
 func (r repository) AddPrescriptionItems(
-	prescriptionId uuid.UUID,
+	prescription *ent.Prescription,
 	tz *ent.TimeZone,
-	medicine AddMedicineRequest,
+	medicine *ent.Medicine,
+	subMedicine AddMedicineRequest,
 ) (*ent.PrescriptionItem, error) {
 	pscItm, err := r.prescriptionItemClient().
 		Create().
-		SetPrescriptionID(prescriptionId).
+		SetUserID(prescription.UserID).
+		SetPrescriptionID(prescription.ID).
 		SetTimezoneID(tz.ID).
 		SetTimezoneName(tz.TimezoneName).
 		SetMidday(tz.Midday).
 		SetHour(tz.Hour).
 		SetMinute(tz.Minute).
-		SetMedicineID(medicine.MedicineId).
-		SetMedicineName(medicine.Name).
-		SetTakeAmount(medicine.TakeAmount).
-		SetRemainAmount(medicine.RemainAmount).
-		SetTotalAmount(medicine.TotalAmount).
-		SetMedicineUnit(medicine.TakeUnit).
-		SetMemo(medicine.Memo).
+		SetMedicineID(medicine.ID).
+		SetMedicineName(medicine.MedicineName).
+		SetTakeAmount(subMedicine.TakeAmount).
+		SetRemainAmount(subMedicine.RemainAmount).
+		SetTotalAmount(subMedicine.TotalAmount).
+		SetMedicineUnit(subMedicine.TakeUnit).
+		SetMemo(subMedicine.Memo).
 		Save(r.GetCtx())
 	if err != nil {
 		return nil, err
@@ -227,7 +290,7 @@ func (r repository) AddTakeHistoryItemFromPrescriptionItem(
 ) (*ent.TakeHistoryItem, error) {
 	tkhItm, err := r.takeHistoryItemClient().
 		Create().
-		SetUserID(prescriptionItem.Edges.Prescription.UserID).
+		SetUserID(prescriptionItem.UserID).
 		SetPrescriptionItemID(prescriptionItem.ID).
 		SetPrescriptionID(prescriptionItem.PrescriptionID).
 		SetTimezoneID(prescriptionItem.TimezoneID).
@@ -240,6 +303,41 @@ func (r repository) AddTakeHistoryItemFromPrescriptionItem(
 		SetTakeAmount(prescriptionItem.TakeAmount).
 		SetRemainAmount(prescriptionItem.RemainAmount).
 		SetTotalAmount(prescriptionItem.TotalAmount).
+		SetTakeUnit(prescriptionItem.MedicineUnit).
+		SetTakeDate(r.mono.Date.GetDate(time.Now())).
+		SetTakeTime("").
+		SetTakeStatus(false).
+		Save(r.GetCtx())
+	if err != nil {
+		return nil, err
+	}
+
+	return tkhItm, nil
+}
+
+// 처방전 아이템 복용내역 생성
+func (r repository) AddTakeHistoryItemFromPrescriptionItemWithDate(
+	prescriptionItem *ent.PrescriptionItem,
+	date time.Time,
+) (*ent.TakeHistoryItem, error) {
+	tkhItm, err := r.takeHistoryItemClient().
+		Create().
+		SetUserID(prescriptionItem.UserID).
+		SetPrescriptionItemID(prescriptionItem.ID).
+		SetPrescriptionID(prescriptionItem.PrescriptionID).
+		SetTimezoneID(prescriptionItem.TimezoneID).
+		SetTimezoneName(prescriptionItem.TimezoneName).
+		SetHour(prescriptionItem.Hour).
+		SetMinute(prescriptionItem.Minute).
+		SetMidday(prescriptionItem.Midday).
+		SetMedicineID(prescriptionItem.MedicineID).
+		SetMedicineName(prescriptionItem.MedicineName).
+		SetTakeAmount(prescriptionItem.TakeAmount).
+		SetRemainAmount(prescriptionItem.RemainAmount).
+		SetTotalAmount(prescriptionItem.TotalAmount).
+		SetTakeUnit(prescriptionItem.MedicineUnit).
+		SetTakeDate(r.mono.Date.GetDate(date)).
+		SetTakeTime("").
 		SetTakeStatus(false).
 		Save(r.GetCtx())
 	if err != nil {
@@ -295,7 +393,7 @@ func (r repository) UpdateTakeHistoryMemo(
 		Query().
 		Where(
 			tkhMemoSchema.UserIDEQ(userId),
-			tkhMemoSchema.TakeDateEQ(date),
+			tkhMemoSchema.TakeDateEQ(r.mono.Date.GetDate(date)),
 			tkhMemoSchema.TimezoneIDEQ(timezoneId),
 		).
 		Only(r.GetCtx())
@@ -304,7 +402,7 @@ func (r repository) UpdateTakeHistoryMemo(
 			Create().
 			SetUserID(userId).
 			SetTimezoneID(timezoneId).
-			SetTakeDate(date).
+			SetTakeDate(r.mono.Date.GetDate(date)).
 			SetMemo(memo).
 			Save(r.GetCtx())
 		if err != nil {
@@ -351,7 +449,7 @@ func (r repository) GetTakeHistoryItemsByTimeZoneId(userId uuid.UUID, date time.
 		Query().
 		Where(
 			tkhItmSchema.UserIDEQ(userId),
-			tkhItmSchema.TakeDateEQ(date),
+			tkhItmSchema.TakeDateEQ(r.mono.Date.GetDate(date)),
 			tkhItmSchema.TimezoneIDEQ(timezoneId),
 		).
 		All(r.GetCtx())
@@ -368,8 +466,8 @@ func (r repository) GetTakeHistoryMemoByTimeZoneId(userId uuid.UUID, date time.T
 		Query().
 		Where(
 			tkhMemoSchema.UserIDEQ(userId),
-			tkhMemoSchema.TakeDateEQ(date),
 			tkhMemoSchema.TimezoneIDEQ(timezoneId),
+			tkhMemoSchema.TakeDateEQ(r.mono.Date.GetDate(date)),
 		).
 		Only(r.GetCtx())
 	if err != nil {
@@ -390,35 +488,44 @@ func (r repository) GetPlanMap(userId uuid.UUID, date time.Time) (map[uuid.UUID]
 	// 처방전 아이템을 시간대별 복용계획 형태로 가공
 	tzMap := map[uuid.UUID]*Plan{}
 	for _, psc := range pscList {
-		pscItms, err := psc.Edges.PrescriptionItemsOrErr()
+		pscItems, err := psc.Edges.PrescriptionItemsOrErr()
 		if err != nil {
 			continue
 		}
 
 		// 처방전 아이템을 시간대별로 그룹핑
-		for _, pscItm := range pscItms {
+		for _, pscItm := range pscItems {
 			tzId := pscItm.TimezoneID
 
 			// 타임존이 없는 경우 생성
 			if tzMap[tzId] == nil {
 				tzText := fmt.Sprintf("%s %s:%s", pscItm.Midday, pscItm.Hour, pscItm.Minute)
+				hour, _ := strconv.Atoi(pscItm.Hour)
+				minute, _ := strconv.Atoi(pscItm.Minute)
 				tzMap[tzId] = &Plan{
 					TimezoneId: tzId,
 					PlanName:   pscItm.TimezoneName,
+					Hour:       hour,
+					Minute:     minute,
 					Timezone:   tzText,
 					Memo:       "",
+					TakeStatus: false,
 				}
 			}
 
 			// 복용내역이 있는 경우 업데이트
-			tkhItm, err := pscItm.Edges.TakeHistoryItemOrErr()
+			tkhItem, err := r.GetTakeHistoryItemFromPrescriptionItemByDate(pscItm.ID, date)
 			takeHistoryItemId := uuid.Nil
 			takeDate := ""
+			takeTime := ""
 			takeStatus := false
+			takeAmount := pscItm.TakeAmount
 			if err == nil {
-				takeHistoryItemId = tkhItm.ID
-				takeStatus = tkhItm.TakeStatus
-				takeDate = tkhItm.TakeDate.Format("2006-01-02 15:04:05")
+				takeHistoryItemId = tkhItem.ID
+				takeStatus = tkhItem.TakeStatus
+				takeDate = tkhItem.TakeDate
+				takeTime = tkhItem.TakeTime
+				takeAmount = tkhItem.TakeAmount
 			}
 
 			// 처방전 아이템을 복용계획으로 추가
@@ -428,11 +535,12 @@ func (r repository) GetPlanMap(userId uuid.UUID, date time.Time) (map[uuid.UUID]
 				MedicineId:         pscItm.MedicineID,
 				PillName:           pscItm.MedicineName,
 				TakeUnit:           pscItm.MedicineUnit,
-				TakeAmount:         pscItm.TakeAmount,
+				TakeAmount:         takeAmount,
 				RemainAmount:       pscItm.RemainAmount,
 				TotalAmount:        pscItm.TotalAmount,
 				TakeHistoryItemId:  takeHistoryItemId,
 				TakeDate:           takeDate,
+				TakeTime:           takeTime,
 				TakeStatus:         takeStatus,
 			}
 			tzMap[tzId].Pills = append(tzMap[tzId].Pills, newPill)
@@ -441,11 +549,25 @@ func (r repository) GetPlanMap(userId uuid.UUID, date time.Time) (map[uuid.UUID]
 
 	// 시간대별 메모 조회 후 복용계획에 추가
 	for tzId, plan := range tzMap {
+		// 복용내역이 모두 완료된 경우 복용완료로 변경
+		pillTotal := len(plan.Pills)
+		taken := 0
+		for i := 0; i < pillTotal; i++ {
+			if plan.Pills[i].TakeStatus {
+				taken++
+			}
+		}
+
+		if pillTotal == taken {
+			plan.TakeStatus = true
+		}
+
 		tkhMemo, err := r.GetTakeHistoryMemoByTimeZoneId(userId, date, tzId)
 		if err != nil {
 			continue
 		}
 		plan.Memo = tkhMemo.Memo
+		tzMap[tzId] = plan
 	}
 
 	return tzMap, nil
@@ -460,15 +582,19 @@ func (r repository) prescriptionClient() *ent.PrescriptionClient {
 }
 
 func (r repository) prescriptionItemClient() *ent.PrescriptionItemClient {
-	return r.db.GetClient().PrescriptionItem
+	return r.db.GetClient().Debug().PrescriptionItem
 }
 
 func (r repository) takeHistoryItemClient() *ent.TakeHistoryItemClient {
-	return r.db.GetClient().TakeHistoryItem
+	return r.db.GetClient().Debug().TakeHistoryItem
 }
 
 func (r repository) takeHistoryMemoClient() *ent.TakeHistoryMemoClient {
-	return r.db.GetClient().TakeHistoryMemo
+	return r.db.GetClient().Debug().TakeHistoryMemo
+}
+
+func (r repository) medicineClient() *ent.MedicineClient {
+	return r.db.GetClient().Medicine
 }
 
 func (r repository) GetTxManager() database.TransactionManager {
@@ -477,13 +603,4 @@ func (r repository) GetTxManager() database.TransactionManager {
 
 func (r repository) GetCtx() context.Context {
 	return r.db.GetCtx()
-}
-
-func Convert[T any, O any](data []O, action func(O) T) []T {
-	var result []T
-	for _, d := range data {
-		result = append(result, action(d))
-	}
-
-	return result
 }
