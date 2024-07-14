@@ -79,7 +79,9 @@ func (r repository) GetPrescription(id uuid.UUID) (*ent.Prescription, error) {
 func (r repository) GetPrescriptionInDate(userId uuid.UUID, date time.Time) ([]*ent.Prescription, error) {
 	ps, err := r.prescriptionClient().
 		Query().
-		WithPrescriptionItems().
+		WithPrescriptionItems(func(query *ent.PrescriptionItemQuery) {
+			query.Order(pscItmSchema.ByCreatedAt())
+		}).
 		Where(
 			pscSchema.And(
 				pscSchema.UserID(userId),
