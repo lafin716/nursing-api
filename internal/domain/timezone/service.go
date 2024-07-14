@@ -73,8 +73,15 @@ func (t service) Create(req *CreateTimeZoneRequest) dto.BaseResponse[TimeZone] {
 }
 
 func (t service) Update(req *UpdateTimeZoneRequest) dto.BaseResponse[TimeZone] {
+	tx := t.repo.GetTxManager()
+	err := tx.BeginTx()
+	if err != nil {
+		return dto.Fail[TimeZone](response.CODE_FAIL_DURING_UPDATE_TIMEZONE, err)
+	}
+
 	timezone, err := t.repo.GetTimeZone(req.ID, req.UserId)
 	if err != nil {
+		_ = tx.RollbackTx()
 		return dto.Fail[TimeZone](response.CODE_NOT_FOUND_TIMEZONE, err)
 	}
 
@@ -93,6 +100,7 @@ func (t service) Update(req *UpdateTimeZoneRequest) dto.BaseResponse[TimeZone] {
 		} else if duplicate.Hour == req.Hour && duplicate.Minute == req.Minute {
 			errCode = response.CODE_ALREADY_EXIST_TIMEZONE_HOUR_MINUTE
 		}
+		_ = tx.RollbackTx()
 		return dto.Fail[TimeZone](errCode, nil)
 	}
 
@@ -113,9 +121,24 @@ func (t service) Update(req *UpdateTimeZoneRequest) dto.BaseResponse[TimeZone] {
 	// 업데이트 처리
 	updated, err := t.repo.UpdateTimeZone(timezone)
 	if !updated || err != nil {
+		_ = tx.RollbackTx()
 		return dto.Fail[TimeZone](response.CODE_FAIL_DURING_UPDATE_TIMEZONE, err)
 	}
 
+	// 의약품, 복용내역 금일자도 업데이트
+	err = t.repo.UpdateCurrentPrescriptionItemByTimeZone(req.UserId, timezone)
+	if err != nil {
+		_ = tx.RollbackTx()
+		return dto.Fail[TimeZone](response.CODE_FAIL_DURING_UPDATE_TIMEZONE, err)
+	}
+
+	err = t.repo.UpdateCurrentTakeHistoryItemByTimeZone(req.UserId, timezone)
+	if err != nil {
+		_ = tx.RollbackTx()
+		return dto.Fail[TimeZone](response.CODE_FAIL_DURING_UPDATE_TIMEZONE, err)
+	}
+
+	_ = tx.CommitTx()
 	return dto.Ok[TimeZone](response.CODE_SUCCESS, timezone)
 }
 

@@ -8,12 +8,15 @@ import (
 	"nursing_api/pkg/ent"
 	pscSchema "nursing_api/pkg/ent/prescription"
 	pscItmSchema "nursing_api/pkg/ent/prescriptionitem"
+	tkhItmSchema "nursing_api/pkg/ent/takehistoryitem"
 	tzSchema "nursing_api/pkg/ent/timezone"
 	"nursing_api/pkg/mono"
 	"time"
 )
 
 type Repository interface {
+	GetTxManager() database.TransactionManager
+
 	GetTimeZones(userId uuid.UUID) ([]*TimeZone, error)
 	GetTimeZone(id uuid.UUID, userId uuid.UUID) (*TimeZone, error)
 	CreateTimeZone(model *TimeZone) (*TimeZone, error)
@@ -21,6 +24,8 @@ type Repository interface {
 	DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, error)
 	GetDuplicate(userId uuid.UUID, name string, midday string, hour string, minute string) (*TimeZone, error)
 	CountPrescriptionItemByTimeZoneId(userId uuid.UUID, timezoneId uuid.UUID, date time.Time) (int, error)
+	UpdateCurrentPrescriptionItemByTimeZone(userId uuid.UUID, model *TimeZone) error
+	UpdateCurrentTakeHistoryItemByTimeZone(userId uuid.UUID, model *TimeZone) error
 }
 
 type timezoneRepository struct {
@@ -175,6 +180,41 @@ func (p timezoneRepository) CountPrescriptionItemByTimeZoneId(
 	return count, nil
 }
 
+// 금일자 의약품아이템과 내역을 업데이트
+func (p timezoneRepository) UpdateCurrentPrescriptionItemByTimeZone(userId uuid.UUID, timezone *TimeZone) error {
+	updated := p.prescriptionItemClient().
+		Update().
+		SetTimezoneName(timezone.Name).
+		SetMidday(timezone.Midday).
+		SetHour(timezone.Hour).
+		SetMinute(timezone.Minute).
+		Where(
+			pscItmSchema.UserIDEQ(userId),
+			pscItmSchema.TimezoneIDEQ(timezone.ID),
+		).Exec(p.GetCtx())
+
+	return updated
+}
+
+// 금일자 복용내역을 업데이트
+func (p timezoneRepository) UpdateCurrentTakeHistoryItemByTimeZone(userId uuid.UUID, timezone *TimeZone) error {
+	updated := p.takeHistoryItemClient().
+		Update().
+		SetTimezoneName(timezone.Name).
+		SetMidday(timezone.Midday).
+		SetHour(timezone.Hour).
+		SetMinute(timezone.Minute).
+		Where(
+			tkhItmSchema.And(
+				tkhItmSchema.UserIDEQ(userId),
+				tkhItmSchema.TimezoneIDEQ(timezone.ID),
+				tkhItmSchema.TakeDateEQ(p.mono.Date.TruncateToDate(time.Now()).Format("2006-01-02")),
+			),
+		).Exec(p.GetCtx())
+
+	return updated
+}
+
 func (p timezoneRepository) timezoneClient() *ent.TimeZoneClient {
 	return p.db.GetClient().TimeZone
 }
@@ -187,6 +227,14 @@ func (p timezoneRepository) prescriptionItemClient() *ent.PrescriptionItemClient
 	return p.db.GetClient().PrescriptionItem
 }
 
+func (p timezoneRepository) takeHistoryItemClient() *ent.TakeHistoryItemClient {
+	return p.db.GetClient().TakeHistoryItem
+}
+
 func (p timezoneRepository) GetCtx() context.Context {
 	return p.db.GetCtx()
+}
+
+func (p timezoneRepository) GetTxManager() database.TransactionManager {
+	return p.db.GetTxManager()
 }
