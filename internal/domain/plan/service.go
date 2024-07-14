@@ -431,9 +431,9 @@ func (p *planService) PillTakeAmountUpdate(req *PillTakeAmountUpdateRequest) dto
 	// 현재 복용상태인 경우
 	if tkhItem.TakeStatus {
 		// 이미 복용된 상태라면 남은량 싱크를 맞춰준다.
-		tkhItem.RemainAmount = tkhItem.RemainAmount + (originTakeAmount - tkhItem.TakeAmount)
+		tkhItem.RemainAmount = (tkhItem.RemainAmount + originTakeAmount) - tkhItem.TakeAmount
 		// 합산 수치가 정합성이 맞지않는 경우
-		if (tkhItem.RemainAmount + tkhItem.TakeAmount) != tkhItem.TotalAmount {
+		if tkhItem.RemainAmount < 0 || tkhItem.RemainAmount > tkhItem.TotalAmount {
 			_ = tx.RollbackTx()
 			return dto.Fail[bool](response.CODE_NOT_VALID_AMOUNT, err)
 		}
