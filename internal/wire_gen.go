@@ -60,7 +60,7 @@ func New() (*Server, error) {
 	planRepository := plan.NewRepository(databaseClient, client)
 	planUseCase := plan.NewService(client, planRepository)
 	planHttpApi := api.NewPlanHttpApi(planUseCase, jwtClient)
-	timezoneRepository := timezone.NewRepository(databaseClient)
+	timezoneRepository := timezone.NewRepository(databaseClient, client)
 	timezoneUseCase := timezone.NewService(timezoneRepository)
 	timeZoneApi := api.NewTimeZoneApi(timezoneUseCase, jwtClient)
 	routable := router.NewRouter(tokenVerifyMiddleware, mainHttpApi, authHttpApi, userHttpApi, medicineHttpApi, prescriptionApi, planHttpApi, timeZoneApi)

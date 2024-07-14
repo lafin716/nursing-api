@@ -645,6 +645,21 @@ paths:
       security:
       - Bearer: []
       summary: 복용시간대 삭제
+  /timezone/deletable/:id:
+    get:
+      description: 복용시간대를 삭제 가능 여부를 확인하는 엔드포인트
+      parameters:
+      - description: 복용시간대 고유번호
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - Bearer: []
+      summary: 복용시간대 삭제 가능 여부
   /user/check-email:
     post:
       consumes:

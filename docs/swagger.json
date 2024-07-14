@@ -635,6 +635,30 @@
                 "responses": {}
             }
         },
+        "/timezone/deletable/:id": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "복용시간대를 삭제 가능 여부를 확인하는 엔드포인트",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "복용시간대 삭제 가능 여부",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "복용시간대 고유번호",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        },
         "/user/check-email": {
             "post": {
                 "description": "이메일 중복확인 엔드포인트",
