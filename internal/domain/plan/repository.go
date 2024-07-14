@@ -554,14 +554,26 @@ func (r repository) GetPlanMap(userId uuid.UUID, date time.Time) (map[uuid.UUID]
 		// 복용내역이 모두 완료된 경우 복용완료로 변경
 		pillTotal := len(plan.Pills)
 		taken := 0
+
+		// 복용완료 시간 중 가장 늦은 시간을 기준으로 복용완료 처리
+		var latestTime time.Time
 		for i := 0; i < pillTotal; i++ {
 			if plan.Pills[i].TakeStatus {
 				taken++
+			}
+
+			// 복용완료 시간 중 가장 늦은 시간을 기준으로 복용완료 처리
+			if plan.Pills[i].TakeTime != "" {
+				takeTime, err := time.Parse("15:04:05", plan.Pills[i].TakeTime)
+				if err == nil && latestTime.After(takeTime) {
+					latestTime = takeTime
+				}
 			}
 		}
 
 		if pillTotal == taken {
 			plan.TakeStatus = true
+			plan.TakeTime = latestTime.Format("15:04:05")
 		}
 
 		tkhMemo, err := r.GetTakeHistoryMemoByTimeZoneId(userId, date, tzId)
