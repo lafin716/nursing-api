@@ -6,7 +6,10 @@ import (
 	"github.com/google/uuid"
 	"nursing_api/pkg/database"
 	"nursing_api/pkg/ent"
-	schemaTimezone "nursing_api/pkg/ent/timezone"
+	pscSchema "nursing_api/pkg/ent/prescription"
+	pscItmSchema "nursing_api/pkg/ent/prescriptionitem"
+	tzSchema "nursing_api/pkg/ent/timezone"
+	"nursing_api/pkg/mono"
 	"time"
 )
 
@@ -17,36 +20,36 @@ type Repository interface {
 	UpdateTimeZone(model *TimeZone) (bool, error)
 	DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, error)
 	GetDuplicate(userId uuid.UUID, name string, midday string, hour string, minute string) (*TimeZone, error)
+	CountPrescriptionItemByTimeZoneId(userId uuid.UUID, timezoneId uuid.UUID, date time.Time) (int, error)
 }
 
 type timezoneRepository struct {
-	root     *ent.Client
-	timezone *ent.TimeZoneClient
-	c        context.Context
+	db   database.DatabaseClient
+	mono *mono.Client
 }
 
 func NewRepository(
-	dbClient database.DatabaseClient,
+	db database.DatabaseClient,
+	mono *mono.Client,
 ) Repository {
 	return &timezoneRepository{
-		root:     dbClient.GetClient(),
-		timezone: dbClient.GetClient().TimeZone,
-		c:        dbClient.GetCtx(),
+		db:   db,
+		mono: mono,
 	}
 }
 
 func (p timezoneRepository) GetTimeZones(userId uuid.UUID) ([]*TimeZone, error) {
-	list, err := p.timezone.
+	list, err := p.timezoneClient().
 		Query().
 		Where(
-			schemaTimezone.UserID(userId),
+			tzSchema.UserID(userId),
 		).
 		Order(
-			schemaTimezone.ByMidday(sql.OrderAsc()),
-			schemaTimezone.ByHour(sql.OrderAsc()),
-			schemaTimezone.ByMinute(sql.OrderAsc()),
+			tzSchema.ByMidday(sql.OrderAsc()),
+			tzSchema.ByHour(sql.OrderAsc()),
+			tzSchema.ByMinute(sql.OrderAsc()),
 		).
-		All(p.c)
+		All(p.GetCtx())
 	if err != nil {
 		return nil, err
 	}
@@ -55,13 +58,13 @@ func (p timezoneRepository) GetTimeZones(userId uuid.UUID) ([]*TimeZone, error) 
 }
 
 func (p timezoneRepository) GetTimeZone(id uuid.UUID, userId uuid.UUID) (*TimeZone, error) {
-	timezone, err := p.timezone.
+	timezone, err := p.timezoneClient().
 		Query().
 		Where(
-			schemaTimezone.ID(id),
-			schemaTimezone.UserID(userId),
+			tzSchema.ID(id),
+			tzSchema.UserID(userId),
 		).
-		Only(p.c)
+		Only(p.GetCtx())
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +73,7 @@ func (p timezoneRepository) GetTimeZone(id uuid.UUID, userId uuid.UUID) (*TimeZo
 }
 
 func (p timezoneRepository) CreateTimeZone(model *TimeZone) (*TimeZone, error) {
-	newPlanTimeZone, err := p.timezone.
+	newPlanTimeZone, err := p.timezoneClient().
 		Create().
 		SetUserID(model.UserID).
 		SetTimezoneName(model.Name).
@@ -79,7 +82,7 @@ func (p timezoneRepository) CreateTimeZone(model *TimeZone) (*TimeZone, error) {
 		SetHour(model.Hour).
 		SetMinute(model.Minute).
 		SetCreatedAt(time.Now()).
-		Save(p.c)
+		Save(p.GetCtx())
 	if err != nil {
 		return nil, err
 	}
@@ -88,14 +91,14 @@ func (p timezoneRepository) CreateTimeZone(model *TimeZone) (*TimeZone, error) {
 }
 
 func (p timezoneRepository) UpdateTimeZone(model *TimeZone) (bool, error) {
-	err := p.timezone.
+	err := p.timezoneClient().
 		Update().
 		SetTimezoneName(model.Name).
 		SetMidday(model.Midday).
 		SetHour(model.Hour).
 		SetMinute(model.Minute).
-		Where(schemaTimezone.ID(model.ID)).
-		Exec(p.c)
+		Where(tzSchema.ID(model.ID)).
+		Exec(p.GetCtx())
 	if err != nil {
 		return false, err
 	}
@@ -104,10 +107,10 @@ func (p timezoneRepository) UpdateTimeZone(model *TimeZone) (bool, error) {
 }
 
 func (p timezoneRepository) DeleteTimeZone(id uuid.UUID, userId uuid.UUID) (bool, error) {
-	deleted, err := p.timezone.
+	deleted, err := p.timezoneClient().
 		Delete().
-		Where(schemaTimezone.ID(id), schemaTimezone.UserID(userId)).
-		Exec(p.c)
+		Where(tzSchema.ID(id), tzSchema.UserID(userId)).
+		Exec(p.GetCtx())
 	if err != nil {
 		return false, err
 	}
@@ -122,25 +125,68 @@ func (p timezoneRepository) GetDuplicate(
 	hour string,
 	minute string,
 ) (*TimeZone, error) {
-	found, err := p.root.Debug().TimeZone.
+	found, err := p.timezoneClient().
 		Query().
 		Where(
-			schemaTimezone.And(
-				schemaTimezone.UserID(userId),
-				schemaTimezone.Or(
-					schemaTimezone.TimezoneNameEQ(name),
-					schemaTimezone.And(
-						schemaTimezone.Midday(midday),
-						schemaTimezone.Hour(hour),
-						schemaTimezone.Minute(minute),
+			tzSchema.And(
+				tzSchema.UserID(userId),
+				tzSchema.Or(
+					tzSchema.TimezoneNameEQ(name),
+					tzSchema.And(
+						tzSchema.Midday(midday),
+						tzSchema.Hour(hour),
+						tzSchema.Minute(minute),
 					),
 				),
 			),
 		).
-		Only(p.c)
+		Only(p.GetCtx())
 	if err != nil {
 		return nil, err
 	}
 
 	return toTimeZoneDomain(found), nil
+}
+
+func (p timezoneRepository) CountPrescriptionItemByTimeZoneId(
+	userId uuid.UUID,
+	timezoneId uuid.UUID,
+	date time.Time,
+) (int, error) {
+	count, err := p.prescriptionClient().
+		Query().
+		WithPrescriptionItems(func(query *ent.PrescriptionItemQuery) {
+			query.Where(
+				pscItmSchema.TimezoneIDEQ(timezoneId),
+			)
+		}).
+		Where(
+			pscSchema.And(
+				pscSchema.UserID(userId),
+				pscSchema.StartedAtLTE(p.mono.Date.TruncateToDate(date)),
+				pscSchema.FinishedAtGT(p.mono.Date.TruncateToDateAddDay(date, 1)),
+			),
+		).
+		Count(p.GetCtx())
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (p timezoneRepository) timezoneClient() *ent.TimeZoneClient {
+	return p.db.GetClient().TimeZone
+}
+
+func (p timezoneRepository) prescriptionClient() *ent.PrescriptionClient {
+	return p.db.GetClient().Prescription
+}
+
+func (p timezoneRepository) prescriptionItemClient() *ent.PrescriptionItemClient {
+	return p.db.GetClient().PrescriptionItem
+}
+
+func (p timezoneRepository) GetCtx() context.Context {
+	return p.db.GetCtx()
 }

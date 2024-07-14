@@ -5,6 +5,7 @@ import (
 	"nursing_api/internal/common/dto"
 	"nursing_api/internal/common/response"
 	"strings"
+	"time"
 )
 
 type UseCase interface {
@@ -12,6 +13,7 @@ type UseCase interface {
 	Create(req *CreateTimeZoneRequest) dto.BaseResponse[TimeZone]
 	Update(req *UpdateTimeZoneRequest) dto.BaseResponse[TimeZone]
 	Delete(req *DeleteTimeZoneRequest) dto.BaseResponse[bool]
+	IsDeletable(req *IsDeletableTimeZoneRequest) dto.BaseResponse[bool]
 }
 
 type service struct {
@@ -129,4 +131,18 @@ func (t service) Delete(req *DeleteTimeZoneRequest) dto.BaseResponse[bool] {
 	}
 
 	return dto.Ok[bool](response.CODE_SUCCESS, &deleted)
+}
+
+func (t service) IsDeletable(req *IsDeletableTimeZoneRequest) dto.BaseResponse[bool] {
+	itemCount, err := t.repo.CountPrescriptionItemByTimeZoneId(req.UserId, req.TimezoneId, time.Now())
+	if err != nil {
+		return dto.Fail[bool](response.CODE_FAIL_DURING_CHECK_DELETABLE_TIMEZONE, err)
+	}
+
+	isDeletable := itemCount > 0
+	if itemCount > 0 {
+		return dto.Ok[bool](response.CODE_CANNOT_DELETE_TIMEZONE, &isDeletable)
+	}
+
+	return dto.Ok[bool](response.CODE_SUCCESS, &isDeletable)
 }

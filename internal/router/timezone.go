@@ -7,5 +7,6 @@ func (c *container) RegisterTimeZoneRoute() {
 		r.Post("", c.AuthMiddleware(c.handler.timezone.Create)...)
 		r.Patch("", c.AuthMiddleware(c.handler.timezone.Update)...)
 		r.Delete("/:id", c.AuthMiddleware(c.handler.timezone.Delete)...)
+		r.Get("/deletable/:id", c.AuthMiddleware(c.handler.timezone.IsDeletable)...)
 	}
 }

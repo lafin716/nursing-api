@@ -82,14 +82,16 @@ const (
 	CODE_FAIL_UPDATE_TAKEHISTORY         = ResultCode(6003)
 
 	// 복용시간대
-	CODE_FAIL_GET_LIST_TAKE_TIMEZONE        = ResultCode(7000)
-	CODE_NOT_FOUND_TIMEZONE                 = ResultCode(7001)
-	CODE_DUPLICATE_TIMEZONE                 = ResultCode(7002)
-	CODE_ALREADY_EXIST_TIMEZONE_NAME        = ResultCode(7003)
-	CODE_ALREADY_EXIST_TIMEZONE_HOUR_MINUTE = ResultCode(7004)
-	CODE_FAIL_DURING_CREATE_TIMEZONE        = ResultCode(7005)
-	CODE_FAIL_DURING_UPDATE_TIMEZONE        = ResultCode(7006)
-	CODE_FAIL_DURING_DELETE_TIMEZONE        = ResultCode(7007)
+	CODE_FAIL_GET_LIST_TAKE_TIMEZONE          = ResultCode(7000)
+	CODE_NOT_FOUND_TIMEZONE                   = ResultCode(7001)
+	CODE_DUPLICATE_TIMEZONE                   = ResultCode(7002)
+	CODE_ALREADY_EXIST_TIMEZONE_NAME          = ResultCode(7003)
+	CODE_ALREADY_EXIST_TIMEZONE_HOUR_MINUTE   = ResultCode(7004)
+	CODE_FAIL_DURING_CREATE_TIMEZONE          = ResultCode(7005)
+	CODE_FAIL_DURING_UPDATE_TIMEZONE          = ResultCode(7006)
+	CODE_FAIL_DURING_DELETE_TIMEZONE          = ResultCode(7007)
+	CODE_FAIL_DURING_CHECK_DELETABLE_TIMEZONE = ResultCode(7008)
+	CODE_CANNOT_DELETE_TIMEZONE               = ResultCode(7009)
 )
 
 var codeMessages = map[ResultCode]string{
@@ -170,14 +172,16 @@ var codeMessages = map[ResultCode]string{
 	CODE_FAIL_UPDATE_TAKEHISTORY:         "복용내역 수정 중 오류가 발생하였습니다.",
 
 	// 복용시간대
-	CODE_FAIL_GET_LIST_TAKE_TIMEZONE:        "복용시간대 목록 조회 중 오류가 발생하였습니다.",
-	CODE_NOT_FOUND_TIMEZONE:                 "시간대를 찾을 수 없습니다.",
-	CODE_DUPLICATE_TIMEZONE:                 "중복되는 시간대가 존재합니다.",
-	CODE_ALREADY_EXIST_TIMEZONE_NAME:        "이미 존재하는 이름입니다.",
-	CODE_ALREADY_EXIST_TIMEZONE_HOUR_MINUTE: "이미 등록된 시간입니다.",
-	CODE_FAIL_DURING_CREATE_TIMEZONE:        "시간대 생성 중 오류가 발생하였습니다.",
-	CODE_FAIL_DURING_UPDATE_TIMEZONE:        "시간대 수정 중 오류가 발생하였습니다.",
-	CODE_FAIL_DURING_DELETE_TIMEZONE:        "시간대 삭제 중 오류가 발생하였습니다.",
+	CODE_FAIL_GET_LIST_TAKE_TIMEZONE:          "복용시간대 목록 조회 중 오류가 발생하였습니다.",
+	CODE_NOT_FOUND_TIMEZONE:                   "시간대를 찾을 수 없습니다.",
+	CODE_DUPLICATE_TIMEZONE:                   "중복되는 시간대가 존재합니다.",
+	CODE_ALREADY_EXIST_TIMEZONE_NAME:          "이미 존재하는 이름입니다.",
+	CODE_ALREADY_EXIST_TIMEZONE_HOUR_MINUTE:   "이미 등록된 시간입니다.",
+	CODE_FAIL_DURING_CREATE_TIMEZONE:          "시간대 생성 중 오류가 발생하였습니다.",
+	CODE_FAIL_DURING_UPDATE_TIMEZONE:          "시간대 수정 중 오류가 발생하였습니다.",
+	CODE_FAIL_DURING_DELETE_TIMEZONE:          "시간대 삭제 중 오류가 발생하였습니다.",
+	CODE_FAIL_DURING_CHECK_DELETABLE_TIMEZONE: "삭제 가능한 시간대인지 확인 중 오류가 발생하였습니다.",
+	CODE_CANNOT_DELETE_TIMEZONE:               "연결 된 처방전이 복용기간 중으로 삭제할 수 없는 시간대입니다.",
 }
 
 func GetMessage(code ResultCode, param ...string) string {

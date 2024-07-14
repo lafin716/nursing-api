@@ -12,6 +12,7 @@ type TimeZoneApi interface {
 	Create(c *fiber.Ctx) error
 	Update(c *fiber.Ctx) error
 	Delete(c *fiber.Ctx) error
+	IsDeletable(c *fiber.Ctx) error
 }
 
 type timezoneApi struct {
@@ -126,5 +127,37 @@ func (t timezoneApi) Delete(c *fiber.Ctx) error {
 	req.UserId = userId
 
 	resp := t.service.Delete(req)
+	return ResolveResponse(resp, c)
+}
+
+// @summary 복용시간대 삭제 가능 여부
+// @description 복용시간대를 삭제 가능 여부를 확인하는 엔드포인트
+// @produce json
+// @param id path string true "복용시간대 고유번호"
+// @router /timezone/deletable/:id [get]
+// @Security Bearer
+func (t timezoneApi) IsDeletable(c *fiber.Ctx) error {
+	userId, err := getUserId(t.jwtClient, c)
+	if err != nil {
+		return err
+	}
+
+	req := new(timezone.IsDeletableTimeZoneRequest)
+	err = c.ParamsParser(req)
+	if err != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(err.Error()).
+			Error(c)
+	}
+
+	errs := validateParameter(req)
+	if errs != nil {
+		return response.New(response.CODE_INVALID_PARAM).
+			SetErrors(errs).
+			Error(c)
+	}
+	req.UserId = userId
+
+	resp := t.service.IsDeletable(req)
 	return ResolveResponse(resp, c)
 }
