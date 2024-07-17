@@ -98,11 +98,12 @@ func (p *planService) GetByMonth(req *GetByMonthRequest) dto.BaseResponse[Summar
 	// 복용계획 아이템 추가
 	for _, ps := range items {
 		summaryItem := &SummaryItem{
-			ID:         ps.ID,
-			Name:       ps.PrescriptionName,
-			StartedAt:  p.mono.Date.Format(ps.StartedAt, "Y-m-d"),
-			FinishedAt: p.mono.Date.Format(ps.FinishedAt, "Y-m-d"),
-			TakeDays:   ps.TakeDays,
+			ID:           ps.ID,
+			Name:         ps.PrescriptionName,
+			HospitalName: ps.HospitalName,
+			StartedAt:    p.mono.Date.Format(ps.StartedAt, "Y-m-d"),
+			FinishedAt:   p.mono.Date.Format(ps.FinishedAt, "Y-m-d"),
+			TakeDays:     ps.TakeDays,
 		}
 		summary.Items = append(summary.Items, *summaryItem)
 	}
