@@ -1,7 +1,6 @@
 package date
 
 import (
-	"log"
 	"time"
 )
 
@@ -55,7 +54,6 @@ func (d parser) ParseWithoutTime(layout string, value string) (time.Time, error)
 func (d parser) ParseWithTime(layout string, value string) (time.Time, error) {
 	// 현재일시에서 시간만 추출
 	nowTime := time.Now().Format("15:04:05")
-	log.Println("현재시간 : ", nowTime)
 	replaced := ReplaceLayout(layout)
 	t, err := time.Parse(replaced, value+" "+nowTime)
 	if err != nil {

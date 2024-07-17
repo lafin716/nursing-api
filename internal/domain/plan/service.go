@@ -125,6 +125,12 @@ func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 		return dto.Fail[any](response.CODE_FAIL_ADD_PRESCRIPTION, err)
 	}
 
+	startedAt, err := p.mono.Date.Parse("Y-m-d", req.StartedAt)
+	if err != nil {
+		_ = tx.RollbackTx()
+		return dto.Fail[any](response.CODE_FAIL_ADD_TAKE_HISTORY_ITEM, err)
+	}
+
 	// 처방전 하위 타임존 순회
 	for _, subTz := range req.Timezones {
 		// 타임존 조회
@@ -148,10 +154,20 @@ func (p *planService) Add(req *AddPlanRequest) dto.BaseResponse[any] {
 			}
 
 			// 처방전 아이템 생성
-			_, err = p.repo.AddPrescriptionItems(ps, tz, med, subMedicine)
+			pscItem, err := p.repo.AddPrescriptionItems(ps, tz, med, subMedicine)
 			if err != nil {
 				_ = tx.RollbackTx()
 				return dto.Fail[any](response.CODE_FAIL_ADDITEM_PRESCRIPTION, err)
+			}
+
+			// 미리 복용내역 생성
+			for i := 0; i <= req.TakeDays; i++ {
+				futureTakeDate := p.mono.Date.TruncateToDateAddDay(startedAt, i)
+				_, err = p.repo.AddTakeHistoryItemFromPrescriptionItemWithDate(pscItem, futureTakeDate)
+				if err != nil {
+					_ = tx.RollbackTx()
+					return dto.Fail[any](response.CODE_FAIL_ADD_TAKE_HISTORY_ITEM, err)
+				}
 			}
 		}
 	}
