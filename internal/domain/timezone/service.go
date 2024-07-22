@@ -157,7 +157,7 @@ func (t service) Delete(req *DeleteTimeZoneRequest) dto.BaseResponse[bool] {
 }
 
 func (t service) IsDeletable(req *IsDeletableTimeZoneRequest) dto.BaseResponse[bool] {
-	itemCount, err := t.repo.CountPrescriptionItemByTimeZoneId(req.UserId, req.TimezoneId, time.Now())
+	itemCount, err := t.repo.CountPrescriptionItemByTimeZoneId(req.UserId, req.ID, time.Now())
 	if err != nil {
 		return dto.Fail[bool](response.CODE_FAIL_DURING_CHECK_DELETABLE_TIMEZONE, err)
 	}

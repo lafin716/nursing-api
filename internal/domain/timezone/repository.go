@@ -158,7 +158,7 @@ func (p timezoneRepository) CountPrescriptionItemByTimeZoneId(
 	timezoneId uuid.UUID,
 	date time.Time,
 ) (int, error) {
-	count, err := p.prescriptionClient().
+	psc, err := p.prescriptionClient().
 		Query().
 		WithPrescriptionItems(func(query *ent.PrescriptionItemQuery) {
 			query.Where(
@@ -172,9 +172,14 @@ func (p timezoneRepository) CountPrescriptionItemByTimeZoneId(
 				pscSchema.FinishedAtGT(p.mono.Date.TruncateToDateAddDay(date, 1)),
 			),
 		).
-		Count(p.GetCtx())
+		All(p.GetCtx())
 	if err != nil {
 		return 0, err
+	}
+
+	count := 0
+	for _, item := range psc {
+		count += len(item.Edges.PrescriptionItems)
 	}
 
 	return count, nil
@@ -220,7 +225,7 @@ func (p timezoneRepository) timezoneClient() *ent.TimeZoneClient {
 }
 
 func (p timezoneRepository) prescriptionClient() *ent.PrescriptionClient {
-	return p.db.GetClient().Prescription
+	return p.db.GetClient().Debug().Prescription
 }
 
 func (p timezoneRepository) prescriptionItemClient() *ent.PrescriptionItemClient {
