@@ -208,7 +208,7 @@ func (p prescriptionService) Update(req *UpdateRequest) *UpdateResponse {
 func (p prescriptionService) Delete(req *DeleteRequest) *DeleteResponse {
 	found, err := p.repo.GetById(req.ID)
 	if err != nil || found == nil {
-		return FailDelete("처방전 데이터를 찾을 수 없습니다.", nil)
+		return FailDelete("처방전 데이터를 찾을 수 없습니다.", err)
 	}
 
 	// 처방전 아이템 삭제
