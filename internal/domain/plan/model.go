@@ -41,6 +41,7 @@ type Pill struct {
 	TakeStatus        bool      `json:"take_status"`
 	TakeDate          string    `json:"take_date,omitempty"`
 	TakeTime          string    `json:"take_time,omitempty"`
+	Memo              string    `json:"memo,omitempty"`
 }
 
 type Summary struct {

@@ -13,7 +13,7 @@ import (
 type Repository interface {
 	// 처방전
 	GetList(search *SearchCondition) ([]*Prescription, error)
-	GetById(id uuid.UUID) (*Prescription, error)
+	GetById(id uuid.UUID) (*ent.Prescription, error)
 	Add(prescription *Prescription) (*Prescription, error)
 	Update(prescription *Prescription) (int, error)
 	Delete(id uuid.UUID) (bool, error)
@@ -24,6 +24,7 @@ type Repository interface {
 	AddItem(item *PrescriptionItem) (*PrescriptionItem, error)
 	UpdateItem(prescriptionItem *PrescriptionItem) (int, error)
 	DeleteItem(itemId uuid.UUID) (bool, error)
+	DeleteItemsById(id uuid.UUID) (bool, error)
 }
 
 type prescriptionRepository struct {
@@ -51,11 +52,11 @@ func (p prescriptionRepository) GetTxManager() database.TransactionManager {
 }
 
 func (p prescriptionRepository) GetPrescriptionClient() *ent.PrescriptionClient {
-	return p.db.GetClient().Prescription
+	return p.db.GetClient().Debug().Prescription
 }
 
 func (p prescriptionRepository) GetPrescriptionItemClient() *ent.PrescriptionItemClient {
-	return p.db.GetClient().PrescriptionItem
+	return p.db.GetClient().Debug().PrescriptionItem
 }
 
 func (p prescriptionRepository) GetCtx() context.Context {
@@ -83,9 +84,10 @@ func (p prescriptionRepository) GetList(search *SearchCondition) ([]*Prescriptio
 	return toDomains(foundList), nil
 }
 
-func (p prescriptionRepository) GetById(id uuid.UUID) (*Prescription, error) {
+func (p prescriptionRepository) GetById(id uuid.UUID) (*ent.Prescription, error) {
 	found, err := p.GetPrescriptionClient().
 		Query().
+		WithPrescriptionItems().
 		Where(
 			pscSchema.ID(id),
 		).
@@ -94,7 +96,7 @@ func (p prescriptionRepository) GetById(id uuid.UUID) (*Prescription, error) {
 		return nil, err
 	}
 
-	return toDomain(found), nil
+	return found, nil
 }
 
 func (p prescriptionRepository) Add(prescription *Prescription) (*Prescription, error) {
@@ -229,10 +231,10 @@ func (p prescriptionRepository) DeleteItem(itemId uuid.UUID) (bool, error) {
 	return true, nil
 }
 
-func (p prescriptionRepository) DeleteItemByIds(itemIds []uuid.UUID) (bool, error) {
+func (p prescriptionRepository) DeleteItemsById(id uuid.UUID) (bool, error) {
 	_, err := p.GetPrescriptionItemClient().
 		Delete().
-		Where(pscItmSchema.IDIn(itemIds...)).
+		Where(pscItmSchema.PrescriptionIDEQ(id)).
 		Exec(p.GetCtx())
 	if err != nil {
 		return false, err

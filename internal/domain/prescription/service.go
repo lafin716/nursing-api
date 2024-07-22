@@ -1,8 +1,11 @@
 package prescription
 
 import (
+	"github.com/google/uuid"
+	"nursing_api/internal/domain/plan"
 	"nursing_api/pkg/jwt"
 	"nursing_api/pkg/mono"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -63,12 +66,49 @@ func (p prescriptionService) GetList(req *GetListRequest) *GetListResponse {
 }
 
 func (p prescriptionService) GetById(req *GetByIdRequest) *GetByIdResponse {
-	ps, err := p.repo.GetById(req.PrescriptionId)
+	ps, err := p.repo.GetById(req.ID)
 	if err != nil {
 		return FailGetById("처방전 조회 중 오류가 발생하였습니다", err)
 	}
 
-	return OkGetById(ps)
+	psItms, err := ps.Edges.PrescriptionItemsOrErr()
+	if err != nil {
+		return FailGetById("처방전 의약품이 없습니다", nil)
+	}
+
+	// 복용계획 형태로 가공
+	psPlanMap := make(map[uuid.UUID]*plan.Plan)
+	for _, item := range psItms {
+		if psPlanMap[item.TimezoneID] == nil {
+			h, _ := strconv.Atoi(item.Hour)
+			m, _ := strconv.Atoi(item.Minute)
+			psPlanMap[item.TimezoneID] = &plan.Plan{
+				TimezoneId: item.TimezoneID,
+				PlanName:   item.TimezoneName,
+				Hour:       h,
+				Minute:     m,
+				Pills:      []plan.Pill{},
+			}
+		}
+
+		psPlanMap[item.TimezoneID].Pills = append(psPlanMap[item.TimezoneID].Pills, plan.Pill{
+			PrescriptionItemId: item.ID,
+			PrescriptionId:     item.PrescriptionID,
+			MedicineId:         item.MedicineID,
+			PillName:           item.MedicineName,
+			TakeAmount:         item.TakeAmount,
+			TakeUnit:           item.MedicineUnit,
+			Memo:               item.Memo,
+		})
+	}
+
+	// 리스트 형태로 변환
+	psPlans := []*plan.Plan{}
+	for _, v := range psPlanMap {
+		psPlans = append(psPlans, v)
+	}
+
+	return OkGetById(psPlans)
 }
 
 func (p prescriptionService) Register(req *RegisterRequest) *RegisterResponse {
@@ -120,10 +160,13 @@ func (p prescriptionService) Register(req *RegisterRequest) *RegisterResponse {
 }
 
 func (p prescriptionService) Update(req *UpdateRequest) *UpdateResponse {
-	found, err := p.repo.GetById(req.ID)
+	foundEnt, err := p.repo.GetById(req.ID)
 	if err != nil {
 		return FailUpdate("처방전 데이터를 찾을 수 없습니다.", err)
 	}
+
+	// 변환처리
+	found := toDomain(foundEnt)
 
 	started := found.StartedAt
 	if req.StartedAt != "" {
@@ -168,6 +211,13 @@ func (p prescriptionService) Delete(req *DeleteRequest) *DeleteResponse {
 		return FailDelete("처방전 데이터를 찾을 수 없습니다.", nil)
 	}
 
+	// 처방전 아이템 삭제
+	_, err = p.repo.DeleteItemsById(found.ID)
+	if err != nil {
+		return FailDelete("처방전 의약품 삭제가 실패하였습니다.", err)
+	}
+
+	// 처방전 삭제
 	result, err := p.repo.Delete(req.ID)
 	if err != nil {
 		return FailDelete("처방전 삭제가 실패하였습니다.", err)

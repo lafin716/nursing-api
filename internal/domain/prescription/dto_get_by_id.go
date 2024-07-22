@@ -2,21 +2,22 @@ package prescription
 
 import (
 	"github.com/google/uuid"
+	"nursing_api/internal/domain/plan"
 )
 
 type GetByIdRequest struct {
-	UserId         uuid.UUID `json:"-"`
-	PrescriptionId uuid.UUID `json:"prescription_id"`
+	ID     uuid.UUID `json:"id"`
+	UserId uuid.UUID `json:"-"`
 }
 
 type GetByIdResponse struct {
 	Success bool
 	Message string
-	Data    *Prescription
+	Data    []*plan.Plan
 	Error   error
 }
 
-func OkGetById(data *Prescription) *GetByIdResponse {
+func OkGetById(data []*plan.Plan) *GetByIdResponse {
 	return &GetByIdResponse{
 		Success: true,
 		Message: "처방전이 조회 되었습니다.",
