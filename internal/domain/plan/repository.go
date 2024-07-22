@@ -86,7 +86,7 @@ func (r repository) GetPrescriptionInDate(userId uuid.UUID, date time.Time) ([]*
 			pscSchema.And(
 				pscSchema.UserID(userId),
 				pscSchema.StartedAtLTE(r.mono.Date.TruncateToDate(date)),
-				pscSchema.FinishedAtGT(r.mono.Date.TruncateToDateAddDay(date, 1)),
+				pscSchema.FinishedAtGTE(r.mono.Date.TruncateToDate(date)),
 			),
 		).
 		All(r.GetCtx())
