@@ -499,6 +499,17 @@ func (r repository) GetPlanMap(userId uuid.UUID, date time.Time) (map[uuid.UUID]
 		for _, pscItm := range pscItems {
 			tzId := pscItm.TimezoneID
 
+			// 시간 파싱
+			h, err := strconv.Atoi(pscItm.Hour)
+			if err != nil {
+				return nil, err
+			}
+
+			// 오후 시간대면서 12 이하인 경우 시간을 12시간 추가
+			if h < 12 && pscItm.Midday == "PM" {
+				pscItm.Hour = strconv.Itoa(h + 12)
+			}
+
 			// 타임존이 없는 경우 생성
 			if tzMap[tzId] == nil {
 				tzText := fmt.Sprintf("%s %s:%s", pscItm.Midday, pscItm.Hour, pscItm.Minute)
