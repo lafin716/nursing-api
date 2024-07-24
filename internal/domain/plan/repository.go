@@ -28,12 +28,12 @@ type Repository interface {
 	GetTimeZone(id uuid.UUID) (*ent.TimeZone, error)
 	GetTakeHistoryItem(takeHistoryItemId uuid.UUID) (*ent.TakeHistoryItem, error)
 	GetTodayTakeHistoryItemFromPrescriptionItem(prescriptionItemId uuid.UUID) (*ent.TakeHistoryItem, error)
-	GetTakeHistoryItemFromPrescriptionItemByDate(prescriptionItemId uuid.UUID, date time.Time) (*ent.TakeHistoryItem, error)
+	GetTakeHistoryItemFromPrescriptionItemByDate(userId uuid.UUID, prescriptionItemId uuid.UUID, date time.Time) (*ent.TakeHistoryItem, error)
 	GetMedicine(id uuid.UUID) (*ent.Medicine, error)
 
 	AddPrescription(plan AddPlanRequest) (*ent.Prescription, error)
 	AddPrescriptionItems(prescription *ent.Prescription, tz *ent.TimeZone, medicine *ent.Medicine, subMedicine AddMedicineRequest) (*ent.PrescriptionItem, error)
-	AddTakeHistoryItemFromPrescriptionItem(prescriptionItem *ent.PrescriptionItem) (*ent.TakeHistoryItem, error)
+	AddTakeHistoryItemFromPrescriptionItem(prescriptionItem *ent.PrescriptionItem, date time.Time) (*ent.TakeHistoryItem, error)
 	AddTakeHistoryItemFromPrescriptionItemWithDate(prescriptionItem *ent.PrescriptionItem, date time.Time) (*ent.TakeHistoryItem, error)
 	UpdateTakeHistoryItem(takeHistoryItem *ent.TakeHistoryItem) error
 	UpdatePrescriptionItemFromTakeHistoryItem(takeHistoryItem *ent.TakeHistoryItem) error
@@ -202,6 +202,7 @@ func (r repository) GetTodayTakeHistoryItemFromPrescriptionItem(
 
 // 날짜별 개별 의약품 복용내역 조회
 func (r repository) GetTakeHistoryItemFromPrescriptionItemByDate(
+	userId uuid.UUID,
 	prescriptionItemId uuid.UUID,
 	date time.Time,
 ) (*ent.TakeHistoryItem, error) {
@@ -209,6 +210,7 @@ func (r repository) GetTakeHistoryItemFromPrescriptionItemByDate(
 		Query().
 		Where(
 			tkhItmSchema.And(
+				tkhItmSchema.UserIDEQ(userId),
 				tkhItmSchema.TakeDateEQ(r.mono.Date.GetDate(date)),
 				tkhItmSchema.PrescriptionItemIDEQ(prescriptionItemId),
 			),
@@ -289,6 +291,7 @@ func (r repository) AddPrescriptionItems(
 // 처방전 아이템 복용내역 생성
 func (r repository) AddTakeHistoryItemFromPrescriptionItem(
 	prescriptionItem *ent.PrescriptionItem,
+	date time.Time,
 ) (*ent.TakeHistoryItem, error) {
 	tkhItm, err := r.takeHistoryItemClient().
 		Create().
@@ -306,7 +309,7 @@ func (r repository) AddTakeHistoryItemFromPrescriptionItem(
 		SetRemainAmount(prescriptionItem.RemainAmount).
 		SetTotalAmount(prescriptionItem.TotalAmount).
 		SetTakeUnit(prescriptionItem.MedicineUnit).
-		SetTakeDate(r.mono.Date.GetDate(time.Now())).
+		SetTakeDate(r.mono.Date.GetDate(date)).
 		SetTakeTime("").
 		SetTakeStatus(false).
 		Save(r.GetCtx())
@@ -527,7 +530,7 @@ func (r repository) GetPlanMap(userId uuid.UUID, date time.Time) (map[uuid.UUID]
 			}
 
 			// 복용내역이 있는 경우 업데이트
-			tkhItem, err := r.GetTakeHistoryItemFromPrescriptionItemByDate(pscItm.ID, date)
+			tkhItem, err := r.GetTakeHistoryItemFromPrescriptionItemByDate(userId, pscItm.ID, date)
 			takeHistoryItemId := uuid.Nil
 			takeDate := ""
 			takeTime := ""

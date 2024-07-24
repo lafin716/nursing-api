@@ -253,7 +253,7 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 			remainAmount := item.RemainAmount
 
 			// 복용 내역이 존재하는지 확인
-			tkhItem, err := p.repo.GetTakeHistoryItemFromPrescriptionItemByDate(item.ID, dateTime)
+			tkhItem, err := p.repo.GetTakeHistoryItemFromPrescriptionItemByDate(req.UserId, item.ID, dateTime)
 			if err != nil || tkhItem == nil {
 				tkhItem, err = p.repo.AddTakeHistoryItemFromPrescriptionItemWithDate(item, dateTime)
 				if err != nil {
@@ -307,7 +307,6 @@ func (p *planService) Take(req *TakeToggleRequest) dto.BaseResponse[bool] {
 				return dto.Fail[bool](response.CODE_TOO_MUCH_TAKE_AMOUNT, err)
 			}
 			item.RemainAmount = item.RemainAmount - item.TakeAmount
-			item.TakeDate = p.mono.Date.GetDate(time.Now())
 			item.TakeTime = p.mono.Date.GetTime(time.Now())
 		} else {
 			item.RemainAmount = item.RemainAmount + item.TakeAmount
@@ -356,7 +355,7 @@ func (p *planService) PillToggle(req *PillToggleRequest) dto.BaseResponse[bool] 
 	// 복용내역이 없는 경우 복용내역 생성
 	tkhItem, err := p.repo.GetTodayTakeHistoryItemFromPrescriptionItem(psItem.ID)
 	if err != nil || tkhItem == nil {
-		tkhItem, err = p.repo.AddTakeHistoryItemFromPrescriptionItem(psItem)
+		tkhItem, err = p.repo.AddTakeHistoryItemFromPrescriptionItem(psItem, time.Now())
 		if err != nil {
 			_ = tx.RollbackTx()
 			return dto.Fail[bool](response.CODE_FAIL_ADD_TAKE_HISTORY_ITEM, err)
@@ -433,7 +432,7 @@ func (p *planService) PillTakeAmountUpdate(req *PillTakeAmountUpdateRequest) dto
 	// 복용내역이 없는 경우 복용내역 생성
 	tkhItem, err := p.repo.GetTodayTakeHistoryItemFromPrescriptionItem(psItem.ID)
 	if err != nil || tkhItem == nil {
-		tkhItem, err = p.repo.AddTakeHistoryItemFromPrescriptionItem(psItem)
+		tkhItem, err = p.repo.AddTakeHistoryItemFromPrescriptionItem(psItem, time.Now())
 		if err != nil {
 			_ = tx.RollbackTx()
 			return dto.Fail[bool](response.CODE_FAIL_ADD_TAKE_HISTORY_ITEM, err)
