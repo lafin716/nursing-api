@@ -97,6 +97,8 @@ func (p prescriptionService) GetById(req *GetByIdRequest) *GetByIdResponse {
 			MedicineId:         item.MedicineID,
 			PillName:           item.MedicineName,
 			TakeAmount:         item.TakeAmount,
+			RemainAmount:       item.RemainAmount,
+			TotalAmount:        item.TotalAmount,
 			TakeUnit:           item.MedicineUnit,
 			Memo:               item.Memo,
 		})
