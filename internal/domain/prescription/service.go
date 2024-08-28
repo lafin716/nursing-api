@@ -238,8 +238,12 @@ func (p prescriptionService) GetItemList(req *GetItemListRequest) *GetItemListRe
 }
 
 func (p prescriptionService) GetItemById(req *GetItemByIdRequest) *GetItemByIdResponse {
-	//TODO implement me
-	panic("implement me")
+	found, err := p.repo.GetItemById(req.PrescriptionItemId)
+	if err != nil {
+		return FailGetItemById("처방전 의약품 데이터를 찾을 수 없습니다.", err)
+	}
+
+	return OkGetItemById(found)
 }
 
 func (p prescriptionService) AddItem(req *AddItemRequest) *AddItemResponse {
