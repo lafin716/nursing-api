@@ -120,7 +120,6 @@ definitions:
         type: string
     required:
     - date
-    - memo
     - timezone_id
     type: object
   prescription.AddItemRequest:

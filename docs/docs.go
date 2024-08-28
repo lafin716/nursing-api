@@ -879,7 +879,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "date",
-                "memo",
                 "timezone_id"
             ],
             "properties": {
