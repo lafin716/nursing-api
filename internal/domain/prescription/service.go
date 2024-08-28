@@ -2,6 +2,7 @@ package prescription
 
 import (
 	"github.com/google/uuid"
+	"nursing_api/internal/domain/medicine"
 	"nursing_api/internal/domain/plan"
 	"nursing_api/pkg/jwt"
 	"nursing_api/pkg/mono"
@@ -26,16 +27,19 @@ type UseCase interface {
 
 type prescriptionService struct {
 	repo      Repository
+	medRepo   medicine.Repository
 	mono      *mono.Client
 	jwtClient *jwt.JwtClient
 }
 
 func NewService(
 	repo Repository,
+	medRepo medicine.Repository,
 	jwtClient *jwt.JwtClient,
 ) UseCase {
 	return &prescriptionService{
 		repo:      repo,
+		medRepo:   medRepo,
 		jwtClient: jwtClient,
 		mono:      mono.NewMono(),
 	}
@@ -241,6 +245,11 @@ func (p prescriptionService) GetItemById(req *GetItemByIdRequest) *GetItemByIdRe
 	found, err := p.repo.GetItemById(req.ID)
 	if err != nil {
 		return FailGetItemById("처방전 의약품 데이터를 찾을 수 없습니다.", err)
+	}
+
+	med, err := p.medRepo.GetById(found.MedicineId)
+	if err == nil && med != nil {
+		found.Medicine = med
 	}
 
 	return OkGetItemById(found)
