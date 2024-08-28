@@ -3,8 +3,8 @@ package prescription
 import "github.com/google/uuid"
 
 type GetItemByIdRequest struct {
-	UserId             uuid.UUID `json:"-"`
-	PrescriptionItemId uuid.UUID `json:"id"`
+	UserId uuid.UUID `json:"-"`
+	ID     uuid.UUID `json:"id"`
 }
 
 type GetItemByIdResponse struct {
